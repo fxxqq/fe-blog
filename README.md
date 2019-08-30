@@ -1,7 +1,9 @@
+预览链接：[](https://ru23.github.io/react-ppt/)
+
 ### React 实际项目应用与最佳实践
 
 <ver />
-react 内部实现原理，
+
 1. createElement 如何构建虚拟 dom
 2. React.Component 如何实现组件化
 3. setState 异步队列
@@ -221,15 +223,21 @@ this.setState((prevState, props) => ({
 ### 使用不可变数据结构 Immutablejs 和 PureComponent
 
 <hor />
-### ErrorBoundary、Suspense和Fragment
+
+### ErrorBoundary、Suspense 和 Fragment
+
 ##### Error Boundaries
+
 React 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, errorInfo)`, 它能将子组件生命周期里所抛出的错误捕获, 防止页面全局崩溃。demo
 componentDidCatch 并不会捕获以下几种错误
+
 - 事件机制抛出的错误(事件里的错误并不会影响渲染)
 - Error Boundaries 自身抛出的错误
 - 异步产生的错误
 - 服务端渲染
+
 ##### Suspense
+
 Suspense 意思是能暂停当前组件的渲染, 当完成某件事以后再继续渲染。
 
 `code splitting`(16.6, 已上线): 文件懒加载。在此之前的实现方式是 react-loadable;
@@ -256,7 +264,9 @@ const OtherComponent = React.lazy(() => OtherComponentPromise)
 ```
 
 <hor />
+
 ### React hooks
+
 在 React 16.7 之前, React 有两种形式的组件, 有状态组件(类)和无状态组件(函数)。Hook 是 React 16.8 的新增特性。它可以让你在不编写 `class` 的情况下使用 state 以及其他的 React 特性。Hooks 的意义就是赋能先前的无状态组件, 让之变为有状态。这样一来更加契合了 React 所推崇的函数式编程。
 
 接下来梳理 Hooks 中最核心的 2 个 api, `useState` 和 `useEffect`
