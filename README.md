@@ -16,6 +16,7 @@ react 内部实现原理，
 
 <ver />
 目前React 16.8 +的生命周期分为三个阶段,分别是挂载阶段、更新阶段、卸载阶段
+
 ```jsx
 class ExampleComponent extends React.Component {
   // 构造函数，最先被执行,我们通常在构造函数里初始化state对象或者给自定义方法绑定this
@@ -34,7 +35,7 @@ class ExampleComponent extends React.Component {
   }
   // shouldComponentUpdate(nextProps, nextState),有两个参数nextProps和nextState，表示新的属性和变化之后的state，返回一个布尔值，true表示会触发重新渲染，false表示不会触发重新渲染，默认返回true,我们通常利用此生命周期来优化React程序性能
   shouldComponentUpdate(nextProps, nextState) {
-     return nextProps.id !== this.props.id;
+    return nextProps.id !== this.props.id
   }
   // 组件挂载后调用
   // 可以在该函数中进行请求或者订阅
