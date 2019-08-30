@@ -1,4 +1,4 @@
-预览链接：[](https://ru23.github.io/react-ppt/)
+预览链接：[https://ru23.github.io/react-ppt/](https://ru23.github.io/react-ppt/)
 
 ### React 实际项目应用与最佳实践
 
