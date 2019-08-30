@@ -1,7 +1,5 @@
 ### React 实际项目应用与最佳实践
 
-预览链接：[https://ru23.github.io/react-ppt/](https://ru23.github.io/react-ppt/)
-
 <ver />
 
 1. createElement 如何构建虚拟 dom
@@ -69,8 +67,8 @@ React 版本 17 将弃用几个类组件 API 生命周期：`componentWillMount`
 ### react 事件机制
 
 <ver />
-react 里面绑定事件的方式和在 HTML 中绑定事件类似，使用驼峰式命名指定要绑定的 onClick 属性为组件定义的一个方法 `{this.handleClick.bind(this)}`。
-由于类的方法默认不会绑定 this，因此在调用的时候如果忘记绑定，this 的值将会是 undefined。 通常如果不是直接调用，应该为方法绑定 this，将事件函数上下文绑定要组件实例上。
+- react 里面绑定事件的方式和在 HTML 中绑定事件类似，使用驼峰式命名指定要绑定的 onClick 属性为组件定义的一个方法{this.handleClick.bind(this)}。
+- 由于类的方法默认不会绑定 this，因此在调用的时候如果忘记绑定，this 的值将会是 undefined。 通常如果不是直接调用，应该为方法绑定 this，将事件函数上下文绑定要组件实例上。
 <ver />
 
 ##### 绑定事件的四种方式
