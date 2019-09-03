@@ -609,7 +609,7 @@ body {
   pointer-events: none;
   overflow: visible;
   z-index: 1;
-  text-align: left;
+  text-align: center;
   -webkit-perspective: 600px;
   perspective: 600px;
   -webkit-perspective-origin: 50% 40%;

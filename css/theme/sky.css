@@ -57,7 +57,7 @@ body {
 
 .reveal {
   font-family: 'Open Sans', sans-serif;
-  font-size: 40px;
+  font-size: 36px;
   font-weight: normal;
   color: #444444;
 }
@@ -130,6 +130,8 @@ body {
 .reveal p {
   margin: 20px 0;
   line-height: 1.3;
+  text-align: left;
+  color: #555;
 }
 
 /* Ensure certain elements are never larger than the slide itself */
@@ -212,7 +214,7 @@ body {
 .reveal pre {
   display: block;
   position: relative;
-  width: 90%;
+
   margin: 20px auto;
   text-align: left;
   font-size: 0.55em;
