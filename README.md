@@ -21,12 +21,13 @@
    ReactDom.render 原理剖析
    render 渲染逻辑
    组件渲染实现
-   生命周期方法实现
+
 8. dom 的 diff 算法
 
    - 对比策略
    - 对比文本、组件、非文本 DOM、属性实现
    - 对比子节点实现
+   - snabbdom 源码
 
 <ver />
 
@@ -104,9 +105,13 @@ react 版本 17 将弃用几个类组件 API 生命周期：`componentWillMount`
 ### react 事件机制
 
 <ver />
+简单的理解 react 如何处理事件的，React 在组件加载(mount)和更新(update)时，将事件通过 addEventListener  统一注册到 document 上，然后会有一个事件池存储了所有的事件，当事件触发的时候，通过 dispatchEvent 进行事件分发。
+
+摘自[新手学习 react 迷惑的点(二)](https://juejin.im/post/5d6f127bf265da03cf7aab6d)
+
 - react 里面绑定事件的方式和在 HTML 中绑定事件类似，使用驼峰式命名指定要绑定的 onClick 属性为组件定义的一个方法{this.handleClick.bind(this)}。
 - 由于类的方法默认不会绑定 this，因此在调用的时候如果忘记绑定，this 的值将会是 undefined。 通常如果不是直接调用，应该为方法绑定 this，将事件函数上下文绑定要组件实例上。
-<ver />
+  <ver />
 
 #### 绑定事件的四种方式
 
@@ -144,6 +149,32 @@ class Button extends react.Component {
     )
   }
 }
+```
+
+<ver />
+
+```jsx
+class Foo extends React.Component {
+  handleClick() {
+    this.setState({ xxx: aaa })
+  }
+
+  render() {
+    return <button onClick={this.handleClick.bind(this)}>Click me</button>
+  }
+}
+```
+
+会被 babel 转化成
+
+```jsx
+React.createElement(
+  'button',
+  {
+    onClick: this.handleClick
+  },
+  'Click me'
+)
 ```
 
 <ver />
