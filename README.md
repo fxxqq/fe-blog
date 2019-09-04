@@ -23,20 +23,20 @@
 目前react 16.8 +的生命周期分为三个阶段,分别是挂载阶段、更新阶段、卸载阶段
  
 - 挂载阶段：
-constructor(props): 实例化。
-static getDeriverdStateFromProps 从 props 中获取 state。
-render 渲染。
-componentDidMount: 完成挂载。
+constructor(props): 实例化。<br/>
+static getDeriverdStateFromProps 从 props 中获取 state。<br/>
+render 渲染。<br/>
+componentDidMount: 完成挂载。 
 - 更新阶段：
-static getDeriverdStateFromProps 从 props 中获取 state。
-shouldComponentUpdate 判断是否需要重绘。
-render 渲染。
-getShapshotBeforeUpdate 获取快照。
-componentDidUpdate 渲染完成后回调。
+static getDeriverdStateFromProps 从 props 中获取 state。<br/>
+shouldComponentUpdate 判断是否需要重绘。<br/>
+render 渲染。<br/>
+getShapshotBeforeUpdate 获取快照。<br/>
+componentDidUpdate 渲染完成后回调。 
 - 卸载阶段：
 componentWillUnmount 即将卸载。
 - 错误处理：
-static getDerivedStateFromError 从错误中获取 state。
+static getDerivedStateFromError 从错误中获取 state。<br/>
 componentDidCatch 捕获错误并进行处理。
 
 <ver />
@@ -403,6 +403,7 @@ function logHoc(WrappedComponent) {
 ```
 
 <ver />
+
 ##### 可用、权限控制
 
 ```jsx
@@ -419,7 +420,8 @@ function auth(WrappedComponent) {
 }
 ```
 
-<ver /> 
+<ver />
+
 ##### 表单校验
 
 基于上面的双向绑定的例子，我们再来一个表单验证器，表单验证器可以包含验证函数以及提示信息，当验证不通过时，展示错误信息：
@@ -776,6 +778,7 @@ State 一旦有变化，Store 就会调用监听函数，来更新 View。
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
 引用[美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
 <ver />
+
 #### `redux` 单向数据流架构如何设计
 
 #### `redux` 中间件
