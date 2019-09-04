@@ -14,6 +14,7 @@
 7. createElement 如何构建虚拟 dom
 8. dom 的 diff 算法
 9. snabbdom 源码
+10. redux
 
 <ver />
 
@@ -463,7 +464,8 @@ function validateHoc(WrappedComponent) {
 }
 ```
 
-<ver />  
+<ver />
+
 ```jsx
 const validatorName = {
   func: (val) => val && !isNaN(val),
@@ -547,7 +549,7 @@ this.setState((prevState, props) => ({
 #### `Error Boundaries`
 
 react 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, errorInfo)`, 它能将子组件生命周期里所抛出的错误捕获, 防止页面全局崩溃。demo
-componentDidCatch 并不会捕获以下几种错误
+`componentDidCatch` 并不会捕获以下几种错误
 
 - 事件机制抛出的错误(事件里的错误并不会影响渲染)
 - Error Boundaries 自身抛出的错误
@@ -586,6 +588,7 @@ const OtherComponent = react.lazy(() => OtherComponentPromise)
 ```
 
 <ver />
+
 #### `Fragments（v16.2.0)`
 
 Fragments 允许你将子列表分组，而无需向 DOM 添加额外节点。
@@ -653,6 +656,7 @@ function App() {
 ```
 
 <ver />
+
 #### `useEffect(fn)`
 
 在每次 render 后都会执行这个钩子。可以将它当成是 componentDidMount、componentDidUpdate、componentWillUnmount 的合集。因此使用 useEffect 比之前优越的地方在于:
@@ -704,6 +708,7 @@ reactElement 对象还有一个$$typeof属性，它是一个Symbol类型的变�
 ### react 性能分析与优化
 
 <ver />
+
 #### 减少不必要的渲染
 
 在使用 `class Component` 进行开发的时候，我们可以使用 `shouldComponentUpdate` 来减少不必要的渲染，那么在使用 `react hooks` 后，我们如何实现这样的功能呢？
@@ -759,17 +764,18 @@ function Parent({ a, b }) {
 ```
 
 从例子可以看出来，它的第二个参数和 useEffect 的第二个参数是一样的，只有在第二个参数数组的值发生变化时，才会触发子组件的更新。
+
 引用[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
 
 ### redux
 
-Store：保存数据的地方，你可以把它看成一个容器，整个应用只能有一个 Store。
+`Store`：保存数据的地方，你可以把它看成一个容器，整个应用只能有一个 `Store`。
 
-State：Store 对象包含所有数据，如果想得到某个时点的数据，就要对 Store 生成快照，这种时点的数据集合，就叫做 State。
+`State`：`Store` 对象包含所有数据，如果想得到某个时点的数据，就要对 `Store` 生成快照，这种时点的数据集合，就叫做 `State`。
 
-Action：State 的变化，会导致 View 的变化。但是，用户接触不到 State，只能接触到 View。所以，State 的变化必须是 View 导致的。Action 就是 View 发出的通知，表示 State 应该要发生变化了。
+`Action`：`State` 的变化，会导致 View 的变化。但是，用户接触不到 State，只能接触到 View。所以，State 的变化必须是 View 导致的。Action 就是 View 发出的通知，表示 State 应该要发生变化了。
 
-Action Creator：View 要发送多少种消息，就会有多少种 Action。如果都手写，会很麻烦，所以我们定义一个函数来生成 Action，这个函数就叫 Action Creator。
+`Action Creator`：View 要发送多少种消息，就会有多少种 Action。如果都手写，会很麻烦，所以我们定义一个函数来生成 Action，这个函数就叫 Action Creator。
 
 Reducer：Store 收到 Action 以后，必须给出一个新的 State，这样 View 才会发生变化。这种 State 的计算过程就叫做 Reducer。Reducer 是一个函数，它接受 Action 和当前 State 作为参数，返回一个新的 State。
 
@@ -784,6 +790,7 @@ dispatch：是 View 发出 Action 的唯一方法。
 State 一旦有变化，Store 就会调用监听函数，来更新 View。
 
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
+
 引用[美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
 <ver />
 
