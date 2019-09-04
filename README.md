@@ -1,5 +1,6 @@
 ### react16 实际项目应用和最佳实践
 
+空格键翻页，左右键切换页面，上下键翻章节，esc 章节预览
 <ver />
 
 ### 目录
@@ -107,7 +108,7 @@ react 版本 17 将弃用几个类组件 API 生命周期：`componentWillMount`
 <ver />
 简单的理解 react 如何处理事件的，React 在组件加载(mount)和更新(update)时，将事件通过 addEventListener  统一注册到 document 上，然后会有一个事件池存储了所有的事件，当事件触发的时候，通过 dispatchEvent 进行事件分发。
 
-摘自[新手学习 react 迷惑的点(二)](https://juejin.im/post/5d6f127bf265da03cf7aab6d)
+引入[新手学习 react 迷惑的点(二)](https://juejin.im/post/5d6f127bf265da03cf7aab6d)
 
 - react 里面绑定事件的方式和在 HTML 中绑定事件类似，使用驼峰式命名指定要绑定的 onClick 属性为组件定义的一个方法{this.handleClick.bind(this)}。
 - 由于类的方法默认不会绑定 this，因此在调用的时候如果忘记绑定，this 的值将会是 undefined。 通常如果不是直接调用，应该为方法绑定 this，将事件函数上下文绑定要组件实例上。
@@ -761,7 +762,7 @@ function Parent({ a, b }) {
 ```
 
 从例子可以看出来，它的第二个参数和 useEffect 的第二个参数是一样的，只有在第二个参数数组的值发生变化时，才会触发子组件的更新。
-摘自[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
+引入[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
 
 ### redux
 
@@ -786,7 +787,7 @@ dispatch：是 View 发出 Action 的唯一方法。
 State 一旦有变化，Store 就会调用监听函数，来更新 View。
 
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
-摘自[美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
+引入[美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
 
 #### redux 单向数据流架构如何设计
 
