@@ -8,27 +8,12 @@
 1. react 生命周期
 2. react 事件机制
 3. react.Component 如何实现组件化以及高阶组件的应用
-
 4. setState 异步队列数据管理
-
-   - 真正的 React 中 setState 如何实现
-   - 合并 setState 实现
-   - setState 队列机制
-   - 清空队列
-
 5. react Fiber 架构分析
 6. react hooks
 7. createElement 如何构建虚拟 dom
-   ReactDom.render 原理剖析
-   render 渲染逻辑
-   组件渲染实现
-
 8. dom 的 diff 算法
-
-   - 对比策略
-   - 对比文本、组件、非文本 DOM、属性实现
-   - 对比子节点实现
-   - snabbdom 源码
+9. snabbdom 源码
 
 <ver />
 
