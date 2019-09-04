@@ -1,5 +1,5 @@
 ### react16 实际项目应用和最佳实践
-https://mp.weixin.qq.com/s/hm8XvNeTuLoLnWIBWDZYbQ
+
 <ver />
 
 ### 目录
@@ -703,6 +703,66 @@ reactElement 对象还有一个$$typeof属性，它是一个Symbol类型的变�
 
 <hor />
 
+### react 性能分析与优化
+
+<ver />
+#### 减少不必要的渲染
+
+在使用 `class Component` 进行开发的时候，我们可以使用 `shouldComponentUpdate` 来减少不必要的渲染，那么在使用 `react hooks` 后，我们如何实现这样的功能呢？
+
+解决方案：`React.memo`和`useMemo`
+对于这种情况，react 当然也给出了官方的解决方案，就是使用 React.memo 和 useMemo。
+<ver />
+
+##### `React.memo`
+
+React.momo 其实并不是一个 hook，它其实等价于 PureComponent，但是它只会对比 props。使用方式如下(用上面的例子):
+
+```jsx
+import React, { useState } from 'react'
+
+export const Count = React.memo(props => {
+  const [data, setData] = useState({
+    count: 0,
+    name: 'cjg',
+    age: 18
+  })
+
+  const handleClick = () => {
+    const { count } = data
+    setData({
+      ...data,
+      count: count + 1
+    })
+  }
+
+  return <button onClick={handleClick}>count:{data.count}</button>
+})
+```
+
+<ver />
+##### useMemo
+
+useMemo 它的用法其实跟 useEffects 有点像，我们直接看官方给的例子
+
+```jsx
+function Parent({ a, b }) {
+  // Only re-rendered if `a` changes:
+  const child1 = useMemo(() => <Child1 a={a} />, [a])
+  // Only re-rendered if `b` changes:
+  const child2 = useMemo(() => <Child2 b={b} />, [b])
+  return (
+    <>
+      {child1}
+      {child2}
+    </>
+  )
+}
+```
+
+从例子可以看出来，它的第二个参数和 useEffect 的第二个参数是一样的，只有在第二个参数数组的值发生变化时，才会触发子组件的更新。
+摘自[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
+
 ### redux
 
 Store：保存数据的地方，你可以把它看成一个容器，整个应用只能有一个 Store。
@@ -735,8 +795,6 @@ State 一旦有变化，Store 就会调用监听函数，来更新 View。
 待完善
 
 <hor />
-
-### react 性能分析与优化
 
 ### 参考：
 
