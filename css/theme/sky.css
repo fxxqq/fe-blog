@@ -59,7 +59,7 @@ body {
   font-family: 'Open Sans', sans-serif;
   font-size: 36px;
   font-weight: normal;
-  color: #444444;
+  color: #804c00;
 }
 
 ::selection {
@@ -90,7 +90,7 @@ body {
 .reveal h5,
 .reveal h6 {
   margin: 0 0 20px 0;
-  color: #333;
+  color: orangered;
   font-family: 'Quicksand', sans-serif;
   font-weight: bold;
   line-height: 1.2;
@@ -131,7 +131,7 @@ body {
   margin: 20px 0;
   line-height: 1.3;
   text-align: left;
-  color: #555;
+  color: #553300;
 }
 
 /* Ensure certain elements are never larger than the slide itself */
@@ -351,7 +351,7 @@ body {
  *********************************************/
 .reveal .progress {
   background: rgba(0, 0, 0, 0.2);
-  color: #3b759e;
+  color: #007fff;
 }
 
 .reveal .progress span {
@@ -367,4 +367,10 @@ body {
   .backgrounds {
     background-color: #f7fbfc;
   }
+}
+.reveal {
+  visibility: hidden;
+}
+.reveal.ready {
+  visibility: visible;
 }

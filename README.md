@@ -559,7 +559,7 @@ react 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, error
 
 #### `lazy、suspense`
 
-lazy 需要跟 Suspence 配合使用，所以这里放在一起介绍。
+lazy 需要跟 Suspence 配合使用，否则会报错。
 
 lazy 实际上是帮助我们实现代码分割的功能，使用过 webpack 的同学都知道，webpack 也有这个功能。 那为什么他们都要做这个功能呢？
 Suspense 意思是能暂停当前组件的渲染, 当完成某件事以后再继续渲染。
