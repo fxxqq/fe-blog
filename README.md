@@ -139,6 +139,8 @@ class Button extends react.Component {
 
 <ver />
 
+为什么直接调用方法会报错
+
 ```jsx
 class Foo extends React.Component {
   handleClick() {
@@ -208,6 +210,7 @@ class Button extends react.Component {
 ```
 
 <ver />
+
 ##### 函数定义组件（Function Component）
 
 纯展示型的，不需要维护 state 和生命周期，则优先使用 `Function Component`
@@ -230,6 +233,7 @@ function MyComponent(props) {
 ```
 
 <ver />
+
 #### `ES6 class` 定义一个纯组件（`PureComponent`）
 
 组件需要维护 state 或使用生命周期方法，则优先使用 `PureComponent`
@@ -246,9 +250,11 @@ class MyComponent extends react.Component {
 ```
 
 <ver />
+
 ##### `PureComponent`
 
 react15.3 中新加了一个类 PureComponent，前身是 PureRenderMixin ，和 Component 基本一样，只不过会在 render 之前帮组件自动执行一次 shallowEqual（浅比较），来决定是否更新组件，浅比较类似于浅复制，只会比较第一层。使用 PureComponent 相当于省去了写 shouldComponentUpdate 函数，当组件更新时，如果组件的 props 和 state：
+
 <ver />
 
 - 引用和第一层数据都没发生改变， render 方法就不会触发，这是我们需要达到的效果。
@@ -273,7 +279,9 @@ map1.get('a') === map2.get('a') // true
 ```
 
 可以看到，修改 map1 的属性返回 map2，他们并不是指向同一存储空间，map1 声明了只有，所有的操作都不会改变它。
+
 <ver />
+
 ImmutableJS 提供了大量的方法去更新、删除、添加数据，极大的方便了我们操纵数据。除此之外，还提供了原生类型与 ImmutableJS 类型判断与转换方法：
 
 ```jsx
