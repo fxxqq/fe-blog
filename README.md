@@ -1,4 +1,4 @@
-### [react16 新特性与项目最佳实践](https://ru23.github.io/react-ppt/)
+### [react16 常见 api 讲解以及原理剖析](https://ru23.github.io/react-ppt/)
 
 ```
 空格键翻页
@@ -325,7 +325,8 @@ react15.3 中新加了一个类 PureComponent，前身是 PureRenderMixin ，和
 ### 使用不可变数据结构 `Immutablejs`
 
 <ver />
-Immutable.js 是 Facebook 在 2014 年出的持久性数据结构的库，持久性指的是数据一旦创建，就不能再被更改，任何修改或添加删除操作都会返回一个新的 Immutable 对象。可以让我们更容易的去处理缓存、回退、数据变化检测等问题，简化开发。并且提供了大量的类似原生 JS 的方法，还有 Lazy Operation 的特性，完全的函数式编程。
+
+`Immutable.js` 是 Facebook 在 2014 年出的持久性数据结构的库，持久性指的是数据一旦创建，就不能再被更改，任何修改或添加删除操作都会返回一个新的 `Immutable` 对象。可以让我们更容易的去处理缓存、回退、数据变化检测等问题，简化开发。并且提供了大量的类似原生 JS 的方法，还有 `Lazy Operation` 的特性，完全的函数式编程。
 
 <ver />
 
@@ -343,7 +344,7 @@ map1.get('a') === map2.get('a') // true
 
 <ver />
 
-ImmutableJS 提供了大量的方法去更新、删除、添加数据，极大的方便了我们操纵数据。除此之外，还提供了原生类型与 ImmutableJS 类型判断与转换方法：
+`ImmutableJS`提供了大量的方法去更新、删除、添加数据，极大的方便了我们操纵数据。除此之外，还提供了原生类型与 `ImmutableJS` 类型判断与转换方法：
 
 ```jsx
 import { fromJS, isImmutable } from 'immutable'
@@ -357,14 +358,17 @@ const obj1 = obj.toJS() // 转换成原生 `js` 类型
 ```
 
 <ver />
+
 `ImmutableJS` 最大的两个特性就是： `immutable data structures`（持久性数据结构）与 `structural sharing`（结构共享），持久性数据结构保证数据一旦创建就不能修改，使用旧数据创建新数据时，旧数据也不会改变，不会像原生 js 那样新数据的操作会影响旧数据。而结构共享是指没有改变的数据共用一个引用，这样既减少了深拷贝的性能消耗，也减少了内存。
+
 <ver />
 比如下图：<br/>
 ![react-tree](https://cdn.ru23.com/react_ppt/ppt_react_tree.png)
 
 <ver />
 
-左边是旧值，右边是新值，我需要改变左边红色节点的值，生成的新值改变了红色节点到根节点路径之间的所有节点，也就是所有青色节点的值，旧值没有任何改变，其他使用它的地方并不会受影响，而超过一大半的蓝色节点还是和旧值共享的。在 ImmutableJS 内部，构造了一种特殊的数据结构，把原生的值结合一系列的私有属性，创建成 ImmutableJS 类型，每次改变值，先会通过私有属性的辅助检测，然后改变对应的需要改变的私有属性和真实值，最后生成一个新的值，中间会有很多的优化，所以性能会很高。
+左边是旧值，右边是新值，我需要改变左边红色节点的值，生成的新值改变了红色节点到根节点路径之间的所有节点，也就是所有青色节点的值，旧值没有任何改变，其他使用它的地方并不会受影响，而超过一大半的蓝色节点还是和旧值共享的。在 `ImmutableJS` 内部，构造了一种特殊的数据结构，把原生的值结合一系列的私有属性，创建成 `ImmutableJS` 类型，每次改变值，先会通过私有属性的辅助检测，然后改变对应的需要改变的私有属性和真实值，最后生成一个新的值，中间会有很多的优化，所以性能会很高。
+
 <ver />
 
 #### 高阶组件(`higher order component`)
@@ -594,8 +598,20 @@ this.setState((prevState, props) => ({
 
 #### `setState` 原理
 
-setState 并没有直接操作去渲染，而是执行了一个 updateQueue（异步 updater 队列），具体可以阅读源码
-[ReactUpdateQueue.js](https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
+setState 并没有直接操作去渲染，而是执行了一个 `updateQueue`（异步 updater 队列），
+
+```jsx
+setState( stateChange ) {
+    Object.assign( this.state, stateChange );
+    //合并接收到的state||stateChange改变的state（setState接收到的参数）
+    renderComponent( this );//调用render渲染组件
+}
+```
+
+这种实现，每次调用 `setState` 都会更新 state 并马上渲染一次（不符合其更新优化机制），所以我们要合并 `setState`。
+
+具体可以阅读源码
+`[ReactUpdateQueue.js]`(https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
 
 <hor />
 
