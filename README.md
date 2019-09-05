@@ -1,6 +1,11 @@
 ### react16 新特性与项目最佳实践
 
-空格键翻页，左右键切换页面，上下键翻章节，esc 章节预览
+- 空格键翻页
+- 左右键切换页面，上下键翻章节
+- esc 章节预览
+
+[https://ru23.github.io/react-ppt/](https://ru23.github.io/react-ppt/)
+
 <ver />
 
 ### 目录
@@ -11,7 +16,7 @@
 4. setState 异步队列数据管理
 5. react Fiber 架构分析
 6. react hooks
-7. createElement 如何构建虚拟 dom
+7. 深入理解 react 原理
 8. dom 的 diff 算法
 9. snabbdom 源码
 10. redux
@@ -24,21 +29,21 @@
 目前react 16.8 +的生命周期分为三个阶段,分别是挂载阶段、更新阶段、卸载阶段
  
 - 挂载阶段：
-constructor(props): 实例化。<br/>
-static getDeriverdStateFromProps 从 props 中获取 state。<br/>
-render 渲染。<br/>
-componentDidMount: 完成挂载。 
+`constructor(props)`: 实例化。<br/>
+`static getDeriverdStateFromProps` 从 `props` 中获取 `state`。<br/>
+`render` 渲染。<br/>
+`componentDidMount`: 完成挂载。 
 - 更新阶段：
-static getDeriverdStateFromProps 从 props 中获取 state。<br/>
-shouldComponentUpdate 判断是否需要重绘。<br/>
-render 渲染。<br/>
-getShapshotBeforeUpdate 获取快照。<br/>
-componentDidUpdate 渲染完成后回调。 
+`static getDeriverdStateFromProps` 从 props 中获取 state。<br/>
+`shouldComponentUpdate` 判断是否需要重绘。<br/>
+`render` 渲染。<br/>
+`getShapshotBeforeUpdate` 获取快照。<br/>
+`componentDidUpdate` 渲染完成后回调。 
 - 卸载阶段：
-componentWillUnmount 即将卸载。
+`componentWillUnmount` 即将卸载。
 - 错误处理：
-static getDerivedStateFromError 从错误中获取 state。<br/>
-componentDidCatch 捕获错误并进行处理。
+`static getDerivedStateFromError` 从错误中获取 `state`。<br/>
+`componentDidCatch` 捕获错误并进行处理。
 
 <ver />
 
@@ -225,11 +230,11 @@ class Button extends react.Component {
 ```jsx
 import react from 'react'
 function MyComponent(props) {
-  let { name } = props
+  let { firstName, lastName } = props
   return (
     <div>
       <img src="avatar.png" className="profile" />
-      <h3>{[user.firstName, user.lastName].join(' ')}</h3>
+      <h3>{[firstName, lastName].join(' ')}</h3>
     </div>
   )
 }
@@ -242,7 +247,7 @@ return React.createElement(
   'div',
   null,
   React.createElement('img', { src: 'avatar.png', className: 'profile' }),
-  React.createElement('h3', null, [user.firstName, user.lastName].join(' '))
+  React.createElement('h3', null, [firstName, lastName].join(' '))
 )
 ```
 
