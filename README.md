@@ -26,24 +26,28 @@ esc 章节预览
 ### react 生命周期
 
 <ver />
-目前react 16.8 +的生命周期分为三个阶段,分别是挂载阶段、更新阶段、卸载阶段
- 
+
+目前 react 16.8 +的生命周期分为三个阶段,分别是挂载阶段、更新阶段、卸载阶段
+
 - 挂载阶段：
-`constructor(props)`: 实例化。<br/>
-`static getDeriverdStateFromProps` 从 `props` 中获取 `state`。<br/>
-`render` 渲染。<br/>
-`componentDidMount`: 完成挂载。 
+  `constructor(props)`: 实例化。<br/>
+  `static getDeriverdStateFromProps` 从 `props` 中获取 `state`。<br/>
+  `render` 渲染。<br/>
+  `componentDidMount`: 完成挂载。
+
+<ver />
+
 - 更新阶段：
-`static getDeriverdStateFromProps` 从 props 中获取 state。<br/>
-`shouldComponentUpdate` 判断是否需要重绘。<br/>
-`render` 渲染。<br/>
-`getShapshotBeforeUpdate` 获取快照。<br/>
-`componentDidUpdate` 渲染完成后回调。 
+  `static getDeriverdStateFromProps` 从 props 中获取 state。<br/>
+  `shouldComponentUpdate` 判断是否需要重绘。<br/>
+  `render` 渲染。<br/>
+  `getShapshotBeforeUpdate` 获取快照。<br/>
+  `componentDidUpdate` 渲染完成后回调。
 - 卸载阶段：
-`componentWillUnmount` 即将卸载。
+  `componentWillUnmount` 即将卸载。
 - 错误处理：
-`static getDerivedStateFromError` 从错误中获取 `state`。<br/>
-`componentDidCatch` 捕获错误并进行处理。
+  `static getDerivedStateFromError` 从错误中获取 `state`。<br/>
+  `componentDidCatch` 捕获错误并进行处理。
 
 <ver />
 
