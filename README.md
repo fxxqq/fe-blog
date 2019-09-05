@@ -1,10 +1,10 @@
-### react16 新特性与项目最佳实践
+### [react16 新特性与项目最佳实践](https://ru23.github.io/react-ppt/)
 
-- 空格键翻页
-- 左右键切换页面，上下键翻章节
-- esc 章节预览
-
-[https://ru23.github.io/react-ppt/](https://ru23.github.io/react-ppt/)
+```
+空格键翻页
+左右键切换页面，上下键翻章节
+esc 章节预览
+```
 
 <ver />
 
@@ -326,7 +326,9 @@ react15.3 中新加了一个类 PureComponent，前身是 PureRenderMixin ，和
 
 <ver />
 Immutable.js 是 Facebook 在 2014 年出的持久性数据结构的库，持久性指的是数据一旦创建，就不能再被更改，任何修改或添加删除操作都会返回一个新的 Immutable 对象。可以让我们更容易的去处理缓存、回退、数据变化检测等问题，简化开发。并且提供了大量的类似原生 JS 的方法，还有 Lazy Operation 的特性，完全的函数式编程。
+
 <ver />
+
 ```jsx
 import { Map } from 'immutable'
 const map1 = Map({ a: { aa: 1 }, b: 2, c: 3 })
@@ -595,7 +597,6 @@ this.setState((prevState, props) => ({
 setState 并没有直接操作去渲染，而是执行了一个 updateQueue（异步 updater 队列），具体可以阅读源码
 [ReactUpdateQueue.js](https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
 
-待完善
 <hor />
 
 ### `react` 中的事务实现
@@ -604,7 +605,7 @@ setState 并没有直接操作去渲染，而是执行了一个 updateQueue（�
 
 <hor />
 
-### `ErrorBoundary`、`Suspense` 和`Fragment`
+### `ErrorBoundary`、`Suspense` 和 `Fragment`
 
 <ver />
 
@@ -621,11 +622,11 @@ react 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, error
 
 #### `lazy、suspense`
 
-lazy 需要跟 Suspence 配合使用，否则会报错。
+`lazy` 需要跟 `Suspence` 配合使用，否则会报错。
 
-lazy 实际上是帮助我们实现代码分割 splitchunk 的功能。
+`lazy` 实际上是帮助我们实现代码分割 ，类似 webpack 的 `splitchunk` 的功能。
 
-Suspense 意思是能暂停当前组件的渲染, 当完成某件事以后再继续渲染。简单来说就是减少首屏代码的体积，提升性能。
+`Suspense` 意思是能暂停当前组件的渲染, 当完成某件事以后再继续渲染。简单来说就是减少首屏代码的体积，提升性能。
 
 <ver />
 
@@ -683,9 +684,13 @@ render() {
 - 采用新的 Diff 算法
 - 采用虚拟栈设计允许当优先级更高的渲染任务和较低优先的任务之间来回切换
 
-#### `Fiber` 如何做到异步渲染 Virtual Dom 和 Diff 算法
+<ver />
+
+#### `Fiber` 如何做到异步渲染 `Virtual Dom` 和 `Diff` 算法
 
 众所周知，画面每秒钟更新 60 次，页面在人眼中显得流畅，无明显卡顿。每秒 60 次，即 16ms 要更新一次页面，如果更新页面消耗的时间不到 16ms，那么在下一次更新时机来到之前会剩下一点时间执行其他的任务，只要保证及时在 16ms 的间隔下更新界面就完全不会影响到页面的流畅程度。fiber 的核心正是利用了 60 帧原则，实现了一个基于优先级和 requestIdleCallback 的循环任务调度算法。
+
+<ver />
 
 ```js
 function fiber(剩余时间) {
@@ -693,7 +698,11 @@ function fiber(剩余时间) {
     做任务
   } else {
     requestIdleCallback(fiber)
-    // requestIdleCallback 是浏览器提供的一个 api，可以让浏览器在空闲的时候执行回调，在回调参数中可以获取到当前帧剩余的时间，fiber 利用了这个参数，判断当前剩下的时间是否足够继续执行任务，如果足够则继续执行，否则暂停任务，并调用 requestIdleCallback 通知浏览器空闲的时候继续执行当前的任务
+    // requestIdleCallback 是浏览器提供的一个 api，可以让浏览器在空闲的时候执行回调，
+    // 在回调参数中可以获取到当前帧剩余的时间，fiber 利用了这个参数，
+    // 判断当前剩下的时间是否足够继续执行任务，
+    // 如果足够则继续执行，否则暂停任务，
+    // 并调用 requestIdleCallback 通知浏览器空闲的时候继续执行当前的任务
   }
 }
 ```
