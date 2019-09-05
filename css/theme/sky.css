@@ -214,7 +214,7 @@ body {
 .reveal pre {
   display: block;
   position: relative;
-
+  color: #333;
   margin: 20px auto;
   text-align: left;
   font-size: 0.55em;

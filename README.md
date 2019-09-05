@@ -226,10 +226,63 @@ class Button extends react.Component {
 import react from 'react'
 function MyComponent(props) {
   let { name } = props
-  return <h1>Hello, {name}</h1>
-  //会被babel转义成 return _react.default.createElement("h1", null, "Hello, ", name);
-  // createElement函数对key和ref等特殊的props进行处理，并获取defaultProps对默认props进行赋值，并且对传入的孩子节点进行处理，最终构造成一个reactElement对象（所谓的虚拟DOM）。
-  // reactDOM.render将生成好的虚拟DOM渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实DOM。
+  return (
+    <div>
+      <img src="avatar.png" className="profile" />
+      <h3>{[user.firstName, user.lastName].join(' ')}</h3>
+    </div>
+  )
+}
+```
+
+会被 babel 转义成
+
+```js
+return React.createElement(
+  'div',
+  null,
+  React.createElement('img', { src: 'avatar.png', className: 'profile' }),
+  React.createElement('h3', null, [user.firstName, user.lastName].join(' '))
+)
+```
+
+createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 defaultProps 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 reactElement 对象（所谓的虚拟 DOM）。
+reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
+
+<ver />
+
+那么，React.createElement 是在做什么？看下相关部分代码：
+
+```jsx
+var ReactElement = function(type, key, ref, self, source, owner, props) {
+  var element = {
+    // This tag allow us to uniquely identify this as a React Element
+    $$typeof: REACT_ELEMENT_TYPE,
+
+    // Built-in properties that belong on the element
+    type: type,
+    key: key,
+    ref: ref,
+    props: props,
+
+    // Record the component responsible for creating this element.
+    _owner: owner
+  }
+  // ...
+  return element
+}
+
+ReactElement.createElement = function(type, config, children) {
+  // ...
+  return ReactElement(
+    type,
+    key,
+    ref,
+    self,
+    source,
+    ReactCurrentOwner.current,
+    props
+  )
 }
 ```
 
@@ -534,6 +587,9 @@ this.setState((prevState, props) => ({
 
 #### `setState` 原理
 
+setState 并没有直接操作去渲染，而是执行了一个 updateQueue（异步 updater 队列），具体可以阅读源码
+[ReactUpdateQueue.js](https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
+
 待完善
 <hor />
 
@@ -621,7 +677,21 @@ render() {
 - 设置渲染任务的优先
 - 采用新的 Diff 算法
 - 采用虚拟栈设计允许当优先级更高的渲染任务和较低优先的任务之间来回切换
-  待补充
+
+#### `Fiber` 如何做到异步渲染 Virtual Dom 和 Diff 算法
+
+众所周知，画面每秒钟更新 60 次，页面在人眼中显得流畅，无明显卡顿。每秒 60 次，即 16ms 要更新一次页面，如果更新页面消耗的时间不到 16ms，那么在下一次更新时机来到之前会剩下一点时间执行其他的任务，只要保证及时在 16ms 的间隔下更新界面就完全不会影响到页面的流畅程度。fiber 的核心正是利用了 60 帧原则，实现了一个基于优先级和 requestIdleCallback 的循环任务调度算法。
+
+```js
+function fiber(剩余时间) {
+  if (剩余时间 > 任务所需时间) {
+    做任务
+  } else {
+    requestIdleCallback(fiber)
+    // requestIdleCallback 是浏览器提供的一个 api，可以让浏览器在空闲的时候执行回调，在回调参数中可以获取到当前帧剩余的时间，fiber 利用了这个参数，判断当前剩下的时间是否足够继续执行任务，如果足够则继续执行，否则暂停任务，并调用 requestIdleCallback 通知浏览器空闲的时候继续执行当前的任务
+  }
+}
+```
 
 <hor />
 
@@ -629,7 +699,7 @@ render() {
 
 在 react 16.7 之前, react 有两种形式的组件, 有状态组件(类)和无状态组件(函数)。
 官方解释： hook 是 React 16.8 的新增特性。它可以让你在不编写 class 的情况下使用 state 以及其他的 React 特性。
-个人理解：让传统的函数组件 function component 有内部状态 state 的函数 function。
+个人理解：让传统的函数组件 function component 有内部状态 state 的函数 function,简单来说就是 hooks 让函数组件有了状态，可以完全替代 class。
 
 接下来梳理 Hooks 中最核心的 2 个 api, `useState` 和 `useEffect`
 <ver />
@@ -666,12 +736,15 @@ function App() {
 可以将关联逻辑写进一个 useEffect(在以前得写进不同生命周期里);
 
 <hor />
+
 ### 深入理解 react 原理
 
 <ver />
+
 #### react 虚拟 dom 原理剖析
 
 <ver />
+
 ##### react 组件的渲染流程
 
 使用 `react.createElement` 或 JSX 编写 react 组件，实际上所有的 JSX 代码最后都会转换成 `react.createElement(...)`，Babel 帮助我们完成了这个转换的过程。
@@ -699,9 +772,10 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 当组件状态 state 有更改的时候，react 会自动调用组件的 render 方法重新渲染整个组件的 UI。
 当然如果真的这样大面积的操作 DOM，性能会是一个很大的问题，所以 react 实现了一个 Virtual DOM，组件 DOM 结构就是映射到这个 Virtual DOM 上，react 在这个 Virtual DOM 上实现了一个 diff 算法，当要重新渲染组件的时候，会通过 diff 寻找到要变更的 DOM 节点，再把这个修改更新到浏览器实际的 DOM 节点上，所以实际上不是真的渲染整个 DOM 树。这个 Virtual DOM 是一个纯粹的 JS 数据结构，所以性能会比原生 DOM 快很多。
 <ver />
+
 ##### 防止 XSS
 
-reactElement 对象还有一个$$typeof属性，它是一个Symbol类型的变量Symbol.for('react.element')，当环境不支持Symbol时，$$typeof 被赋值为 0xeac7。
+`reactElement` 对象还有一个`$$typeof`属性，它是一个 Symbol 类型的变量`Symbol.for('react.element')`，当环境不支持 Symbol 时，`$$typeof` 被赋值为 0xeac7。
 这个变量可以防止 XSS。如果你的服务器有一个漏洞，允许用户存储任意 JSON 对象， 而客户端代码需要一个字符串，这可能为你的应用程序带来风险。JSON 中不能存储 Symbol 类型的变量，而 react 渲染时会把没有\$\$typeof 标识的组件过滤掉。
 
 <hor />
@@ -745,6 +819,7 @@ export const Count = React.memo(props => {
 ```
 
 <ver />
+
 ##### useMemo
 
 useMemo 它的用法其实跟 useEffects 有点像，我们直接看官方给的例子
@@ -776,24 +851,23 @@ function Parent({ a, b }) {
 
 `Action`：`State` 的变化，会导致 View 的变化。但是，用户接触不到 State，只能接触到 View。所以，State 的变化必须是 View 导致的。Action 就是 View 发出的通知，表示 State 应该要发生变化了。
 
-`Action Creator`：View 要发送多少种消息，就会有多少种 Action。如果都手写，会很麻烦，所以我们定义一个函数来生成 Action，这个函数就叫 Action Creator。
+`Action Creator`：View 要发送多少种消息，就会有多少种 `Action`。如果都手写，会很麻烦，所以我们定义一个函数来生成 Action，这个函数就叫 `Action Creator`。
 
-Reducer：Store 收到 Action 以后，必须给出一个新的 State，这样 View 才会发生变化。这种 State 的计算过程就叫做 Reducer。Reducer 是一个函数，它接受 Action 和当前 State 作为参数，返回一个新的 State。
+`Reducer`：`Store` 收到 `Action` 以后，必须给出一个新的 `State`，这样 View 才会发生变化。这种 `State` 的计算过程就叫做 `Reducer`。`Reducer` 是一个函数，它接受 Action 和当前 `State` 作为参数，返回一个新的 `State`。
 
-dispatch：是 View 发出 Action 的唯一方法。
+`dispatch`：是 `View` 发出 `Action` 的唯一方法。
+
 <ver />
+
 然后我们过下整个工作流程：
 
-首先，用户（通过 View）发出 Action，发出方式就用到了 dispatch 方法。
+首先，用户（通过 `View`）发出 `Action`，发出方式就用到了 `dispatch` 方法。
 
-然后，Store 自动调用 Reducer，并且传入两个参数：当前 State 和收到的 Action，Reducer 会返回新的 State
+然后，`Store` 自动调用 `Reducer`，并且传入两个参数：当前 `State` 和收到的 `Action`，`Reducer` 会返回新的 `State`
 
-State 一旦有变化，Store 就会调用监听函数，来更新 View。
+`State` 一旦有变化，`Store` 就会调用监听函数，来更新 `View`。
 
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
-
-引用[美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
-<ver />
 
 #### `redux` 单向数据流架构如何设计
 
@@ -808,3 +882,5 @@ State 一旦有变化，Store 就会调用监听函数，来更新 View。
 1. [深入分析虚拟 DOM 的渲染原理和特性](https://juejin.im/post/5cb66fdaf265da0384128445)
 2. [react 事件机制](http://www.conardli.top/blog/article/react%E6%B7%B1%E5%85%A5%E7%B3%BB%E5%88%97/react%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html)
 3. [从 Mixin 到 HOC 再到 Hook](https://juejin.im/post/5cad39b3f265da03502b1c0a)
+4. [美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
+   <ver />
