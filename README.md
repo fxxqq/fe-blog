@@ -1,10 +1,8 @@
 ### [react16 常见 api 讲解以及原理剖析](https://ru23.github.io/react-ppt/)
 
- 
 - 空格键翻页
 - 左右键切换页面，上下键翻章节
 - esc 章节预览
- 
 
 <ver />
 
@@ -254,6 +252,8 @@ return React.createElement(
   React.createElement('h3', null, [firstName, lastName].join(' '))
 )
 ```
+
+<ver />
 
 createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 defaultProps 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 reactElement 对象（所谓的虚拟 DOM）。
 reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
