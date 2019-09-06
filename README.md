@@ -1,4 +1,4 @@
-### [react16 常见 api 讲解以及原理剖析](https://ru23.github.io/react-ppt/)
+### [React16 常见 api 讲解以及原理剖析](https://ru23.github.io/react-ppt/)
 
 - 空格键翻页
 - 左右键切换页面，上下键翻章节
@@ -615,7 +615,7 @@ setState( stateChange ) {
 这种实现，每次调用 `setState` 都会更新 state 并马上渲染一次（不符合其更新优化机制），所以我们要合并 `setState`。
 
 具体可以阅读源码
-`[ReactUpdateQueue.js]`(https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
+[`ReactUpdateQueue.js`](https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
 
 <hor />
 
@@ -814,6 +814,36 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 
 <hor />
 
+#### `diff` 算法
+
+传统的 `diff` 算法通过循环递归对节点一次对比，效率很低，算法复杂度达到 O(n^3)，其中 n 是树中节点的总数,React 通过制定大胆的策略，将 O(n^3) 复杂度的问题转换成 O(n) 复杂度的问题。
+
+<ver />
+
+`diff` 策略:
+
+1. web ui 中 Dom 节点跨层级的移动操作很少,`diff` 算法比较新旧节点的时候，比较只会在同层级比较，不会跨层级比较
+2. 拥有相同类的两个组件将会生成相似的树形结构，拥有不同类的两个组件将会生成不同的树形结构。
+3. 对于同一层级的一组子节点，他们可以通过唯一 key 进行区分
+
+基于以上三个前提策略，React 分别对 `tree diff`、`component diff` 以及 `element diff` 进行算法优化，事实也证明这三个前提策略是合理且准确的，它保证了整体界面构建的性能。
+
+具体可以参考[React 源码剖析系列 － 不可思议的 react diff](https://zhuanlan.zhihu.com/p/20346379)
+
+<ver />
+
+React 通过制定大胆的 diff 策略，将 O(n3) 复杂度的问题转换成 O(n) 复杂度的问题；
+
+React 通过分层求异的策略，对 tree diff 进行算法优化；
+
+React 通过相同类生成相似树形结构，不同类生成不同树形结构的策略，对 `component diff` 进行算法优化；
+
+React 通过设置唯一 key 的策略，对 `element diff` 进行算法优化；
+
+建议，在开发组件时，保持稳定的 DOM 结构会有助于性能的提升；
+
+建议，在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。
+
 ### react 性能分析与优化
 
 <ver />
@@ -824,6 +854,7 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 
 解决方案：`React.memo`和`useMemo`
 对于这种情况，react 当然也给出了官方的解决方案，就是使用 React.memo 和 useMemo。
+
 <ver />
 
 ##### `React.memo`
@@ -905,6 +936,8 @@ function Parent({ a, b }) {
 
 #### `redux` 单向数据流架构如何设计
 
+待完善
+
 #### `redux` 中间件
 
 待完善
@@ -917,4 +950,4 @@ function Parent({ a, b }) {
 2. [react 事件机制](http://www.conardli.top/blog/article/react%E6%B7%B1%E5%85%A5%E7%B3%BB%E5%88%97/react%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html)
 3. [从 Mixin 到 HOC 再到 Hook](https://juejin.im/post/5cad39b3f265da03502b1c0a)
 4. [美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
-   <ver />
+5. [解析 snabbdom 源码，教你实现精简的 Virtual DOM 库](https://github.com/creeperyang/blog/issues/33)
