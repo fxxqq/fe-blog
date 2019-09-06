@@ -1,4 +1,4 @@
-### [`React16`常见`api`讲解以及原理剖析](https://ru23.github.io/react-ppt/)
+### [`React16`常用`api`解析以及原理剖析](https://ru23.github.io/react-ppt/)
 
 - 空格键翻页
 - 左右键切换页面，上下键翻章节
@@ -15,7 +15,7 @@
 5. react Fiber 架构分析
 6. react hooks
 7. dom 的 diff 算法
-8. 解析 snabbdom 源码，教你实现精简的 Virtual DOM 库
+8. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
 9. redux
 
 <ver />
@@ -829,6 +829,7 @@ createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 
 3. 对于同一层级的一组子节点，他们可以通过唯一 key 进行区分
 
 基于以上三个前提策略，React 分别对 `tree diff`、`component diff` 以及 `element diff` 进行算法优化，事实也证明这三个前提策略是合理且准确的，它保证了整体界面构建的性能。
+简单的讲就是：
 
 具体可以参考[React 源码剖析系列 － 不可思议的 react diff](https://zhuanlan.zhihu.com/p/20346379)
 
