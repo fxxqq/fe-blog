@@ -1,4 +1,4 @@
-### [React16 常见 api 讲解以及原理剖析](https://ru23.github.io/react-ppt/)
+### [`React16`常见`api`讲解以及原理剖析](https://ru23.github.io/react-ppt/)
 
 - 空格键翻页
 - 左右键切换页面，上下键翻章节
@@ -14,10 +14,9 @@
 4. setState 异步队列数据管理
 5. react Fiber 架构分析
 6. react hooks
-7. 深入理解 react 原理
-8. dom 的 diff 算法
-9. snabbdom 源码
-10. redux
+7. dom 的 diff 算法
+8. 解析 snabbdom 源码，教你实现精简的 Virtual DOM 库
+9. redux
 
 <ver />
 
@@ -832,16 +831,12 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 
 <ver />
 
-React 通过制定大胆的 diff 策略，将 O(n3) 复杂度的问题转换成 O(n) 复杂度的问题；
-
-React 通过分层求异的策略，对 tree diff 进行算法优化；
-
-React 通过相同类生成相似树形结构，不同类生成不同树形结构的策略，对 `component diff` 进行算法优化；
-
-React 通过设置唯一 key 的策略，对 `element diff` 进行算法优化；
+- React 通过制定大胆的 diff 策略，将 O(n3) 复杂度的问题转换成 O(n) 复杂度的问题；
+- React 通过分层求异的策略，对 tree diff 进行算法优化；
+- React 通过相同类生成相似树形结构，不同类生成不同树形结构的策略，对 `component diff` 进行算法优化；
+- React 通过设置唯一 key 的策略，对 `element diff` 进行算法优化；
 
 建议，在开发组件时，保持稳定的 DOM 结构会有助于性能的提升；
-
 建议，在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。
 
 ### react 性能分析与优化
