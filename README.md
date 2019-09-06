@@ -254,12 +254,12 @@ return React.createElement(
 
 <ver />
 
-createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 defaultProps 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 reactElement 对象（所谓的虚拟 DOM）。
-reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
+`createElement` 函数对 key 和 ref 等特殊的 props 进行处理，并获取 `defaultProps` 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 `reactElement` 对象（所谓的虚拟 DOM）。
+`reactDOM.render` 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
 
 <ver />
 
-那么，React.createElement 是在做什么？看下相关部分代码：
+那么，`React.createElement` 是在做什么？看下相关部分代码：
 
 ```jsx
 var ReactElement = function(type, key, ref, self, source, owner, props) {
@@ -763,10 +763,10 @@ function App() {
 
 #### `useEffect(fn)`
 
-在每次 render 后都会执行这个钩子。可以将它当成是 componentDidMount、componentDidUpdate、componentWillUnmount 的合集。因此使用 useEffect 比之前优越的地方在于:
+在每次 render 后都会执行这个钩子。可以将它当成是 `componentDidMount`、` componentDidUpdate``、componentWillUnmount ` 的合集。因此使用 `useEffect` 比之前优越的地方在于:
 
-可以避免在 componentDidMount、componentDidUpdate 书写重复的代码;
-可以将关联逻辑写进一个 useEffect(在以前得写进不同生命周期里);
+可以避免在 `componentDidMount`、`componentDidUpdate` 书写重复的代码;
+可以将关联逻辑写进一个 `useEffect`(在以前得写进不同生命周期里);
 
 <hor />
 
@@ -782,9 +782,10 @@ function App() {
 
 使用 `react.createElement` 或 JSX 编写 react 组件，实际上所有的 JSX 代码最后都会转换成 `react.createElement(...)`，Babel 帮助我们完成了这个转换的过程。
 
-createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 defaultProps 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 reactElement 对象（所谓的虚拟 DOM）。
+createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 `defaultProps` 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 `reactElement` 对象（所谓的虚拟 DOM）。
 
-reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
+`reactDOM.render` 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
+
 <ver />
 
 ##### 虚拟 DOM 的组成
@@ -802,14 +803,16 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 ```
 
 <ver />
+
 当组件状态 state 有更改的时候，react 会自动调用组件的 render 方法重新渲染整个组件的 UI。
-当然如果真的这样大面积的操作 DOM，性能会是一个很大的问题，所以 react 实现了一个 Virtual DOM，组件 DOM 结构就是映射到这个 Virtual DOM 上，react 在这个 Virtual DOM 上实现了一个 diff 算法，当要重新渲染组件的时候，会通过 diff 寻找到要变更的 DOM 节点，再把这个修改更新到浏览器实际的 DOM 节点上，所以实际上不是真的渲染整个 DOM 树。这个 Virtual DOM 是一个纯粹的 JS 数据结构，所以性能会比原生 DOM 快很多。
+当然如果真的这样大面积的操作 DOM，性能会是一个很大的问题，所以 react 实现了一个 `Virtual DOM`，组件 DOM 结构就是映射到这个 `Virtual DOM`上，react 在这个 `Virtual DOM` 上实现了一个 diff 算法，当要重新渲染组件的时候，会通过 diff 寻找到要变更的 DOM 节点，再把这个修改更新到浏览器实际的 DOM 节点上，所以实际上不是真的渲染整个 DOM 树。这个 `Virtual DOM` 是一个纯粹的 JS 数据结构，所以性能会比原生 DOM 快很多。
+
 <ver />
 
-##### 防止 XSS
+##### `react` 是如何防止 `XSS` 的
 
-`reactElement` 对象还有一个`$$typeof`属性，它是一个 Symbol 类型的变量`Symbol.for('react.element')`，当环境不支持 Symbol 时，`$$typeof` 被赋值为 0xeac7。
-这个变量可以防止 XSS。如果你的服务器有一个漏洞，允许用户存储任意 JSON 对象， 而客户端代码需要一个字符串，这可能为你的应用程序带来风险。JSON 中不能存储 Symbol 类型的变量，而 react 渲染时会把没有\$\$typeof 标识的组件过滤掉。
+`reactElement` 对象还有一个`$$typeof`属性，它是一个 Symbol 类型的变量`Symbol.for('react.element')`，当环境不支持 Symbol 时，`$$typeof` 被赋值为 `0xeac7`。
+这个变量可以防止 XSS。如果你的服务器有一个漏洞，允许用户存储任意 JSON 对象， 而客户端代码需要一个字符串，这可能为你的应用程序带来风险。JSON 中不能存储 `Symbol` 类型的变量，而 react 渲染时会把没有`\$\$typeof` 标识的组件过滤掉。
 
 <hor />
 
@@ -819,7 +822,7 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 
 <ver />
 
-`diff` 策略:
+**`diff` 策略:**
 
 1. web ui 中 Dom 节点跨层级的移动操作很少,`diff` 算法比较新旧节点的时候，比较只会在同层级比较，不会跨层级比较
 2. 拥有相同类的两个组件将会生成相似的树形结构，拥有不同类的两个组件将会生成不同的树形结构。
@@ -832,12 +835,14 @@ reactDOM.render 将生成好的虚拟 DOM 渲染到指定容器上，其中采�
 <ver />
 
 - React 通过制定大胆的 diff 策略，将 O(n3) 复杂度的问题转换成 O(n) 复杂度的问题；
-- React 通过分层求异的策略，对 tree diff 进行算法优化；
+- React 通过分层求异的策略，对 `tree diff` 进行算法优化；
 - React 通过相同类生成相似树形结构，不同类生成不同树形结构的策略，对 `component diff` 进行算法优化；
 - React 通过设置唯一 key 的策略，对 `element diff` 进行算法优化；
 
 建议，在开发组件时，保持稳定的 DOM 结构会有助于性能的提升；
 建议，在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。
+
+<hor />
 
 ### react 性能分析与优化
 
