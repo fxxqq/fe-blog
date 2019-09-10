@@ -9,3 +9,6 @@
 * snabbdom 源码
 
 react 核心 api
+谈谈技术选型：https://www.infoq.cn/article/2017/02/Technology-selection
+谈谈技术选型的注意事项：https://www.infoq.cn/article/points-for-attention-with-technology-choice
+react:https://react.jokcy.me/book/update/react-dom-render.html

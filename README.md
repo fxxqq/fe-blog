@@ -1,5 +1,7 @@
 ### [`React16`常用`api`解析以及原理剖析](https://ru23.github.io/react-ppt/)
 
+ppt 预览：https://ru23.github.io/react-ppt/
+
 - 空格键翻页
 - 左右键切换页面，上下键翻章节
 - esc 章节预览
@@ -218,7 +220,7 @@ class Button extends react.Component {
 
 <ver />
 
-##### 函数定义组件（Function Component）
+#### 函数定义组件（Function Component）
 
 纯展示型的，不需要维护 state 和生命周期，则优先使用 `Function Component`
 
@@ -366,6 +368,7 @@ const obj1 = obj.toJS() // 转换成原生 `js` 类型
 
 <ver />
 比如下图：<br/>
+
 ![react-tree](https://cdn.ru23.com/react_ppt/ppt_react_tree.png)
 
 <ver />
@@ -374,7 +377,7 @@ const obj1 = obj.toJS() // 转换成原生 `js` 类型
 
 <ver />
 
-#### 高阶组件(`higher order component`)
+### 高阶组件(`higher order component`)
 
 高阶组件是一个以组件为参数并返回一个新组件的函数。HOC 运行你重用代码、逻辑和引导抽象。
 <ver />
@@ -639,7 +642,7 @@ react 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, error
 - 服务端渲染
   <ver />
 
-#### `lazy、suspense`
+#### `lazy、suspense` 延迟加载组件
 
 `lazy` 需要跟 `Suspence` 配合使用，否则会报错。
 
@@ -673,7 +676,7 @@ const OtherComponent = react.lazy(() => OtherComponentPromise)
 
 #### `Fragments（v16.2.0)`
 
-Fragments 允许你将子列表分组，而无需向 DOM 添加额外节点。
+Fragments 允许你将子列表分组，避免向 DOM 添加额外的节点。
 
 ```jsx
 render() {
@@ -845,6 +848,10 @@ createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 
 
 <hor />
 
+#### snabbdom 源码，是怎样实现精简的 Virtual DOM 的
+
+待补充
+
 ### react 性能分析与优化
 
 <ver />
@@ -908,6 +915,10 @@ function Parent({ a, b }) {
 从例子可以看出来，它的第二个参数和 useEffect 的第二个参数是一样的，只有在第二个参数数组的值发生变化时，才会触发子组件的更新。
 
 引用[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
+
+#### React 性能分析器
+
+React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支持。 此插件使用 React 实验性的 Profiler API 来收集有关每个组件渲染的用时信息，以便识别 React 应用程序中的性能瓶颈。 它将与我们即将推出的 time slicing（时间分片） 和 suspense（悬停） 功能完全兼容。
 
 ### redux
 
