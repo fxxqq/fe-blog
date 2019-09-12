@@ -10,17 +10,20 @@ ppt 预览：https://ru23.github.io/react-ppt/
 
 ### 目录
 
-1. react 生命周期
-2. react 事件机制
-3. react.Component 如何实现组件化以及高阶组件的应用
-4. setState 异步队列数据管理
-5. react Fiber 架构分析
-6. react hooks
-7. dom 的 diff 算法
-8. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
-9. redux
+1. React or Vue: 你应该如何选择？
+2. react 生命周期
+3. react 事件机制
+4. react.Component 如何实现组件化以及高阶组件的应用
+5. setState 异步队列数据管理
+6. react Fiber 架构分析
+7. react hooks
+8. dom 的 diff 算法
+9. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
+10. redux
 
 <ver />
+
+### react 和 vue 区别比对以及如何取舍
 
 ### react 生命周期
 
@@ -30,14 +33,14 @@ ppt 预览：https://ru23.github.io/react-ppt/
 
 - 挂载阶段：
   `constructor(props)`: 实例化。<br/>
-  `static getDeriverdStateFromProps` 从 `props` 中获取 `state`。<br/>
+  `static getDerivedStateFromProps` 从 `props` 中获取 `state`。<br/>
   `render` 渲染。<br/>
   `componentDidMount`: 完成挂载。
 
 <ver />
 
 - 更新阶段：
-  `static getDeriverdStateFromProps` 从 props 中获取 state。<br/>
+  `static getDerivedStateFromProps` 从 props 中获取 state。<br/>
   `shouldComponentUpdate` 判断是否需要重绘。<br/>
   `render` 渲染。<br/>
   `getShapshotBeforeUpdate` 获取快照。<br/>
@@ -915,6 +918,20 @@ function Parent({ a, b }) {
 从例子可以看出来，它的第二个参数和 useEffect 的第二个参数是一样的，只有在第二个参数数组的值发生变化时，才会触发子组件的更新。
 
 引用[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
+
+##### 使用 shouldComponentUpdate() 防止不必要的重新渲染
+
+当一个组件的 props 或 state 变更，React 会将最新返回的元素与之前渲染的元素进行对比，以此决定是否有必要更新真实的 DOM，当它们不相同时 React 会更新该 DOM。
+
+即使 React 只更新改变了的 DOM 节点，重新渲染仍然花费了一些时间。在大部分情况下它并不是问题，但是如果渲染的组件非常多时，就会浮现性能上的问题，我们可以通过覆盖生命周期方法 shouldComponentUpdate 来进行提速。
+
+shouldComponentUpdate 方法会在重新渲染前被触发。其默认实现总是返回 true，如果组件不需要更新，可以在 shouldComponentUpdate 中返回 false 来跳过整个渲染过程。其包括该组件的 render 调用以及之后的操作。
+
+```jsx
+shouldComponentUpdate(nextProps, nextState) {
+   return nextProps.next !== this.props.next
+}
+```
 
 #### React 性能分析器
 
