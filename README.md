@@ -10,20 +10,191 @@ ppt 预览：https://ru23.github.io/react-ppt/
 
 ### 目录
 
-1. React or Vue: 你应该如何选择？
-2. react 生命周期
-3. react 事件机制
-4. react.Component 如何实现组件化以及高阶组件的应用
-5. setState 异步队列数据管理
-6. react Fiber 架构分析
-7. react hooks
-8. dom 的 diff 算法
-9. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
-10. redux
+1. `Vue` 与 `React` 两个框架的粗略区别对比
+2. react16 版本常见 api
+3. react 生命周期
+4. react 事件机制
+5. react.Component 如何实现组件化以及高阶组件的应用
+6. setState 异步队列数据管理
+7. react Fiber 架构分析
+8. react hooks
+9. dom 的 diff 算法
+10. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
+11. redux
 
 <ver />
 
-### react 和 vue 区别比对以及如何取舍
+### `Vue` 与 `React` 两个框架的粗略区别对比
+
+React--Facebook 创建的 JavaScript UI 框架。它支撑着包括 Instagram 在内的大多数 Facebook 网站。React 与当时流行的 jQuery,Backbone.js 和 Angular 1 等框架不同，它的诞生改变了 JavaScript 的世界。其中最大的变化是 React 推广了 Virtual DOM（虚拟 DOM）并创造了新的语法——JSX，JSX 允许开发者在 JavaScript 中书写 HTML（译者注：即 HTML in JavaScript）。
+
+Vue 致力解决的问题与 React 一致，但却提供了另外一套解决方案。Vue 使用模板系统（弱化的 jsx），使其对现有应用的升级更加容易。这是因为模板用的就是普通的 HTML，通过 Vue 来整合现有的系统是比较容易的，不需要整体重构。同时 Vue 的学习曲线相对 react 来说更加容易。
+<ver />
+
+#### 相似之处
+
+React 与 Vue 有很多相似之处，如他们都是 JavaScript 的 UI 框架，专注于创造前端的富应用。不同于早期的 JavaScript 框架“功能齐全”，Reat 与 Vue 只有框架的骨架，其他的功能如路由、状态管理等是框架分离的组件。
+
+<ver />
+
+- 两者都是用于创建 UI 的 JavaScript 库；
+- 两者都快速轻便；
+- 都有基于组件的架构；
+- 都是用虚拟 DOM；
+- 都可放入单个 HTML 文件中，或者成为更复杂 webpack 设置中的模块；
+- 都有独立但常用的路由器和状态管理库；
+- 它们之间的最大区别是 Vue 通常使用 HTML 模板文件，而 React 则完全是 JavaScript。Vue 有双向绑定语法糖。
+
+<ver />
+
+#### 不同点
+
+- Vue 组件分为全局注册和局部注册，在 react 中都是通过 import 相应组件，然后模版中引用；
+- props 是可以动态变化的，子组件也实时更新，在 react 中官方建议 props 要像纯函数那样，输入输出一致对应，而且不太建议通过 props 来更改视图；
+- 子组件一般要显示地调用 props 选项来声明它期待获得的数据。而在 react 中不必需，另两者都有 props 校验机制；
+
+<ver />
+
+- 每个 Vue 实例都实现了事件接口，方便父子组件通信，小型项目中不需要引入状态管理机制，而 react 必需自己实现；
+- 使用插槽分发内容，使得可以混合父组件的内容与子组件自己的模板；
+- 多了指令系统，让模版可以实现更丰富的功能，而 React 只能使用 JSX 语法；
+- Vue 增加的语法糖 computed 和 watch，而在 React 中需要自己写一套逻辑来实现；
+
+<ver />
+
+- react 的思路是 all in js，通过 js 来生成 html，所以设计了 jsx，还有通过 js 来操作 css，社区的 styled-component、jss 等；而 vue 是把 html，css，js 组合到一起，用各自的处理方式，vue 有单文件组件，可以把 html、css、js 写到一个文件中，html 提供了模板引擎来处理。
+
+<ver />
+
+- react 做的事情很少，很多都交给社区去做，vue 很多东西都是内置的，写起来确实方便一些， 比如 redux 的 combineReducer 就对应 vuex 的 modules， 比如 reselect 就对应 vuex 的 getter 和 vue 组件的 computed， vuex 的 mutation 是直接改变的原始数据，而 redux 的 reducer 是返回一个全新的 state，所以 redux 结合 immutable 来优化性能，vue 不需要。
+
+<ver />
+
+- react 是整体的思路的就是函数式，所以推崇纯组件，数据不可变，单向数据流，当然需要双向的地方也可以做到，比如结合 redux-form，组件的横向拆分一般是通过高阶组件。而 vue 是数据可变的，双向绑定，声明式的写法，vue 组件的横向拆分很多情况下用 mixin。
+
+<hor />
+
+#### 社区活跃度
+
+<ver />
+
+从两者的 github 表现来看（数据取于 2019-09-16）
+
+![react](https://cdn.ru23.com/react_ppt/github-react.jpg)
+
+<ver />
+
+![react](https://cdn.ru23.com/react_ppt/github-vue.jpg)
+
+<ver />
+
+可以看出 vue 的 star 数量已经是前端框架中最火爆的。从维护上来看，react 是 facebook 在维护，而 vue 现阶段虽然也有了团队，但主要还是尤雨溪在维护贡献代码，并且阿里巴巴开源的混合式框架 weex 也是基于 vue 的，所以我们相信 vue 未来将会得到更多的人和团队维护。
+根据不完全统计，包括饿了么、简书、高德、稀土掘金、苏宁易购、美团、天猫、荔枝 FM、房多多、Laravel、htmlBurger 等国内外知名大公司都在使用 vue 进行新项目的开发和旧项目的前端重构工作。
+使用 React 的公司 facebook、INS、Airbnb、Yahoo、ThoughtWorks、蚂蚁金服、阿里巴巴、腾讯、百度、口碑、美团、滴滴出行、饿了么、京东、网易等，
+
+<ver />
+
+#### UI 生态
+
+|            |                  vue |             react             |
+| ---------- | -------------------: | :---------------------------: |
+| pc 端      |    iview、element 等 |   Ant Design、Materal-UI 等   |
+| h5 端      | 有赞 vant、mintui 等 |    Ant Design Mobile、weui    |
+| 混合开发   |     weexui、bui-weex | teaset、react-native-elements |
+| 微信小程序 |  iview、Weapp、zanui |     iView Weapp、Taro UI      |
+
+<hor />
+
+### `react16` 版本常见 `api`
+
+<ver />
+
+先来看一下 react 暴露出来的 API
+
+```jsx
+const React = {
+  Children: {
+    map,
+    forEach,
+    count,
+    toArray,
+    only
+  },
+
+  createRef,
+  Component,
+  PureComponent,
+
+  createContext,
+  forwardRef,
+
+  Fragment: REACT_FRAGMENT_TYPE,
+  StrictMode: REACT_STRICT_MODE_TYPE,
+  unstable_AsyncMode: REACT_ASYNC_MODE_TYPE,
+  unstable_Profiler: REACT_PROFILER_TYPE,
+
+  createElement: __DEV__ ? createElementWithValidation : createElement,
+  cloneElement: __DEV__ ? cloneElementWithValidation : cloneElement,
+  createFactory: __DEV__ ? createFactoryWithValidation : createFactory,
+  isValidElement: isValidElement,
+
+  version: ReactVersion,
+
+  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: ReactSharedInternals
+}
+```
+
+<ver />
+
+#### `Children`
+
+这个对象提供了一堆帮你处理 props.children 的方法，因为 children 是一个类似数组但是不是数组的数据结构，如果你要对其进行处理可以用 React.Children 外挂的方法。
+
+<ver />
+
+#### `createRef`
+
+新的 ref 用法，React 即将抛弃<div ref="myDiv" />这种 string ref 的用法，将来你只能使用两种方式来使用 ref
+
+```jsx
+class App extends React.Component {
+  constructor() {
+    this.ref = React.createRef()
+  }
+
+  render() {
+    return <div ref={this.ref} />
+    // or
+    return <div ref={node => (this.funRef = node)} />
+  }
+}
+```
+
+<ver />
+
+#### `createContext`
+
+`createContext` 是官方定稿的 context 方案，在这之前我们一直在用的老的 context API 都是 React 不推荐的 API，现在新的 API 释出，官方也已经确定在 17 大版本会把老 API 去除(老 API 的性能不是一般的差)。
+
+新 API 的使用方法：
+
+```jsx
+const { Provider, Consumer } = React.createContext('defaultValue')
+
+const ProviderComp = (props) => (
+  <Provider value={'realValue'}>
+    {props.children}
+  </Provider>
+)
+
+const ConsumerComp = () => (
+  <Consumer>
+    {(value) => <p>{value}</p>}
+  </Consumber>
+)
+```
+
+<hor />
 
 ### react 生命周期
 
@@ -320,13 +491,17 @@ class MyComponent extends react.Component {
 
 ##### `PureComponent`
 
-react15.3 中新加了一个类 PureComponent，前身是 PureRenderMixin ，和 Component 基本一样，只不过会在 render 之前帮组件自动执行一次 shallowEqual（浅比较），来决定是否更新组件，浅比较类似于浅复制，只会比较第一层。使用 PureComponent 相当于省去了写 shouldComponentUpdate 函数，当组件更新时，如果组件的 props 和 state：
+`Component` & `PureComponent` 这两个类基本相同，唯一的区别是 `PureComponent` 的原型上多了一个标识，`shallowEqual`（浅比较），来决定是否更新组件，浅比较类似于浅复制，只会比较第一层。使用 `PureComponent` 相当于省去了写 `shouldComponentUpdate` 函数
 
-<ver />
+```jsx
+if (ctor.prototype && ctor.prototype.isPureReactComponent) {
+  return !shallowEqual(oldProps, newProps) || !shallowEqual(oldState, newState)
+}
+```
 
-- 引用和第一层数据都没发生改变， render 方法就不会触发，这是我们需要达到的效果。
-- 虽然第一层数据没变，但引用变了，就会造成虚拟 DOM 计算的浪费。
-- 第一层数据改变，但引用没变，会造成不渲染，所以需要很小心的操作数据。
+这是检查组件是否需要更新的一个判断，ctor 就是你声明的继承自 `Component` or `PureComponent` 的类，他会判断你是否继承自 `PureComponent，如果是的话就` `shallowEqual` 比较 state 和 props。
+
+React 中对比一个 `ClassComponent` 是否需要更新，只有两个地方。一是看有没有 `shouldComponentUpdate` 方法，二就是这里的 `PureComponent` 判断
 
 <hor />
 
@@ -984,3 +1159,5 @@ React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支�
 3. [从 Mixin 到 HOC 再到 Hook](https://juejin.im/post/5cad39b3f265da03502b1c0a)
 4. [美团技术团队-Redux 从设计到源码](https://tech.meituan.com/2017/07/14/redux-design-code.html)
 5. [解析 snabbdom 源码，教你实现精简的 Virtual DOM 库](https://github.com/creeperyang/blog/issues/33)
+6. [react 源码解析](https://react.jokcy.me)
+7. [Vue 与 React 两个框架的粗略区别对比](https://segmentfault.com/a/1190000017414633)
