@@ -216,7 +216,7 @@ const ConsumerComp = () => (
   `static getDerivedStateFromProps` 从 props 中获取 state。<br/>
   `shouldComponentUpdate` 判断是否需要重绘。<br/>
   `render` 渲染。<br/>
-  `getShapshotBeforeUpdate` 获取快照。<br/>
+  `getSnapshotBeforeUpdate` 获取快照。<br/>
   `componentDidUpdate` 渲染完成后回调。
 - 卸载阶段：
   `componentWillUnmount` 即将卸载。
@@ -1137,7 +1137,7 @@ React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支�
 
 <ver />
 
-#### redux的基本原理
+#### redux 的基本原理
 
 然后我们过下整个工作流程：
 
