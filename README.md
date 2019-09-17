@@ -11,16 +11,16 @@ ppt 预览：https://ru23.github.io/react-ppt/
 ### 目录
 
 1. `Vue` 与 `React` 两个框架的粗略区别对比
-2. react16 版本常见 api
-3. react 生命周期
-4. react 事件机制
-5. react.Component 如何实现组件化以及高阶组件的应用
-6. setState 异步队列数据管理
-7. react Fiber 架构分析
-8. react hooks
-9. dom 的 diff 算法
-10. snabbdom 源码，是怎样实现精简的 Virtual DOM 的
-11. redux
+2. `react 16` 版本常见 `api`
+3. `react` 生命周期
+4. `react` 事件机制
+5. `react.Component` 如何实现组件化以及高阶组件的应用
+6. `setState` 异步队列数据管理
+7. `react Fiber` 架构分析
+8. `react hooks`
+9. `dom` 的 `diff` 算法
+10. `snabbdom` 源码，是怎样实现精简的 `Virtual DOM` 的
+11. `redux`单向数据流架构如何设计
 
 <ver />
 
@@ -89,8 +89,10 @@ React 与 Vue 有很多相似之处，如他们都是 JavaScript 的 UI 框架�
 <ver />
 
 可以看出 vue 的 star 数量已经是前端框架中最火爆的。从维护上来看，react 是 facebook 在维护，而 vue 现阶段虽然也有了团队，但主要还是尤雨溪在维护贡献代码，并且阿里巴巴开源的混合式框架 weex 也是基于 vue 的，所以我们相信 vue 未来将会得到更多的人和团队维护。
+
 根据不完全统计，包括饿了么、简书、高德、稀土掘金、苏宁易购、美团、天猫、荔枝 FM、房多多、Laravel、htmlBurger 等国内外知名大公司都在使用 vue 进行新项目的开发和旧项目的前端重构工作。
-使用 React 的公司 facebook、INS、Airbnb、Yahoo、ThoughtWorks、蚂蚁金服、阿里巴巴、腾讯、百度、口碑、美团、滴滴出行、饿了么、京东、网易等，
+
+使用 React 的公司 facebook、Twitter、INS、Airbnb、Yahoo、ThoughtWorks、蚂蚁金服、阿里巴巴、腾讯、百度、口碑、美团、滴滴出行、饿了么、京东、网易等。
 
 <ver />
 
@@ -154,7 +156,7 @@ const React = {
 
 #### `createRef`
 
-新的 ref 用法，React 即将抛弃<div ref="myDiv" />这种 string ref 的用法，将来你只能使用两种方式来使用 ref
+新的 ref 用法，React 即将抛弃`<div ref="myDiv" />`这种 string ref 的用法，将来你只能使用两种方式来使用 ref
 
 ```jsx
 class App extends React.Component {
@@ -802,6 +804,12 @@ setState( stateChange ) {
 ### `react` 中的事务实现
 
 待完善
+这块看的还有点懵圈
+[React 源码解析(三):详解事务与更新队列](https://juejin.im/post/59cc4c4bf265da0648446ce0)
+[React 中的 Transaction](https://oychao.github.io/2017/09/25/react/16_transaction/)
+[React 的事务机制](https://zhuanlan.zhihu.com/p/61367775)
+
+#### transaction 事务
 
 <hor />
 
@@ -820,7 +828,7 @@ react 16 提供了一个新的错误捕获钩子 `componentDidCatch(error, error
 - 服务端渲染
   <ver />
 
-#### `lazy、suspense` 延迟加载组件
+#### `lazy、Suspence` 延迟加载组件
 
 `lazy` 需要跟 `Suspence` 配合使用，否则会报错。
 
@@ -843,6 +851,7 @@ function MyComponent() {
 ```
 
 <ver />
+
 一种简单的预加载思路, 可参考 preload
 
 ```jsx
@@ -1128,6 +1137,8 @@ React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支�
 
 <ver />
 
+#### redux的基本原理
+
 然后我们过下整个工作流程：
 
 首先，用户（通过 `View`）发出 `Action`，发出方式就用到了 `dispatch` 方法。
@@ -1148,7 +1159,15 @@ React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支�
 
 #### `redux` 中间件
 
-待完善
+Redux 的中间件提供的是位于 action 被发起之后，到达 reducer 之前的扩展点，换而言之，原本 view -> action -> reducer -> store 的数据流加上中间件后变成了 view -> action -> middleware -> reducer -> store ，在这一环节我们可以做一些 “副作用” 的操作，如 异步请求、打印日志等。
+
+redux 中间件通过改写 store.dispatch 方法实现了 action -> reducer 的拦截，从上面的描述中可以更加清晰地理解 redux 中间件的洋葱圈模型：
+
+```
+中间件A -> 中间件B-> 中间件C-> 原始 dispatch -> 中间件C -> 中间件B ->  中间件A
+```
+
+这也就提醒我们使用中间件时需要注意这个中间件是在什么时候 “搞事情” 的，比如 redux-thunk 在执行 next(action) 前就拦截了类型为 function 的 action，而 redux-saga 就在 next(action) 才会触发监听 sagaEmitter.emit(action), 并不会拦截已有 action 到达 reducer。
 
 <hor />
 
