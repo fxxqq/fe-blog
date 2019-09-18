@@ -26,14 +26,23 @@ ppt 预览：https://ru23.github.io/react-ppt/
 
 ### `Vue` 与 `React` 两个框架的粗略区别对比
 
-React--Facebook 创建的 JavaScript UI 框架。它支撑着包括 Instagram 在内的大多数 Facebook 网站。React 与当时流行的 jQuery,Backbone.js 和 Angular 1 等框架不同，它的诞生改变了 JavaScript 的世界。其中最大的变化是 React 推广了 Virtual DOM（虚拟 DOM）并创造了新的语法——JSX，JSX 允许开发者在 JavaScript 中书写 HTML（译者注：即 HTML in JavaScript）。
+Vue 的优势包括：
 
-Vue 致力解决的问题与 React 一致，但却提供了另外一套解决方案。Vue 使用模板系统（弱化的 jsx），使其对现有应用的升级更加容易。这是因为模板用的就是普通的 HTML，通过 Vue 来整合现有的系统是比较容易的，不需要整体重构。同时 Vue 的学习曲线相对 react 来说更加容易。
+1. 模板和渲染函数的弹性选择
+2. 简单的语法及项目创建
+3. 更快的渲染速度和更小的体积
+
+React 的优势包括：
+
+1. 更适用于大型应用和更好的可测试性
+2. 同时适用于 Web 端和原生 App
+3. 更大的生态圈带来的更多支持和工具
+
 <ver />
 
 #### 相似之处
 
-React 与 Vue 有很多相似之处，如他们都是 JavaScript 的 UI 框架，专注于创造前端的富应用。不同于早期的 JavaScript 框架“功能齐全”，Reat 与 Vue 只有框架的骨架，其他的功能如路由、状态管理等是框架分离的组件。
+React 与 Vue 有很多相似之处，React 和 Vue 都是非常优秀的框架，它们之间的相似之处多过不同之处，并且它们大部分最棒的功能是相通的：如他们都是 JavaScript 的 UI 框架，专注于创造前端的富应用。不同于早期的 JavaScript 框架“功能齐全”，Reat 与 Vue 只有框架的骨架，其他的功能如路由、状态管理等是框架分离的组件。
 
 <ver />
 
