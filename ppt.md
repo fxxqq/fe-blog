@@ -17,7 +17,7 @@
 7. `react Fiber` 架构分析
 8. `react hooks`
 9. `dom` 的 `diff` 算法
-10. `redux`单向数据流架构如何设计
+10. `redux` 流程与基本原理
 
 <ver />
 
@@ -111,10 +111,9 @@ React 与 Vue 有很多相似之处，React 和 Vue 都是非常优秀的框架�
 | 混合开发   |     weexui、bui-weex | teaset、react-native-elements |
 | 微信小程序 |  iview、Weapp、zanui |     iView Weapp、Taro UI      |
 
-
 <ver />
 
-无论您选择React.js还是Vue.js，两个框架都没有相当大的差异，根据您的要求，这个决定是非常主观的。如果您想将前端JavaScript框架集成到现有应用程序中，Vue.js是更好的选择，如果您想使用JavaScript构建移动应用程序，React绝对是您的选择。
+无论您选择 React.js 还是 Vue.js，两个框架都没有相当大的差异，根据您的要求，这个决定是非常主观的。如果您想将前端 JavaScript 框架集成到现有应用程序中，Vue.js 是更好的选择，如果您想使用 JavaScript 构建移动应用程序，React 绝对是您的选择。
 
 <hor />
 
@@ -477,9 +476,10 @@ ReactElement.createElement = function(type, config, children) {
   )
 }
 ```
+
 <ver />
 
-React.createElement()来构建 React 元素的。它接受三个参数，第一个参数type可以是一个标签名。如 div、span，或者 React 组件。第二个参数props为传入的属性。第三个以及之后的参数children，皆作为组件的子组件。
+React.createElement()来构建 React 元素的。它接受三个参数，第一个参数 type 可以是一个标签名。如 div、span，或者 React 组件。第二个参数 props 为传入的属性。第三个以及之后的参数 children，皆作为组件的子组件。
 
 `createElement` 函数对 key 和 ref 等特殊的 props 进行处理，并获取 `defaultProps` 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 `reactElement` 对象（所谓的虚拟 DOM）。
 `reactDOM.render` 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
@@ -766,7 +766,7 @@ setState( stateChange ) {
 具体可以阅读源码
 [`ReactUpdateQueue.js`](https://github.com/facebook/react/blob/03944bfb0bdacfe35b2a1722426ff744ae47d018/packages/react-reconciler/src/ReactUpdateQueue.js)
 
-<hor /> 
+<hor />
 
 ### `ErrorBoundary`、`Suspense` 和 `Fragment`
 
@@ -990,7 +990,7 @@ createElement 函数对 key 和 ref 等特殊的 props 进行处理，并获取 
 建议，在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。
 
 <hor />
- 
+
 
 ### react 性能分析与优化
 
@@ -1101,7 +1101,6 @@ React 16.5 增加了对新的开发者工具 DevTools 性能分析插件的支�
 `State` 一旦有变化，`Store` 就会调用监听函数，来更新 `View`。
 
 到这儿为止，一次用户交互流程结束。可以看到，在整个流程中数据都是单向流动的，这种方式保证了流程的清晰。
-
 
 <hor />
 
