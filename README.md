@@ -503,6 +503,10 @@ class MyComponent extends react.Component {
 
 <ver />
 
+React.createElement()来构建 React 元素的。它接受三个参数，第一个参数type可以是一个标签名。如 div、span，或者 React 组件。第二个参数props为传入的属性。第三个以及之后的参数children，皆作为组件的子组件。
+
+<ver />
+
 ##### `PureComponent`
 
 `Component` & `PureComponent` 这两个类基本相同，唯一的区别是 `PureComponent` 的原型上多了一个标识，`shallowEqual`（浅比较），来决定是否更新组件，浅比较类似于浅复制，只会比较第一层。使用 `PureComponent` 相当于省去了写 `shouldComponentUpdate` 函数
