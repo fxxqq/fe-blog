@@ -943,6 +943,7 @@ function fiber(剩余时间) {
 个人理解：让传统的函数组件 function component 有内部状态 state 的函数 function,简单来说就是 hooks 让函数组件有了状态，可以完全替代 class。
 
 接下来梳理 Hooks 中最核心的 2 个 api, `useState` 和 `useEffect`
+
 <ver />
 
 #### `useState`
@@ -1121,13 +1122,13 @@ function Parent({ a, b }) {
 
 引用[React hooks 实践](https://github.com/chenjigeng/blog/blob/master/React%20hooks%E5%AE%9E%E8%B7%B5.md)
 
-##### 使用 shouldComponentUpdate() 防止不必要的重新渲染
+##### 使用 `shouldComponentUpdate()` 防止不必要的重新渲染
 
 当一个组件的 props 或 state 变更，React 会将最新返回的元素与之前渲染的元素进行对比，以此决定是否有必要更新真实的 DOM，当它们不相同时 React 会更新该 DOM。
 
-即使 React 只更新改变了的 DOM 节点，重新渲染仍然花费了一些时间。在大部分情况下它并不是问题，但是如果渲染的组件非常多时，就会浮现性能上的问题，我们可以通过覆盖生命周期方法 shouldComponentUpdate 来进行提速。
+即使 React 只更新改变了的 DOM 节点，重新渲染仍然花费了一些时间。在大部分情况下它并不是问题，但是如果渲染的组件非常多时，就会浮现性能上的问题，我们可以通过覆盖生命周期方法 `shouldComponentUpdate` 来进行提速。
 
-shouldComponentUpdate 方法会在重新渲染前被触发。其默认实现总是返回 true，如果组件不需要更新，可以在 shouldComponentUpdate 中返回 false 来跳过整个渲染过程。其包括该组件的 render 调用以及之后的操作。
+`shouldComponentUpdate` 方法会在重新渲染前被触发。其默认实现总是返回 true，如果组件不需要更新，可以在 `shouldComponentUpdate` 中返回 false 来跳过整个渲染过程。其包括该组件的 render 调用以及之后的操作。
 
 ```jsx
 shouldComponentUpdate(nextProps, nextState) {
