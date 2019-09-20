@@ -277,7 +277,8 @@ class ExampleComponent extends react.Component {
   // 组件销毁后调用
   componentDidUnMount() {}
   // componentDidUpdate(prevProps, prevState, snapshot):
-  // 该方法在getSnapshotBeforeUpdate方法之后被调用，有三个参数prevProps，prevState，snapshot，
+  // 该方法在getSnapshotBeforeUpdate方法之后被调用，
+  // 有三个参数prevProps，prevState，snapshot，
   // 表示之前的props，之前的state，和snapshot。
   // 第三个参数是getSnapshotBeforeUpdate返回的,
   // 如果触发某些回调函数时需要用到 DOM 元素的状态，
