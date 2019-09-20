@@ -514,6 +514,8 @@ if (ctor.prototype && ctor.prototype.isPureReactComponent) {
 }
 ```
 
+<ver />
+
 这是检查组件是否需要更新的一个判断，ctor 就是你声明的继承自 `Component` or `PureComponent` 的类，他会判断你是否继承自 `PureComponent，如果是的话就` `shallowEqual` 比较 state 和 props。
 
 React 中对比一个 `ClassComponent` 是否需要更新，只有两个地方。一是看有没有 `shouldComponentUpdate` 方法，二就是这里的 `PureComponent` 判断
