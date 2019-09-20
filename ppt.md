@@ -1033,9 +1033,9 @@ export const Count = React.memo(props => {
 
 <ver />
 
-##### useMemo
+##### `useMemo`
 
-useMemo 它的用法其实跟 useEffects 有点像，我们直接看官方给的例子
+`useMemo` 它的用法其实跟 useEffects 有点像，我们直接看官方给的例子
 
 ```jsx
 function Parent({ a, b }) {
