@@ -444,11 +444,6 @@ return React.createElement(
 
 <ver />
 
-`createElement` 函数对 key 和 ref 等特殊的 props 进行处理，并获取 `defaultProps` 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 `reactElement` 对象（所谓的虚拟 DOM）。
-`reactDOM.render` 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
-
-<ver />
-
 那么，`React.createElement` 是在做什么？看下相关部分代码：
 
 ```jsx
@@ -483,6 +478,12 @@ ReactElement.createElement = function(type, config, children) {
   )
 }
 ```
+<ver />
+
+React.createElement()来构建 React 元素的。它接受三个参数，第一个参数type可以是一个标签名。如 div、span，或者 React 组件。第二个参数props为传入的属性。第三个以及之后的参数children，皆作为组件的子组件。
+
+`createElement` 函数对 key 和 ref 等特殊的 props 进行处理，并获取 `defaultProps` 对默认 props 进行赋值，并且对传入的孩子节点进行处理，最终构造成一个 `reactElement` 对象（所谓的虚拟 DOM）。
+`reactDOM.render` 将生成好的虚拟 DOM 渲染到指定容器上，其中采用了批处理、事务等机制并且对特定浏览器进行了性能优化，最终转换为真实 DOM。
 
 <ver />
 
@@ -500,10 +501,6 @@ class MyComponent extends react.Component {
   }
 }
 ```
-
-<ver />
-
-React.createElement()来构建 React 元素的。它接受三个参数，第一个参数type可以是一个标签名。如 div、span，或者 React 组件。第二个参数props为传入的属性。第三个以及之后的参数children，皆作为组件的子组件。
 
 <ver />
 
