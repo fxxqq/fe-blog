@@ -590,9 +590,12 @@ function visible(WrappedComponent) {
 ```
 
 上面的代码就是一个 HOC 的简单应用，函数接收一个组件作为参数，并返回一个新组件，新组建可以接收一个 visible props，根据 visible 的值来判断是否渲染 Visible。
+
 <ver />
+
 最常见的还有 Redux 的 connect 函数。除了简单分享工具库和简单的组合，HOC 最好的方式是共享 react 组件之间的行为。如果你发现你在不同的地方写了大量代码来做同一件事时，就应该考虑将代码重构为可重用的 HOC。
 下面就是一个简化版的 connect 实现：
+
 <ver />
 
 ```jsx
