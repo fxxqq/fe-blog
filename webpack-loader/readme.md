@@ -231,7 +231,67 @@ runLoaders(
 );
 ```
 执行 `node run-loader`
+### 认识更多的loader
+##### style-loader源码简析
+作用：把样式插入到DOM中，方法是在head中插入一个style标签，并把样式写入到这个标签的 innerHTML 里
+看下源码。
+
+先去掉option处理代码，这样就比较清晰明了了
+![style-loader](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/3271798C542B4C41A7DA37C9CB9282C7/6366)
+返回一段js代码，通过require来获取css内容，再通过addStyle的方法把css插入到dom里
+自己实现一个简陋的`style-loader.js`
+```js
+module.exports.pitch = function (request) {
+  const {stringifyRequest}=loaderUtils
+  var result = [
+    //1. 获取css内容。2.// 调用addStyle把CSS内容插入到DOM中（locals为true，默认导出css）
+    'var content=require(' + stringifyRequest(this, '!!' + request) + ')’, 
+    'require(' + stringifyRequest(this, '!' + path.join(__dirname, "addstyle.js")) + ')(content)’, 
+    'if(content.locals) module.exports = content.locals’ 
+  ]
+  return result.join(';')
+}
+```
+需要说明的是，正常我们都会用default的方法，这里用到pitch方法。pitch 方法有一个官方的解释在这里 pitching loader。简单的解释一下就是，默认的loader都是从右向左执行，用 `pitching loader` 是从左到右执行的。
+```js
+{
+  test: /\.css$/,
+  use: [
+    { loader: "style-loader" },
+    { loader: "css-loader" }
+  ]
+}
+```
+为什么要先执行style-loader呢，因为我们要把css-loader拿到的内容最终输出成CSS样式中可以用的代码而不是字符串。
+
+`addstyle.js`
+```js
+module.exports = function (content) {
+  let style = document.createElement("style")
+  style.innerHTML = content
+  document.head.appendChild(style)
+}
+```
+
+##### babel-loader源码简析
+首先看下跳过loader的配置处理，看下babel-loader输出
+![babel-loader-console](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/ADAA239AE9D2458DA3899C6D45F46812/6357)
+上图我们可以看到是输出`transpile(source, options)`的code和map
+再来看下`transpile`方法做了啥
+![babel-loader-transpile](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/AFA25D095ECC4A5CACCEB278C6547D3E/6360)
+babel-loader是通过babel.transform来实现对代码的编译的，
+这么看来，所以我们只需要几行代码就可以实现一个简单的babel-loader
+```js
+const babel = require("babel-core")
+module.exports = function (source) {
+  const babelOptions = {
+    presets: ['env']
+  }
+  return babel.transform(source, babelOptions).code
+}
+```
 
 ### 参考文献
-1. [官网loader api] (https://www.webpackjs.com/api/loaders/)
+1. [官网webpack loader api] (https://www.webpackjs.com/api/loaders/)
 2. [手把手教你写webpack yaml-loader]：(https://mp.weixin.qq.com/s/gTAq5K5pziPT4tmiGqw5_w)
+3. [言川-webpack 源码解析系列]:(https://github.com/lihongxun945/diving-into-webpack)
