@@ -1,68 +1,80 @@
 const md = require('markdown-ast');
 const loaderUtils = require("loader-utils");
+const hljs = require('highlight.js');
 // 利用 AST 作源码转换
 class MdParser {
-	constructor(content) {
-		this.data = md(content);
-		this.parse()
-	}
-	parse() {
-		console.log("md转抽象语法树")
-		this.data = this.traverse(this.data);
-	}
-	traverse(ast) {
-		console.log(ast)
-		ast.map(item => {
-			switch (item.type) {
-			case "bold":
-				// **text**
-
-				break;
-			case "border":
-				// **text**
-
-				break;
-			case "break":
-				break;
-			case "codeBlock":
-				break;
-			case "codeSpan":
-				break;
-			case "image":
-				break;
-			case "italic":
-				break;
-			case "link":
-				break;
-			case "linkDefinition":
-				break;
-			case "list":
-				break;
-			case "quote":
-				break;
-			case "strike":
-				break;
-			case "text":
-				break;
-			case "title":
-        break;
-			default:
-				throw Error("error",`No corresponding treatment when item.type equal${item.type}`);
-			}
-		})
-
-	}
+  constructor(content) {
+    this.data = md(content);
+    this.parse()
+  }
+  parse() {
+    this.data = this.traverse(this.data);
+  }
+  traverse(ast) {
+    let body = '';
+    ast.map(item => {
+      switch (item.type) {
+        case "bold":
+          body += `'<strong>${this.traverse(item.block)}</strong>'`
+          break;
+        case "break":
+          body += '<br/> '
+          break;
+        case "codeBlock":
+          const highlightedCode = hljs.highlight(item.syntax, item.code).value
+          body += highlightedCode
+          break;
+        case "codeSpan":
+          body += `<code>${item.code}</code>`
+          break;
+        case "image":
+          body += `<img src=${item.type} alt=${item.alt} rel=${item.rel||''}>`
+          break;
+        case "italic":
+          body += `<em> ${this.traverse(item.block)}</em>`;
+          break;
+        case "link":
+          let linkString = this.traverse(item.block)
+          body += `<a href=${item.url}> ${linkString}<a/>`
+          break;
+        case "list":
+          item.type = (item.bullet === '-') ? 'ul' : 'ol'
+          if (item.type !== '-') {
+            item.startatt = (` start=${item.indent.length}`)
+          } else {
+            item.startatt = ''
+          }
+          body += '<' + item.type + item.startatt + '>\n' + this.traverse(item.block) + '</' + item.type + '>\n'
+          break;
+        case "quote":
+          let quoteString = this.traverse(item.block)
+          body += '<blockquote>\n' + quoteString + '</blockquote>\n';
+          break;
+        case "strike":
+          body += `<del>${this.traverse(item.block)}</del>`
+          break;
+        case "text":
+          body += item.text
+          break;
+        case "title":
+          body += `<h${item.rank}>${this.traverse(item.block)}</h${item.rank}>`
+          break;
+        default:
+          throw Error("error", `No corresponding treatment when item.type equal${item.type}`);
+      }
+    })
+    return body
+  }
 }
- 
+
 module.exports = function(content) {
-	this.cacheable && this.cacheable();
-	const options = loaderUtils.getOptions(this);
-	try {
-    console.log(md(content))
-		const parser = new MdParser(content);
-		return parser
-	} catch (err) {
-		this.emitError(err);
-		return null
-	}
+  this.cacheable && this.cacheable();
+  const options = loaderUtils.getOptions(this);
+  try {
+    const parser = new MdParser(content);
+    return parser.data
+  } catch (err) {
+    console.log(err)
+    return null
+  }
 };

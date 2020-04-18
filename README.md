@@ -3,6 +3,8 @@
 
 ##### webpack系列
 1. [手写实现webpack-loader](https://github.com/ru23/fe-blog/blob/master/webpack-loader/readme.md)
+2. [手写实现webpack-plugin]
+3. [webpack原理]
 
 
 

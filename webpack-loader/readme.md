@@ -135,69 +135,70 @@ module.exports = function(content) {
 		const parser = new MdParser(content);
 		return parser
 	} catch (err) {
-		this.emitError(err);
+		console.log(err)
 		return null
 	}
 };
 ```
 
 ```js
+const md = require('markdown-ast');//md通过正则匹配的方法把buffer转抽象语法树
+const hljs = require('highlight.js');//代码高亮插件
 // 利用 AST 作源码转换
 class MdParser {
 	constructor(content) {
-		this.data = md(content);
+    this.data = md(content);
+    console.log(this.data)
 		this.parse()
 	}
 	parse() {
 		this.data = this.traverse(this.data);
 	}
 	traverse(ast) {
-		console.log("md转抽象语法树",ast)
-		ast.map(item => {
-			switch (item.type) {
-			case "bold":
-				// **text**
-
-				break;
-			case "border":
-				// **text**
-
-				break;
-			case "break":
-				break;
-			case "codeBlock":
-				break;
-			case "codeSpan":
-				break;
-			case "image":
-				break;
-			case "italic":
-				break;
-			case "link":
-				break;
-			case "linkDefinition":
-				break;
-			case "list":
-				break;
-			case "quote":
-				break;
-			case "strike":
-				break;
-			case "text":
-				break;
-			case "title":
-        break;
-			default:
-				throw Error("error",`No corresponding treatment when item.type equal${item.type}`);
-			}
-		})
-
+    console.log("md转抽象语法树操作",ast)
+     let body = '';
+    ast.map(item => {
+      switch (item.type) {
+        case "bold":
+        case "break":
+        case "codeBlock":
+          const highlightedCode = hljs.highlight(item.syntax, item.code).value
+          body += highlightedCode
+          break;
+        case "codeSpan":
+        case "image":
+        case "italic":
+        case "link":
+        case "list":
+          item.type = (item.bullet === '-') ? 'ul' : 'ol'
+          if (item.type !== '-') {
+            item.startatt = (` start=${item.indent.length}`)
+          } else {
+            item.startatt = ''
+          }
+          body += '<' + item.type + item.startatt + '>\n' + this.traverse(item.block) + '</' + item.type + '>\n'
+          break;
+        case "quote":
+          let quoteString = this.traverse(item.block)
+          body += '<blockquote>\n' + quoteString + '</blockquote>\n';
+          break;
+        case "strike":
+        case "text":
+        case "title":
+          body += `<h${item.rank}>${item.text}</h${item.rank}>`
+          break;
+        default:
+          throw Error("error", `No corresponding treatment when item.type equal${item.type}`);
+      }
+    })
+    return body
 	}
 }
 ```
-![md-ast](http://cdn.ru23.com/md2ast.jpg)
-
-
+**md 转成抽象语树**
+![md-ast](http://cdn.ru23.com/github/cdn/loader-ast.jpg)
+**抽象语法数转成html字符串**
+！[md-ast-string](https://note.youdao.com/yws/public/resource/66d319a62e055c7ba95e98111cb6d495/xmlnote/7116AC6533F7443C82E7923A63F18E0B/6311)
 
 ### loader的一些开发技巧
 1. 尽量保证一个loader去做一件事情，然后可以用不同的loader组合不同的场景需求
