@@ -1,5 +1,6 @@
-## webpack loader详解以及手写一个markdown-loader
+[webpack loader详解以及手写一个markdown-loader](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/readme.md)
 
+[源码地址](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
 ### loader简介
 webpack允许我们使用loader来处理文件，loader是一个导出为function的node模块。可以将匹配到的文件进行一次转换，同时loader可以链式传递。
 loader文件处理器是一个CommonJs风格的函数，该函数接收一个 String/Buffer 类型的入参，并返回一个 String/Buffer 类型的返回值。
@@ -88,7 +89,6 @@ module.exports = function(content, map, meta) {
 可选的：第三个参数必须是一个可以被这个模块解析的 source map。
 可选的：第四个选项，会被 webpack 忽略，可以是任何东西【可以将抽象语法树(abstract syntax tree - AST)（例如 ESTree）作为第四个参数（meta），如果你想在多个 loader 之间共享通用的 AST，这样做有助于加速编译时间。】。
 
-
 ### 异步loader
 异步loader，使用 this.async 来获取 callback 函数。
 ```js
@@ -128,16 +128,16 @@ module.exports = function (content) {
 ```js
 const md = require('markdown-ast');//通过正则的方法把字符串处理成直观的AST语法树
 module.exports = function(content) {
-	this.cacheable && this.cacheable();
-	const options = loaderUtils.getOptions(this);
-	try {
-    console.log(md(content))
-		const parser = new MdParser(content);
-		return parser
-	} catch (err) {
-		console.log(err)
-		return null
-	}
+    this.cacheable && this.cacheable();
+    const options = loaderUtils.getOptions(this);
+    try {
+      console.log(md(content))
+      const parser = new MdParser(content);
+      return parser.data
+    } catch (err) {
+      console.log(err)
+      return null
+    }
 };
 ```
 
@@ -195,10 +195,12 @@ class MdParser {
 	}
 }
 ```
+[完整的代码参考这里](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
+
 **md 转成抽象语树**
 ![md-ast](http://cdn.ru23.com/github/cdn/loader-ast.jpg)
-**抽象语法数转成html字符串**
-！[md-ast-string](https://note.youdao.com/yws/public/resource/66d319a62e055c7ba95e98111cb6d495/xmlnote/7116AC6533F7443C82E7923A63F18E0B/6311)
+**ast抽象语法数转成html字符串**
+![md-ast-string](https://note.youdao.com/yws/public/resource/66d319a62e055c7ba95e98111cb6d495/xmlnote/7116AC6533F7443C82E7923A63F18E0B/6311)
 
 ### loader的一些开发技巧
 1. 尽量保证一个loader去做一件事情，然后可以用不同的loader组合不同的场景需求
@@ -228,7 +230,8 @@ runLoaders(
     (err ? console.error(err) : console.log(result))
 );
 ```
-[node-run-loader.jpg](./static/node-run-loader.jpg)
+执行 `node run-loader`
 
-
-### 认识更多的 Loader
+### 参考文献
+1. [官网loader api] (https://www.webpackjs.com/api/loaders/)
+2. [手把手教你写webpack yaml-loader]：(https://mp.weixin.qq.com/s/gTAq5K5pziPT4tmiGqw5_w)

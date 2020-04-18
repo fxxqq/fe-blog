@@ -1,6 +1,6 @@
-const md = require('markdown-ast');
 const loaderUtils = require("loader-utils");
-const hljs = require('highlight.js');
+const md = require('markdown-ast'); //md通过正则匹配的方法把buffer转抽象语法树
+const hljs = require('highlight.js'); //代码高亮插件
 // 利用 AST 作源码转换
 class MdParser {
   constructor(content) {
@@ -74,7 +74,6 @@ module.exports = function(content) {
     const parser = new MdParser(content);
     return parser.data
   } catch (err) {
-    console.log(err)
-    return null
+    throw err;
   }
 };
