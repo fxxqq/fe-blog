@@ -2,11 +2,8 @@
 前端学习记录
 
 ##### webpack系列
-1.  - [手写实现webpack-loader](https://github.com/ru23/fe-blog/blob/master/webpack-loader/readme.md)
-    - [vue-loader源码阅读]
-    - [babel-loader源码阅读]
-
-2. [手写实现webpack-plugin]()
+1. <a href="https://github.com/ru23/fe-blog/blob/master/webpack-loader/readme.md" target="_blank">https://github.com/ru23/fe-blog/blob/master/webpack-loader/readme.md</a>
+2. [手写实现webpack-plugin]
 3. [webpack原理]
 
 ##### react系列

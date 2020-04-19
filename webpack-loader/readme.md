@@ -1,5 +1,5 @@
 本文会带你简单的认识一下webpack的loader，动手实现一个利用md转成抽象语法树，再转成html字符串的loader。顺便简单的了解一下几个style-loader，vue-loader，babel-loader的源码以及工作流程。
-[md2html-loader源码地址](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
+
 ### loader简介
 webpack允许我们使用loader来处理文件，loader是一个导出为function的node模块。可以将匹配到的文件进行一次转换，同时loader可以链式传递。
 loader文件处理器是一个CommonJs风格的函数，该函数接收一个 String/Buffer 类型的入参，并返回一个 String/Buffer 类型的返回值。
@@ -139,6 +139,8 @@ module.exports = function(content) {
     }
 };
 ```
+**md通过正则切割的方法转成抽象语树**
+![md-ast](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/B8D7F611A3274F43827F1D617B3601E1/6379)
 
 ```js
 const md = require('markdown-ast');//md通过正则匹配的方法把buffer转抽象语法树
@@ -195,9 +197,6 @@ class MdParser {
 }
 ```
 [完整的代码参考这里](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
-
-**md 转成抽象语树**
-![md-ast](http://cdn.ru23.com/github/cdn/loader-ast.jpg)
 **ast抽象语法数转成html字符串**
 ![md-ast-string](https://note.youdao.com/yws/public/resource/66d319a62e055c7ba95e98111cb6d495/xmlnote/7116AC6533F7443C82E7923A63F18E0B/6311)
 
@@ -261,7 +260,7 @@ module.exports.pitch = function (request) {
   ]
 }
 ```
-为什么要先执行style-loader呢，因为我们要把css-loader拿到的内容最终输出成CSS样式中可以用的代码而不是字符串。
+为什么要先执行`style-loader`呢，因为我们要把`css-loader`拿到的内容最终输出成CSS样式中可以用的代码而不是字符串。
 
 `addstyle.js`
 ```js
@@ -336,6 +335,7 @@ module.exports = {
 ```
 **VueLoaderPlugin**
 作用：将在webpack.config定义过的其它规则复制并应用到 .vue 文件里相应语言的块中。
+
 `plugin-webpack4.js`
 ```js
  const vueLoaderUse = vueUse[vueLoaderUseIndex]
@@ -368,11 +368,11 @@ module.exports = {
       ...rules
     ]
 ```
-获取webpack.config.js的rules项，然后复制rules，为携带了?vue&lang=xx...query参数的文件依赖配置xx后缀文件同样的loader
+获取`webpack.config.js`的rules项，然后复制rules，为携带了`?vue&lang=xx...query`参数的文件依赖配置xx后缀文件同样的loader
 为Vue文件配置一个公共的loader：pitcher
-将[pitchLoder, ...clonedRules, ...rules]作为webapck新的rules。
+将`[pitchLoder, ...clonedRules, ...rules]`作为webapck新的rules。
 
-再看一下vue-loader结果的输出
+再看一下`vue-loader`结果的输出
 ![vue-loader-result](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/ADD8440EB03E4A609CD1E7AE4F68F48F/6375)
 当引入一个vue文件后，vue-loader是将vue单文件组件进行parse，获取每个 block 的相关内容，将不同类型的 block 组件的 Vue SFC 转化成 js module 字符串。
 
@@ -410,18 +410,17 @@ export * from "./App.vue?vue&type=script&lang=js&"
 import style0 from "./App.vue?vue&type=style&index=0&lang=scss&scope=true&"
 ```
 **总结一下vue-loader的工作流程**
-1. 注册VueLoaderPlugin
+1. 注册`VueLoaderPlugin`
 在插件中，会复制当前项目webpack配置中的rules项，当资源路径包含query.lang时通过resourceQuery匹配相同的rules并执行对应loader时
 插入一个公共的loader，并在pitch阶段根据query.type插入对应的自定义loader
-2. 加载*.vue时会调用vue-loader
-.vue文件被解析成一个descriptor对象，包含template、script、styles等属性对应各个标签，
-对于每个标签，会根据标签属性拼接src?vue&query引用代码，其中src为单页面组件路径，query为一些特性的参数，比较重要的有lang、type和scoped
+2. 加载*.vue时会调用`vue-loader`,.vue文件被解析成一个`descriptor`对象，包含`template、script、styles`等属性对应各个标签，
+对于每个标签，会根据标签属性拼接`src?vue&query`引用代码，其中src为单页面组件路径，query为一些特性的参数，比较重要的有lang、type和scoped
 如果包含lang属性，会匹配与该后缀相同的rules并应用对应的loaders
-根据type执行对应的自定义loader，template将执行templateLoader、style将执行stylePostLoader
-3. 在templateLoader中，会通过`vue-template-compiler`将template转换为render函数，在此过程中，
-会将传入的scopeId追加到每个标签的segments上，最后作为vnode的配置属性传递给createElemenet方法，
-在render函数调用并渲染页面时，会将scopeId属性作为原始属性渲染到页面上
-4. 在stylePostLoader中，通过PostCSS解析style标签内容
+根据type执行对应的自定义loader，`template`将执行`templateLoader`、`style`将执行`stylePostLoader`
+3. 在`templateLoader`中，会通过`vue-template-compiler`将template转换为render函数，在此过程中，
+会将传入的`scopeId`追加到每个标签的上，最后作为vnode的配置属性传递给`createElemenet`方法，
+在render函数调用并渲染页面时，会将`scopeId`属性作为原始属性渲染到页面上
+4. 在`stylePostLoader`中，通过PostCSS解析style标签内容
 
 ### 参考文献
 1. [webpack官网loader api](https://www.webpackjs.com/api/loaders/)
