@@ -2,12 +2,14 @@
 const fs = require("fs");
 const path = require("path");
 const { runLoaders } = require("loader-runner");
-
-let options = ['mdtest.md', 'md-loader']
+const VueLoader = require('vue-loader')
+  // let options = ['mdtest.md', './loaders/md-loader'];
   // let options = ['main.js', 'babel-loader']
+let options = ['App.vue', VueLoader]
+
 runLoaders({
     resource: `./src/${options[0]}`,
-    loaders: [path.resolve(__dirname, `./loaders/${options[1]}`)],
+    loaders: [path.resolve(__dirname, options[1])],
     readResource: fs.readFile.bind(fs),
   },
   (err, result) =>

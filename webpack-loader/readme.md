@@ -1,6 +1,5 @@
-[webpack loader详解以及手写一个markdown-loader](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/readme.md)
-
-[源码地址](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
+本文会带你简单的认识一下webpack的loader，动手实现一个利用md转成抽象语法树，再转成html字符串的loader。顺便简单的了解一下几个style-loader，vue-loader，babel-loader的源码以及工作流程。
+[md2html-loader源码地址](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
 ### loader简介
 webpack允许我们使用loader来处理文件，loader是一个导出为function的node模块。可以将匹配到的文件进行一次转换，同时loader可以链式传递。
 loader文件处理器是一个CommonJs风格的函数，该函数接收一个 String/Buffer 类型的入参，并返回一个 String/Buffer 类型的返回值。
@@ -291,7 +290,141 @@ module.exports = function (source) {
 }
 ```
 
+##### vue-loader源码简析
+vue单文件组件（简称sfc）
+```vue
+<template>
+  <div class="text">
+    {{a}}
+  </div>
+</template>
+<script>
+export default {
+  data () {
+    return {
+      a: "vue demo"
+    };
+  }
+};
+</script>
+<style lang="scss" scope>
+.text {
+  color: red;
+}
+</style>
+```
+webpack配置
+```js
+const VueloaderPlugin = require('vue-loader/lib/plugin')
+module.exports = {
+  ...
+  module: {
+    rules: [
+      ...
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader'
+      }
+    ]
+  }
+
+  plugins: [
+    new VueloaderPlugin()
+  ]
+  ...
+}
+```
+**VueLoaderPlugin**
+作用：将在webpack.config定义过的其它规则复制并应用到 .vue 文件里相应语言的块中。
+`plugin-webpack4.js`
+```js
+ const vueLoaderUse = vueUse[vueLoaderUseIndex]
+    vueLoaderUse.ident = 'vue-loader-options'
+    vueLoaderUse.options = vueLoaderUse.options || {}
+    // cloneRule会修改原始rule的resource和resourceQuery配置，
+    // 携带特殊query的文件路径将被应用对应rule
+    const clonedRules = rules
+      .filter(r => r !== vueRule)
+      .map(cloneRule)
+
+    // global pitcher (responsible for injecting template compiler loader & CSS
+    // post loader)
+    const pitcher = {
+      loader: require.resolve('./loaders/pitcher'),
+      resourceQuery: query => {
+        const parsed = qs.parse(query.slice(1))
+        return parsed.vue != null
+      },
+      options: {
+        cacheDirectory: vueLoaderUse.options.cacheDirectory,
+        cacheIdentifier: vueLoaderUse.options.cacheIdentifier
+      }
+    }
+
+    // 更新webpack的rules配置，这样vue单文件中的各个标签可以应用clonedRules相关的配置
+    compiler.options.module.rules = [
+      pitcher,
+      ...clonedRules,
+      ...rules
+    ]
+```
+获取webpack.config.js的rules项，然后复制rules，为携带了?vue&lang=xx...query参数的文件依赖配置xx后缀文件同样的loader
+为Vue文件配置一个公共的loader：pitcher
+将[pitchLoder, ...clonedRules, ...rules]作为webapck新的rules。
+
+再看一下vue-loader结果的输出
+![vue-loader-result](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/ADD8440EB03E4A609CD1E7AE4F68F48F/6375)
+当引入一个vue文件后，vue-loader是将vue单文件组件进行parse，获取每个 block 的相关内容，将不同类型的 block 组件的 Vue SFC 转化成 js module 字符串。
+
+```js
+// vue-loader使用`@vue/component-compiler-utils`将SFC源码解析成SFC描述符,,根据不同 module path 的类型(query 参数上的 type 字段)来抽离 SFC 当中不同类型的 block。
+const { parse } = require('@vue/component-compiler-utils')
+// 将单个*.vue文件内容解析成一个descriptor对象，也称为SFC（Single-File Components）对象
+// descriptor包含template、script、style等标签的属性和内容，方便为每种标签做对应处理
+const descriptor = parse({
+  source,
+  compiler: options.compiler || loadTemplateCompiler(loaderContext),
+  filename,
+  sourceRoot,
+  needMap: sourceMap
+})
+
+// 为单文件组件生成唯一哈希id
+const id = hash(
+  isProduction
+  ? (shortFilePath + '\n' + source)
+  : shortFilePath
+)
+// 如果某个style标签包含scoped属性，则需要进行CSS Scoped处理
+const hasScoped = descriptor.styles.some(s => s.scoped)
+```
+然后下一步将新生成的 js module 加入到 webpack 的编译环节，即对这个 js module 进行 AST 的解析以及相关依赖的收集过程。
+
+来看下源码是怎么操作不同type类型（`template/script/style`）的，selectBlock 方法内部主要就是根据不同的 type 类型，来获取 descriptor 上对应类型的 content 内容并传入到下一个 loader 处理
+![vue-loader源码](https://note.youdao.com/yws/public/resource/ccd7c65d76760773562c7a0fd1edabfd/xmlnote/B8D7F611A3274F43827F1D617B3601E1/6379)
+这三段代码可以把不同type解析成一个import的字符串
+```js
+import { render, staticRenderFns } from "./App.vue?vue&type=template&id=7ba5bd90&"
+import script from "./App.vue?vue&type=script&lang=js&"
+export * from "./App.vue?vue&type=script&lang=js&"
+import style0 from "./App.vue?vue&type=style&index=0&lang=scss&scope=true&"
+```
+**总结一下vue-loader的工作流程**
+1. 注册VueLoaderPlugin
+在插件中，会复制当前项目webpack配置中的rules项，当资源路径包含query.lang时通过resourceQuery匹配相同的rules并执行对应loader时
+插入一个公共的loader，并在pitch阶段根据query.type插入对应的自定义loader
+2. 加载*.vue时会调用vue-loader
+.vue文件被解析成一个descriptor对象，包含template、script、styles等属性对应各个标签，
+对于每个标签，会根据标签属性拼接src?vue&query引用代码，其中src为单页面组件路径，query为一些特性的参数，比较重要的有lang、type和scoped
+如果包含lang属性，会匹配与该后缀相同的rules并应用对应的loaders
+根据type执行对应的自定义loader，template将执行templateLoader、style将执行stylePostLoader
+3. 在templateLoader中，会通过`vue-template-compiler`将template转换为render函数，在此过程中，
+会将传入的scopeId追加到每个标签的segments上，最后作为vnode的配置属性传递给createElemenet方法，
+在render函数调用并渲染页面时，会将scopeId属性作为原始属性渲染到页面上
+4. 在stylePostLoader中，通过PostCSS解析style标签内容
+
 ### 参考文献
-1. [官网webpack loader api] (https://www.webpackjs.com/api/loaders/)
-2. [手把手教你写webpack yaml-loader]：(https://mp.weixin.qq.com/s/gTAq5K5pziPT4tmiGqw5_w)
-3. [言川-webpack 源码解析系列]:(https://github.com/lihongxun945/diving-into-webpack)
+1. [webpack官网loader api](https://www.webpackjs.com/api/loaders/)
+2. [手把手教你写webpack yaml-loader](https://mp.weixin.qq.com/s/gTAq5K5pziPT4tmiGqw5_w)
+3. [言川-webpack 源码解析系列](https://github.com/lihongxun945/diving-into-webpack)
+4. [从vue-loader源码分析CSS Scoped的实现](https://juejin.im/post/5d8627355188253f3a70c22c)

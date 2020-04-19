@@ -1,21 +1,22 @@
 <template>
-  <div>
-    <p v-html="mdTest">vue demo</p>
-
+  <div class="text">
+    {{a}}
   </div>
 </template>
-
 <script>
-import mdTest from "./mdtest.md";
-console.log(mdTest)
-
 export default {
   data () {
     return {
-      mdTest
+      a: "vue demo"
     };
   }
 };
 </script>
+<style lang="scss" scope>
+.text {
+  color: red;
+}
+</style>
+ 
 
   
