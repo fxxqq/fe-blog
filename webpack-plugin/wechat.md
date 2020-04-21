@@ -19,7 +19,7 @@ webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
 Webpack原理-编写Pluginhttps://juejin.im/post/5a5c18f2518825734f52ad65
 3.编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
 编写webpack 插件：https://zhuanlan.zhihu.com/p/20929843
-
+https://github.com/webpack/docs/wiki/how-to-write-a-plugin
 
 15.是否写过Plugin？简单描述一下编写Plugin的思路？
 webpack在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在特定的阶段钩入想要添加的自定义功能。Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
