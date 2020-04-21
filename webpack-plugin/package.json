@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server --mode development --open",
+    "dev": "webpack-dev-server --mode development",
+    "dev:pen": "webpack-dev-server --mode development --open",
     "build": "webpack --mode production"
   },
   "keywords": [],

@@ -126,3 +126,16 @@ FileListPlugin.prototype.apply = function(compiler) {
 
 module.exports = FileListPlugin;
 ```
+
+
+构建流程
+在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。Webpack的基本构建流程如下：
+
+校验配置文件
+生成Compiler对象
+初始化默认插件
+run/watch：如果运行在watch模式则执行watch方法，否则执行run方法
+compilation：创建Compilation对象回调compilation相关钩子
+emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
+afterEmit：文件已经写入磁盘完成
+done：完成编译
