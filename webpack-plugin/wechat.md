@@ -1,25 +1,35 @@
-手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
-Webpack4不求人(5)——编写自定义插件 https://mp.weixin.qq.com/s/ltm64e9TTkux8WmXP4FMKQ
-【Webpack】513- Webpack 插件开发如此简单！https://mp.weixin.qq.com/s/LTAlkoyS3C2yiLkFriu-Cw
-Webpack 插件开发实战 :https://mp.weixin.qq.com/s/DWDY62lZzvlGhEbu-0-_Og
-手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
-webpack学习笔记（原理，实现loader和插件） https://mp.weixin.qq.com/s/CBrF4Bm8m0yDJ4J0FYq9ug
-webpack 插件机制分析及开发调试 https://mp.weixin.qq.com/s/JSn23OsWz7BYptnb0MTrAQ
-webpack原理解析（三）plugin机制 :https://juejin.im/post/5e72def0f265da573c0c987f
-Webpack学习－Plugin :http://wushaobin.top/2019/03/15/webpackPlugin/
-关于Webpack中Loader与Plugin的实践 https://mp.weixin.qq.com/s/Bf2rGFD2oWFeXmNQbXS-LA
-bundle.js内容分析https://github.com/lihongxun945/diving-into-webpack/blob/master/5-bundle.js.md
-骨架屏插件：https://www.jianshu.com/p/ec4bf33ab2c8
-如何写一个webpack插件：https://github.com/lcxfs1991/blog/issues/1
-自定义一个webpack插件：https://mp.weixin.qq.com/s/L20aoerWtC818gRbWYcdjA
-从零实现一个 Webpack Pluginhttps://juejin.im/post/5cc6b457518825634d444365
-webpack插件官网https://webpack.docschina.org/api/compilation/
-webpack源码执行过程分析，loaders+plugin https://juejin.im/post/5cec9060f265da1ba431cd55
-webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
-Webpack原理-编写Pluginhttps://juejin.im/post/5a5c18f2518825734f52ad65
-3.编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
-编写webpack 插件：https://zhuanlan.zhihu.com/p/20929843
-https://github.com/webpack/docs/wiki/how-to-write-a-plugin
+1. 手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
+2. Webpack4不求人(5)——编写自定义插件 https://mp.weixin.qq.com/s/ltm64e9TTkux8WmXP4FMKQ
+3. 【Webpack】513- Webpack 插件开发如此简单！https://mp.weixin.qq.com/s/LTAlkoyS3C2yiLkFriu-Cw
+
+在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。Webpack的基本构建流程如下：
+
+1. 校验配置文件
+2. 生成Compiler对象
+3. 初始化默认插件
+4. run/watch：如果运行在watch模式则执行watch方法，否则执行run方法
+5. compilation：创建Compilation对象回调compilation相关钩子
+6. emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
+7. afterEmit：文件已经写入磁盘完成
+8. done：完成编译
+
+4. Webpack 插件开发实战 :https://mp.weixin.qq.com/s/DWDY62lZzvlGhEbu-0-_Og
+5. 手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
+6. webpack学习笔记（原理，实现loader和插件） https://mp.weixin.qq.com/s/CBrF4Bm8m0yDJ4J0FYq9ug
+7. webpack 插件机制分析及开发调试 https://mp.weixin.qq.com/s/JSn23OsWz7BYptnb0MTrAQ
+8. webpack原理解析（三）plugin机制 :https://juejin.im/post/5e72def0f265da573c0c987f
+9. Webpack学习－Plugin :http://wushaobin.top/2019/03/15/webpackPlugin/
+10. 关于Webpack中Loader与Plugin的实践 https://mp.weixin.qq.com/s/Bf2rGFD2oWFeXmNQbXS-LA
+11. bundle.js内容分析https://github.com/lihongxun945/diving-into-webpack/blob/master/5-bundle.js.md
+12. 如何写一个webpack插件：https://github.com/lcxfs1991/blog/issues/1
+13. 从零实现一个 Webpack Pluginhttps://juejin.im/post/5cc6b457518825634d444365
+14. webpack插件官网https://webpack.docschina.org/api/compilation/
+15. webpack源码执行过程分析，loaders+plugin https://juejin.im/post/5cec9060f265da1ba431cd55
+16. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
+17. Webpack原理-编写Pluginhttps://juejin.im/post/5a5c18f2518825734f52ad65
+18. 编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
+
+
 
 15.是否写过Plugin？简单描述一下编写Plugin的思路？
 webpack在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在特定的阶段钩入想要添加的自定义功能。Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
@@ -78,4 +88,5 @@ plugins: [
   )
 ]
 复制代码执行运行 or 编译命令，就能看到我们的 plugin 起作用了。
+
 
