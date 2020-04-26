@@ -2,16 +2,7 @@
 2. Webpack4不求人(5)——编写自定义插件 https://mp.weixin.qq.com/s/ltm64e9TTkux8WmXP4FMKQ
 3. 【Webpack】513- Webpack 插件开发如此简单！https://mp.weixin.qq.com/s/LTAlkoyS3C2yiLkFriu-Cw
 
-在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。Webpack的基本构建流程如下：
 
-1. 校验配置文件
-2. 生成Compiler对象
-3. 初始化默认插件
-4. run/watch：如果运行在watch模式则执行watch方法，否则执行run方法
-5. compilation：创建Compilation对象回调compilation相关钩子
-6. emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
-7. afterEmit：文件已经写入磁盘完成
-8. done：完成编译
 
 4. Webpack 插件开发实战 :https://mp.weixin.qq.com/s/DWDY62lZzvlGhEbu-0-_Og
 5. 手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
@@ -32,16 +23,7 @@
 
 
 15.是否写过Plugin？简单描述一下编写Plugin的思路？
-webpack在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在特定的阶段钩入想要添加的自定义功能。Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
-Plugin的API 可以去官网查阅
-compiler 暴露了和 Webpack 整个生命周期相关的钩子
-compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
-插件需要在其原型上绑定apply方法，才能访问 compiler 实例
-传给每个插件的 compiler 和 compilation对象都是同一个引用，若在一个插件中修改了它们身上的属性，会影响后面的插件
-找出合适的事件点去完成想要的功能
-emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改(emit 事件是修改 Webpack 输出资源的最后时机)
-watch-run 当依赖的文件发生变化时会触发
-异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
+
 
 开发一个 plugin
 
