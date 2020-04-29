@@ -4,6 +4,7 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MyWebpackPlugin = require('./plugins/MyWebpackPlugin')
+const QiniuUpload = require('./plugins/QiniuUpload')
 module.exports = (env, argv) => {
   const devMode = argv.mode !== 'production'
   return {
@@ -58,8 +59,13 @@ module.exports = (env, argv) => {
         filename: "[name].css",
         chunkFilename: "[id].css"
       }),
-      new MyWebpackPlugin({
-        param: 'paramValue'
+      new QiniuUpload({
+        qiniu: {
+          accessKey: 'HCct3FpW17hnRMdsSCnogNeqtklD5nIiUa9hOrvi',
+          secretKey: '7Pp2QhmgJo0SdwpKCiuq5M1VMFHbZNj68mjLBwRz',
+          bucket: 'static',
+          keyPrefix: 'webpack-inaction/demo1/'
+        }
       }),
     ]
   }

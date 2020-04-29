@@ -11,6 +11,7 @@ class qiniuUploadPlugin {
     // 检查选项中的参数
     this.checkQiniuConfig();
     // 初始化七牛mac对象
+
     this.mac = new qiniu.auth.digest.Mac(
       this.options.qiniu.accessKey,
       this.options.qiniu.secretKey
@@ -19,6 +20,7 @@ class qiniuUploadPlugin {
   checkQiniuConfig() {
     // 配置未传qiniu，读取环境变量中的配置
     if (!this.options.qiniu) {
+      console.log(process)
       this.options.qiniu = {
         accessKey: process.env.QINIU_ACCESS_KEY,
         secretKey: process.env.QINIU_SECRET_KEY,
@@ -33,8 +35,8 @@ class qiniuUploadPlugin {
   }
 
   apply(compiler) {
-      compiler.hooks.afterEmit.tapPromise('MyWebpackPlugin', (compilation) => {
-            returnnewPromise((resolve, reject) => {
+      compiler.hooks.afterEmit.tapPromise('qiniuUploadPlugin', (compilation) => {
+            return new Promise((resolve, reject) => {
                   // 总上传数量
                   const uploadCount = Object.keys(compilation.assets).length;
                   // 已上传数量
