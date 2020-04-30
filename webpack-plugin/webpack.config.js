@@ -15,6 +15,13 @@ module.exports = (env, argv) => {
     devServer: {
       port: 3000, //端口号
     },
+    output: {
+      // 给输出的 JavaScript 文件名称加上 Hash 值
+      filename: '[name]_[chunkhash:8].js',
+      path: path.resolve(__dirname, './dist'),
+      // 指定存放 JavaScript 文件的 CDN 目录 URL
+      publicPath: '//wcdn.6fed.com/',
+    },
     module: {
       rules: [{
           test: /\.(js|jsx)$/,
@@ -43,9 +50,15 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.(png|svg|jpg|gif)$/,
-          use: [
-            'file-loader'
-          ]
+          use: [{
+            loader: 'file-loader',
+            options: {
+              limit: 1,
+              name: 'img/[name].[hash:7].[ext]',
+              publicPath: "http://wcdn.6fed.com"
+            }
+          }],
+
         }
       ]
     },
@@ -53,18 +66,24 @@ module.exports = (env, argv) => {
       new CleanWebpackPlugin(['dist']),
       new HtmlWebPackPlugin({
         template: "./public/index.html",
-        filename: "./index.html"
+        filename: "index.html"
       }),
       new MiniCssExtractPlugin({
-        filename: "[name].css",
+        filename: "css/[name].css",
         chunkFilename: "[id].css"
       }),
       new QiniuUpload({
         qiniu: {
           accessKey: 'HCct3FpW17hnRMdsSCnogNeqtklD5nIiUa9hOrvi',
           secretKey: '7Pp2QhmgJo0SdwpKCiuq5M1VMFHbZNj68mjLBwRz',
-          bucket: 'static',
-          keyPrefix: 'webpack-inaction/demo1/'
+          bucket: 'webpack-plugin-upload',
+          keyPrefix: 'webpack-plugins-statics/',
+          include: [
+            'css/**',
+          ],
+          exclude: [
+            path.resolve(__dirname, "index.html")
+          ],
         }
       }),
     ]

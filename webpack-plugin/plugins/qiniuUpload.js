@@ -1,6 +1,7 @@
 const qiniu = require('qiniu');
 const path = require('path');
-
+const createFilter = require('./utils');
+console.log(createFilter)
 class qiniuUploadPlugin {
   // 七牛SDK mac对象
   mac = null;
@@ -42,7 +43,8 @@ class qiniuUploadPlugin {
                   // 已上传数量
                   let currentUploadedCount = 0;
                   // 七牛SDK相关参数
-                  const putPolicy = new qiniu.rs.PutPolicy({ scope: this.options.qiniu.bucket });
+                  const { include, exclude, bucket, keyPrefix } = this.options.qiniu
+                  const putPolicy = new qiniu.rs.PutPolicy({ scope: bucket });
                   const uploadToken = putPolicy.uploadToken(this.mac);
                   const config = new qiniu.conf.Config();
                   config.zone = qiniu.zone.Zone_z1;
@@ -51,12 +53,14 @@ class qiniuUploadPlugin {
                   // 因为是批量上传，需要在最后将错误对象回调
                   let globalError = null;
 
+                  const includeExcludeFilter = createFilter(include, exclude);
+                  const filter = id => extensionRegExp.test(id) && includeExcludeFilter(id);
                   // 遍历编译资源文件
                   for (const filename of Object.keys(compilation.assets)) {
                     // 开始上传
                     formUploader.putFile(
                         uploadToken,
-                        this.options.qiniu.keyPrefix + filename,
+                        keyPrefix + filename,
                         path.resolve(compilation.outputOptions.path, filename),
                         putExtra,
                         (err) => {
