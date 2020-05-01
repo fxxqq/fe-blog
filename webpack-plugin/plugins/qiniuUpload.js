@@ -1,7 +1,7 @@
 const qiniu = require('qiniu');
 const path = require('path');
-const createFilter = require('./utils');
-console.log(createFilter)
+const { createFilter } = require('./utils');
+
 class qiniuUploadPlugin {
   // 七牛SDK mac对象
   mac = null;
@@ -21,7 +21,7 @@ class qiniuUploadPlugin {
   checkQiniuConfig() {
     // 配置未传qiniu，读取环境变量中的配置
     if (!this.options.qiniu) {
-      console.log(process)
+
       this.options.qiniu = {
         accessKey: process.env.QINIU_ACCESS_KEY,
         secretKey: process.env.QINIU_SECRET_KEY,
@@ -52,10 +52,12 @@ class qiniuUploadPlugin {
                   const putExtra = new qiniu.form_up.PutExtra();
                   // 因为是批量上传，需要在最后将错误对象回调
                   let globalError = null;
+                  console.log(Object.keys(compilation.assets))
 
-                  const includeExcludeFilter = createFilter(include, exclude);
-                  const filter = id => extensionRegExp.test(id) && includeExcludeFilter(id);
+                  // const includeExcludeFilter = createFilter(include, exclude);
+                  // const filter = id => extensionRegExp.test(id) && includeExcludeFilter(id);
                   // 遍历编译资源文件
+
                   for (const filename of Object.keys(compilation.assets)) {
                     // 开始上传
                     formUploader.putFile(
