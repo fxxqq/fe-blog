@@ -24,9 +24,7 @@ emit 事件发生时，可以读取到最终输出的资源、代码块、模块
 watch-run 当依赖的文件发生变化时会触发
 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
 
-
-
-## 插件基本结构
+### 插件基本结构
 
 plugins是可以用自身原型方法apply来实例化的对象。apply只在安装插件被Webpack compiler执行一次。apply方法传入一个webpck compiler的引用，来访问编译器回调。
 
@@ -88,126 +86,95 @@ https://github.com/webpack/webpack/blob/master/lib/Compiler.js
 使用compiler对象，你可能需要绑定带有各个新compilation的引用的回调函数。这些compilation提供回调函数连接成许多构建过程中的步骤。
 
 Compiler 和 Compilation 的区别在于：Compiler 代表了整个 Webpack 从启动到关闭的生命周期，而 Compilation 只是代表了一次新的编译。
-```js
-function HelloCompilationPlugin(options) {}
-
-HelloCompilationPlugin.prototype.apply = function(compiler) {
-
-  // Setup callback for accessing a compilation:
-  compiler.plugin("compilation", function(compilation) {
-
-    // Now setup callbacks for accessing compilation steps:
-    compilation.plugin("optimize", function() {
-      console.log("Assets are being optimized.");
-    });
-  });
-});
-
-module.exports = HelloCompilationPlugin;
-```
+ 
 更多关于在compiler, compilation等对象中哪些回调有用，看一下api
-
-异步编译插件
-
-有些compilation插件的步骤时异步的，并且会传入一个当你的插件运行完成时候必须调用的回调函数。
-
-```js
-function HelloAsyncPlugin(options) {}
-
-HelloAsyncPlugin.prototype.apply = function(compiler) {
-  compiler.plugin("emit", function(compilation, callback) {
-
-    // Do something async...
-    setTimeout(function() {
-      console.log("Done with async work...");
-      callback();
-    }, 1000);
-
-  });
-});
-
-module.exports = HelloAsyncPlugin;
-```
 
 我们了解了Webpack compiler和各个compilations，我们就可以用它们来创造无尽的可能。我们可以重定当前文件的格式，生成一个衍生文件，或者制造出一个全新的assets
 
-下面我们将写一个简单的插件，生成一个filelist.md文件，里面的内容是，列出我们build的所有asset 文件。
-```js
-function FileListPlugin(options) {}
-
-FileListPlugin.prototype.apply = function(compiler) {
-  compiler.plugin('emit', function(compilation, callback) {
-    // Create a header string for the generated file:
-    var filelist = 'In this build:\n\n';
-
-    // Loop through all compiled assets,
-    // adding a new line item for each filename.
-    for (var filename in compilation.assets) {
-      filelist += ('- '+ filename +'\n');
-    }
-    
-    // Insert this list into the Webpack build as a new file asset:
-    compilation.assets['filelist.md'] = {
-      source: function() {
-        return filelist;
-      },
-      size: function() {
-        return filelist.length;
-      }
-    };
-
-    callback();
-  });
-};
-
-module.exports = FileListPlugin;
-```
-
-
-
- 
-
 
 ### 事件流
+
+Tapable也是一个小型的 library，是Webpack的一个核心工具。作用是提供类似的插件接口。
+Webpack中许多对象扩展自Tapable类。Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
 Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
-Tapable是Webpack的一个核心工具，Webpack中许多对象扩展自Tapable类。Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
+
 
 tap 同步钩子
+```js
+compiler.hooks.compile.tap('MyPlugin', params => {
+  console.log('以同步方式触及 compile 钩子。')
+})
+```
 tapAsync 异步钩子，通过callback回调告诉Webpack异步执行完毕
 tapPromise 异步钩子，返回一个Promise告诉Webpack异步执行完毕
+```js
+compiler.hooks.run.tapAsync('MyPlugin', (compiler, callback) => {
+  console.log('以异步方式触及 run 钩子。')
+  callback()
+})
+
+compiler.hooks.run.tapPromise('MyPlugin', compiler => {
+  return new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
+    console.log('以具有延迟的异步方式触及 run 钩子')
+  })
+})
+```
+
 
 Webpack 就像一条生产线，要经过一系列处理流程后才能将源文件转换成输出结果。 这条生产线上的每个处理流程的职责都是单一的，多个流程之间有存在依赖关系，只有完成当前处理后才能交给下一个流程去处理。 插件就像是一个插入到生产线中的一个功能，在特定的时机对生产线上的资源做处理。
 
 Webpack 通过 Tapable 来组织这条复杂的生产线。 Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条生产线中，去改变生产线的运作。 Webpack 的事件流机制保证了插件的有序性，使得整个系统扩展性很好。
 
+
+
+
 Webpack 的事件流机制应用了观察者模式，和 Node.js 中的 EventEmitter 非常相似。Compiler 和 Compilation 都继承自 Tapable，可以直接在 Compiler 和 Compilation 对象上广播和监听事件，方法如下：
 ```js
 /**
-
 * 广播出事件
-
 * event-name 为事件名称，注意不要和现有的事件重名
-
 * params 为附带的参数
-
 */
-
 compiler.apply('event-name',
    params
 );
 
 /**
-
 * 监听名称为 event-name 的事件，当 event-name 事件发生时，函数就会被执行。
-
 * 同时函数中的 params 参数为广播事件时附带的参数。
-
 */
-
 compiler.plugin('event-name',function(params){
 
 });
 ```
 
+常见钩子
+entryOption : 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。
+afterPlugins : 设置完初始插件之后，执行插件。
+compilation : 编译创建之后，生成文件之前，执行插件。。
+emit : 生成资源到 output 目录之前。
+done : 编译完成。
+Webpack会根据执行流程来回调对应的钩子，下面我们来看看都有哪些常见钩子，这些钩子支持的tap操作是什么。
+
+让我们来了解更多不同的钩子类(hook class)，以及它们是如何工作的。
+
+钩子	说明	参数	类型
+| 钩子         | 说明                                                    | 参数              | 类型 |
+|--------------|---------------------------------------------------------|-------------------|------|
+| entryOption  | 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。 |                   |      |
+| afterPlugins | 启动一次新的编译                                        | compiler          | 同步 |
+| compile      | 创建compilation对象之前                                 | compilationParams | 同步 |
+| compilation  | compilation对象创建完成                                 | compilation       | 同步 |
+| emit         | 资源生成完成，输出之前                                  | compilation       | 同步 |
+| afterEmit    | 资源输出到目录完成                                      | compilation       | 异步 |
+| done         | 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。 | stats             | 同步 |
+
+apply方法中插入钩子的一般形式如下：
+```js
+compileer.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
+});
+```
+
 常用 API
 插件可以用来修改输出文件、增加输出文件、甚至可以提升 Webpack 性能、等等，总之插件通过调用 Webpack 提供的 API 能完成很多事情。 由于 Webpack 提供的 API 非常多，有很多 API 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
+

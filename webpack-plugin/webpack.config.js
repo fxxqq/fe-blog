@@ -72,20 +72,21 @@ module.exports = (env, argv) => {
         filename: "css/[name].css",
         chunkFilename: "[id].css"
       }),
-      new QiniuUpload({
-        qiniu: {
-          accessKey: 'HCct3FpW17hnRMdsSCnogNeqtklD5nIiUa9hOrvi',
-          secretKey: '7Pp2QhmgJo0SdwpKCiuq5M1VMFHbZNj68mjLBwRz',
-          bucket: 'webpack-plugin-upload',
-          keyPrefix: 'webpack-plugins-statics/',
-          include: [
-            'css/**',
-          ],
-          exclude: [
-            path.resolve(__dirname, "index.html")
-          ],
-        }
-      }),
+      // new QiniuUpload({
+      //   qiniu: {
+      //     accessKey: 'HCct3FpW17hnRMdsSCnogNeqtklD5nIiUa9hOrvi',
+      //     secretKey: '7Pp2QhmgJo0SdwpKCiuq5M1VMFHbZNj68mjLBwRz',
+      //     bucket: 'webpack-plugin-upload',
+      //     keyPrefix: 'webpack-plugins-statics/',
+      //     include: [
+      //       'css/**',
+      //     ],
+      //     exclude: [
+      //       path.resolve(__dirname, "index.html")
+      //     ],
+      //   }
+      // }),
+      new MyWebpackPlugin()
     ]
   }
 };
