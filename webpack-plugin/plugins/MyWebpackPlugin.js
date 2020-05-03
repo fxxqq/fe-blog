@@ -22,7 +22,13 @@ class MyWebpackPlugin {
           return this.source().length;
         }
       };
-      callback();
+      callback(); // 4. 通过compiler对象可以注册对应的事件，全部的钩子都可以使用
+      // 注册一个编译完成的钩子， 一般需要将插件名作为事件名即可
+      compiler.hooks.done.tap('HelloWordPlugin', (stats) => {
+        console.log('整个webpack打包结束了');
+      })
+
+
     });
   }
 }

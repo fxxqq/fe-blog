@@ -15,6 +15,14 @@ Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听�
 6. emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
 7. afterEmit：文件已经写入磁盘完成
 8. done：完成编译
+
+首先，webpack会读取你在命令行传入的配置以及项目里的 webpack.config.js 文件，初始化本次构建的配置参数，并且执行配置文件中的插件实例化语句，生成Compiler传入plugin的apply方法，为webpack事件流挂上自定义钩子。
+接下来到了entryOption阶段，webpack开始读取配置的Entries，递归遍历所有的入口文件
+Webpack接下来就开始了compilation过程。会依次进入其中每一个入口文件(entry)，先使用用户配置好的loader对文件内容进行编译（buildModule），我们可以从传入事件回调的compilation上拿到module的resource（资源路径）、loaders（经过的loaders）等信息；之后，再将编译好的文件内容使用acorn解析生成AST静态语法树（normalModuleLoader），分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的require语法替换成__webpack_require__来模拟模块化操作。
+emit阶段，所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的compilation.assets 上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
+
+ 
+
 compiler 暴露了和 Webpack 整个生命周期相关的钩子
 compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
 插件需要在其原型上绑定apply方法，才能访问 compiler 实例
@@ -178,3 +186,43 @@ compileer.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 常用 API
 插件可以用来修改输出文件、增加输出文件、甚至可以提升 Webpack 性能、等等，总之插件通过调用 Webpack 提供的 API 能完成很多事情。 由于 Webpack 提供的 API 非常多，有很多 API 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
 
+
+读取输出资源、代码块、模块及其依赖
+
+有些插件可能需要读取 Webpack 的处理结果，例如输出资源、代码块、模块及其依赖，以便做下一步处理。
+在 emit 事件发生时，代表源文件的转换和组装已经完成，在这里可以读取到最终将输出的资源、代码块、模块及其依赖，并且可以修改输出资源的内容。
+插件代码如下：
+
+```js
+class Plugin {
+  apply(compiler) {
+    compiler.plugin('emit', function (compilation, callback) {
+      // compilation.chunks 存放所有代码块，是一个数组
+      compilation.chunks.forEach(function (chunk) {
+        // chunk 代表一个代码块
+        // 代码块由多个模块组成，通过 chunk.forEachModule 能读取组成代码块的每个模块
+        chunk.forEachModule(function (module) {
+          // module 代表一个模块
+          // module.fileDependencies 存放当前模块的所有依赖的文件路径，是一个数组
+          module.fileDependencies.forEach(function (filepath) {
+          });
+        });
+
+        // Webpack 会根据 Chunk 去生成输出的文件资源，每个 Chunk 都对应一个及其以上的输出文件
+        // 例如在 Chunk 中包含了 CSS 模块并且使用了 ExtractTextPlugin 时，
+        // 该 Chunk 就会生成 .js 和 .css 两个文件
+        chunk.files.forEach(function (filename) {
+          // compilation.assets 存放当前所有即将输出的资源
+          // 调用一个输出资源的 source() 方法能获取到输出资源的内容
+          let source = compilation.assets[filename].source();
+        });
+      });
+
+      // 这是一个异步事件，要记得调用 callback 通知 Webpack 本次事件监听处理结束。
+      // 如果忘记了调用 callback，Webpack 将一直卡在这里而不会往后执行。
+      callback();
+    })
+  }
+}
+
+```
