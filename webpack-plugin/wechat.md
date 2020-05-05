@@ -1,29 +1,28 @@
 1. 手把手用代码教你实现一个 webpack plugin https://mp.weixin.qq.com/s/x0KQ7yvvyiztoIjkBFDphA
 已经看完
-3. 【Webpack】513- Webpack 插件开发如此简单！https://mp.weixin.qq.com/s/LTAlkoyS3C2yiLkFriu-Cw
+2. 【Webpack】513- Webpack 插件开发如此简单！https://mp.weixin.qq.com/s/LTAlkoyS3C2yiLkFriu-Cw
 
-2. Webpack4不求人(5)——编写自定义插件 https://mp.weixin.qq.com/s/ltm64e9TTkux8WmXP4FMKQ
+3. Webpack4不求人(5)——编写自定义插件 https://mp.weixin.qq.com/s/ltm64e9TTkux8WmXP4FMKQ
 实现上传七牛云，还需要再看下
-9. Webpack学习－Plugin :http://wushaobin.top/2019/03/15/webpackPlugin/
-4. Webpack原理-编写Pluginhttps://juejin.im/post/5a5c18f2518825734f52ad65
+4. Webpack学习－Plugin :http://wushaobin.top/2019/03/15/webpackPlugin/
+5. Webpack原理-编写Pluginhttps://juejin.im/post/5a5c18f2518825734f52ad65
 常用api和事件流
 6. webpack学习笔记（原理，实现loader和插件） https://mp.weixin.qq.com/s/CBrF4Bm8m0yDJ4J0FYq9ug
-12. 如何写一个webpack插件：https://github.com/lcxfs1991/blog/issues/1
-20. 让我们来写个 webpack 插件: https://zhuanlan.zhihu.com/p/94577244
-21. 可能是全网最全最新最细的 webpack-tapable-2.0 的源码分析:https://juejin.im/post/5c12046af265da612b1377aa
-19. 手写一个webpack插件:https://zhuanlan.zhihu.com/p/64052995
+7. 如何写一个webpack插件：https://github.com/lcxfs1991/blog/issues/1
+8. 让我们来写个 webpack 插件: https://zhuanlan.zhihu.com/p/94577244
+9. 可能是全网最全最新最细的 webpack-tapable-2.0 的源码分析:https://juejin.im/post/5c12046af265da612b1377aa
+10. 手写一个webpack插件:https://zhuanlan.zhihu.com/p/64052995
 事件流和常用api Compiler
 
-7. webpack 插件机制分析及开发调试 https://mp.weixin.qq.com/s/JSn23OsWz7BYptnb0MTrAQ 
+11. webpack 插件机制分析及开发调试 https://mp.weixin.qq.com/s/JSn23OsWz7BYptnb0MTrAQ 
 
-14. webpack插件官网https://webpack.docschina.org/api/compilation/
+12. webpack插件官网https://webpack.docschina.org/api/compilation/
 /api/compiler-hooks/
 compilation-hooks
 
-16. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
+13. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
 
-18. 编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
-
+14. 编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
 赋予webpack事件流我们的自定义事件能够实现嘛？
 
 
