@@ -212,6 +212,10 @@ Compiler {
     ...
   },
   ...
+  watchFileSystem: NodeWatchFileSystem {
+    //监听文件变化列表信息
+     ...
+  }
 }
 ```
 
