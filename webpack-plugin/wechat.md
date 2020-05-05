@@ -9,12 +9,12 @@
  
 6. webpack学习笔记（原理，实现loader和插件） https://mp.weixin.qq.com/s/CBrF4Bm8m0yDJ4J0FYq9ug
 7. webpack 插件机制分析及开发调试 https://mp.weixin.qq.com/s/JSn23OsWz7BYptnb0MTrAQ
-8. webpack原理解析（三）plugin机制 :https://juejin.im/post/5e72def0f265da573c0c987f
+
 9. Webpack学习－Plugin :http://wushaobin.top/2019/03/15/webpackPlugin/
 10. 关于Webpack中Loader与Plugin的实践 https://mp.weixin.qq.com/s/Bf2rGFD2oWFeXmNQbXS-LA
-11. bundle.js内容分析https://github.com/lihongxun945/diving-into-webpack/blob/master/5-bundle.js.md
+ 
 12. 如何写一个webpack插件：https://github.com/lcxfs1991/blog/issues/1
-13. 从零实现一个 Webpack Pluginhttps://juejin.im/post/5cc6b457518825634d444365
+ 
 14. webpack插件官网https://webpack.docschina.org/api/compilation/
 15. webpack源码执行过程分析，loaders+plugin https://juejin.im/post/5cec9060f265da1ba431cd55
 16. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
@@ -22,14 +22,21 @@
 18. 编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
 赋予webpack事件流我们的自定义事件能够实现嘛？
 
+19. 手写一个webpack插件:https://zhuanlan.zhihu.com/p/64052995
 
+20. 让我们来写个 webpack 插件: https://zhuanlan.zhihu.com/p/94577244
+21. 可能是全网最全最新最细的 webpack-tapable-2.0 的源码分析:https://juejin.im/post/5c12046af265da612b1377aa
+做一个实验，如果你在 apply 函数内插入 throw new Error("Message")，会发生什么，终端会打印出 Unhandled rejection Error: Message。然后 webpack 中断执行。
  
-
+为了不影响 webpack 的执行，要在编译期间向用户发出警告或错误消息，则应使用 compilation.warnings 和 compilation.errors。
 
 插件中可以使用很多 Webpack 提供的 API，例如读取输出资源、代码块、模块及依赖等；
 
+
+
 1、编写插件
 在根目录下，新建目录 my-plugin 作为我们编写插件的名称，执行 npm init -y 命令，新建一个模块化项目，然后新建 index.js 文件，相关源码如下：
+```js
 class MyPlugin {
   constructor(doneCallback, failCallback) {
     // 保存在创建插件实例时传入的回调函数
@@ -60,6 +67,7 @@ plugins: [
     }
   )
 ]
+```
  
 
 

@@ -54,6 +54,7 @@ class qiniuUploadPlugin {
                   let globalError = null;
                   console.log(Object.keys(compilation.assets))
 
+                  // excludeDir
                   // const includeExcludeFilter = createFilter(include, exclude);
                   // const filter = id => extensionRegExp.test(id) && includeExcludeFilter(id);
                   // 遍历编译资源文件

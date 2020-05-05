@@ -3,8 +3,9 @@ const path = require('path');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const MyWebpackPlugin = require('./plugins/MyWebpackPlugin')
 const QiniuUpload = require('./plugins/QiniuUpload')
+const MyWebpackPlugin = require('./plugins/MyWebpackPlugin')
+
 module.exports = (env, argv) => {
   const devMode = argv.mode !== 'production'
   return {
@@ -58,7 +59,6 @@ module.exports = (env, argv) => {
               publicPath: "http://wcdn.6fed.com"
             }
           }],
-
         }
       ]
     },
