@@ -1,9 +1,12 @@
+const getLogger = require('webpack-log');
+const log = getLogger({ name: 'webpack-batman' });
 class MyWebpackPlugin {
   constructor(options) {}
 
   apply(compiler) {
-    console.log(compiler)
+
     compiler.hooks.emit.tapAsync('MyWebpackPlugin', (compilation, callback) => {
+
 
       // 4. 通过compiler对象可以注册对应的事件，全部的钩子都可以使用
       // 注册一个编译完成的钩子， 一般需要将插件名作为事件名即可

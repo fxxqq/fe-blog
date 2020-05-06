@@ -34,6 +34,10 @@
     "style-loader": "^0.21.0",
     "webpack": "^4.14.0",
     "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "^3.1.4"
+    "webpack-dev-server": "^3.1.4",
+    "webpack-log": "^3.0.1"
+  },
+  "dependencies": {
+    "simple-log-webpack-plugin": "^0.1.3"
   }
 }
