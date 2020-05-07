@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const QiniuUpload = require('./plugins/QiniuUpload')
 const MyWebpackPlugin = require('./plugins/MyWebpackPlugin')
-
+const WebpackConsoleLog = require('./plugins/webpackConsoleLog')
 module.exports = (env, argv) => {
   const devMode = argv.mode !== 'production'
   return {
@@ -86,7 +86,8 @@ module.exports = (env, argv) => {
       //     ],
       //   }
       // }),
-      new MyWebpackPlugin()
+      new MyWebpackPlugin(),
+
     ]
   }
 };

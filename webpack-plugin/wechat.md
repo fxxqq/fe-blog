@@ -20,7 +20,7 @@
 /api/compiler-hooks/
 compilation-hooks
 
-13. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-5
+13. webpack原理：https://juejin.im/post/5d99a8265188254d014e364e#heading-6
 
 14. 编写自定义webpack plugin：https://juejin.im/post/5badd0c5e51d450e4437f07a#heading-18
 赋予webpack事件流我们的自定义事件能够实现嘛？

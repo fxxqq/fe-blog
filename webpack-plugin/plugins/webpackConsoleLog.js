@@ -38,7 +38,7 @@ module.exports = class LogPlugin {
   }
 
   doLog(module) {
-
+    console.log(module._source)
     if (!module._source) return
     let _val = module._source.source(),
       _name = module.resource;
@@ -71,8 +71,11 @@ module.exports = class LogPlugin {
 
       // modlue解析完毕钩子
       compilation.hooks.succeedModule.tap(this.plugin, module => {
+        console.log(module)
+
         // 修改模块的代码
         module._source._value = this.doLog(module)
+
 
       })
     })
