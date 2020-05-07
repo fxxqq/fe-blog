@@ -72,7 +72,8 @@ compiler 对象代表了完整的 webpack 环境配置。这个对象在启动 w
 这个对象在 Webpack 启动时候被实例化，它是全局唯一的，可以简单地把它理解为 Webpack 实例；
  compiler。这个对象包含了 webpack 环境所有的的配置信息，包含 options，loaders，plugins 这些信息，这个对象在 webpack 启动时候被实例化，它是全局唯一的，可以简单地把它理解为 webpack 实例。
 
-如果看完这段话，你还是没理解compiler是做啥的，不要怕，运行npm run build，把compiler的全部信息输出到控制台上。为了能更直观的让大家看清楚compiler的结构，里面的大量代码使用省略号（...）代替。
+如果看完这段话，你还是没理解compiler是做啥的，不要怕，运行npm run build，把compiler的全部信息输出到控制台上console.log(Compiler)。
+为了能更直观的让大家看清楚compiler的结构，里面的大量代码使用省略号（...）代替。
 ```js
 Compiler {
   _pluginCompat: SyncBailHook {
@@ -216,6 +217,98 @@ Compiler {
 }
 ```
 
+**Compiler源码简析**
+源码地址：https://github.com/webpack/webpack/blob/master/lib/Compiler.js(源代码948行)
+```js
+const { SyncHook,SyncBailHook,AsyncParallelHook,AsyncSeriesHook } = require("tapable");
+class Compiler{
+  constructor(){
+    // 1. 定义生命周期钩子
+   this.hooks = Object.freeze({
+      ...
+      done: new AsyncSeriesHook(["stats"]),
+      beforeRun: new AsyncSeriesHook(["compiler"]),
+      run: new AsyncSeriesHook(["compiler"]),
+      emit: new AsyncSeriesHook(["compilation"]),
+      afterEmit: new AsyncSeriesHook(["compilation"]),
+      compilation: new SyncHook(["compilation", "params"]),
+      beforeCompile: new AsyncSeriesHook(["params"]),
+      compile: new SyncHook(["params"]),
+      afterCompile: new AsyncSeriesHook(["compilation"]),
+      watchRun: new AsyncSeriesHook(["compiler"]),
+      failed: new SyncHook(["error"]),
+      invalid: new SyncHook(["filename", "changeTime"]),
+      watchClose: new SyncHook([]),
+      afterPlugins: new SyncHook(["compiler"]),
+      entryOption: new SyncBailHook(["context", "entry"])
+    });
+  }
+
+  transfer(){
+    // 3. 在合适的时候 调用
+    this.hooks.entryOption.call() //在 webpack 选项中的 entry 配置项 处理过之后，执行插件。
+    this.hooks.afterPlugins.call() //设置完初始插件之后，执行插件。
+    this.hooks.beforeRun.call() //compiler.run() 执行之前，添加一个钩子。
+    this.hooks.run.call()//开始读取 records 之前，钩入(hook into) compiler。
+    
+  }
+  watch(){
+    if (this.running) {
+			return handler(new ConcurrentCompilationError());
+		}
+		this.running = true;
+		this.watchMode = true;
+		return new Watching(this, watchOptions, handler);
+  }, 
+  run(){
+    if (this.running) {
+			return callback(new ConcurrentCompilationError());
+    }
+    this.running = true;
+  },
+  compile(){
+ 
+    const params = this.newCompilationParams();
+		this.hooks.beforeCompile.callAsync(params, err => {
+			if (err) return callback(err);
+
+			this.hooks.compile.call(params);
+
+			const compilation = this.newCompilation(params);
+
+			const logger = compilation.getLogger("webpack.Compiler");
+
+			logger.time("make hook");
+			this.hooks.make.callAsync(compilation, err => {
+				logger.timeEnd("make hook");
+				if (err) return callback(err);
+
+				process.nextTick(() => {
+					logger.time("finish compilation");
+					compilation.finish(err => {
+						logger.timeEnd("finish compilation");
+						if (err) return callback(err);
+
+						logger.time("seal compilation");
+						compilation.seal(err => {
+							logger.timeEnd("seal compilation");
+							if (err) return callback(err);
+
+							logger.time("afterCompile hook");
+							this.hooks.afterCompile.callAsync(compilation, err => {
+								logger.timeEnd("afterCompile hook");
+								if (err) return callback(err);
+
+								return callback(null, compilation);
+							});
+						});
+					});
+				});
+			});
+		});
+  }
+}
+```
 
 compiler 暴露了和 Webpack 整个生命周期相关的钩子
 compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
@@ -227,6 +320,8 @@ watch-run 当依赖的文件发生变化时会触发
 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
 
 compiler可以理解为一个webpack的实例，该实例存储了webpack配置、打包过程等一系列的内容。compiler提供了compiler.hooks,在为 webpack 开发插件时，你可能需要知道每个钩子函数是在哪里调用的，具体就可以查阅官方文档。这里可以看到有很多时刻，我们可以根据这些不同的时刻去让插件做不同的事情。
+
+
 
 compilation 模块会被 compiler 用来创建新的编译（或新的构建）。该实例存放的是本次打包编译的内容。
 
@@ -247,27 +342,16 @@ https://github.com/webpack/webpack/blob/master/lib/Compiler.js
 访问 compilation
 使用compiler对象，你可能需要绑定带有各个新compilation的引用的回调函数。这些compilation提供回调函数连接成许多构建过程中的步骤。
 
-Compiler 和 Compilation 的区别在于：Compiler 代表了整个 Webpack 从启动到关闭的生命周期，而 Compilation 只是代表了一次新的编译。
- 
-更多关于在compiler, compilation等对象中哪些回调有用，看一下api
-
-我们了解了Webpack compiler和各个compilations，我们就可以用它们来创造无尽的可能。我们可以重定当前文件的格式，生成一个衍生文件，或者制造出一个全新的assets
-
-
 > 注意 Compiler 和 Compilattion 的区别
 
-compile: compile对象表示不变的webpack环境，是针对webpack的
-compilation: compilation对象针对的是随时可变的项目文件，只要文件有改动，compilation就会被重新创建
-
- 
+Compiler: Compiler对象表示不变的webpack环境，是针对webpack的
+Compilation: compilation对象针对的是随时可变的项目文件，只要文件有改动，compilation就会被重新创建
+Compiler 代表了整个 Webpack 从启动到关闭的生命周期，而 Compilation 只是代表了一次新的编译。
 
 ### 事件流Tabable
 
 Tapable也是一个小型的 library，是Webpack的一个核心工具。类似于node中的events库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
 Webpack中许多对象扩展自Tapable类。Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
-
-Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
-
 tap 同步钩子
 ```js
 compiler.hooks.compile.tap('MyPlugin', params => {
@@ -288,6 +372,7 @@ compiler.hooks.run.tapPromise('MyPlugin', compiler => {
   })
 })
 ```
+Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
 
 Webpack 的事件流机制应用了观察者模式，和 Node.js 中的 EventEmitter 非常相似。Compiler 和 Compilation 都继承自 Tapable，可以直接在 Compiler 和 Compilation 对象上广播和监听事件，方法如下：
 ```js
