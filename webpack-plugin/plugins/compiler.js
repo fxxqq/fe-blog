@@ -32,7 +32,7 @@ class Compiler {
     // 创建Compilation对象回调compilation相关钩子
     const compilation = new Compilation(this);
     //...一系列操作
-    this.hooks.compilation.call(compilation, params);
+    this.hooks.compilation.call(compilation, params); //compilation对象创建完成 
     return compilation
   }
   watch() {
@@ -59,6 +59,7 @@ class Compiler {
           // ...
           // done：完成编译
           this.hooks.done.callAsync(stats, err => {
+            // 创建compilation对象之前   
             this.compile(onCompiled);
           });
         }
@@ -71,12 +72,20 @@ class Compiler {
     });
 
     this.hooks.beforeRun.callAsync(this, err => {
+      // 假设我们想在 compiler.run() 之前处理逻辑，那么就要调用 beforeRun 钩子来处理：
+      // compiler.hooks.beforeRun.tap(
+      //   'testPlugin', 
+      //   (comp) => {   
+      //     // ... 
+      //   }
+      // );
       this.hooks.run.callAsync(this, err => {
         this.readRecords(err => {
           this.compile(onCompiled);
         });
       });
     });
+
   }
   compile(callback) {
     const params = this.newCompilationParams();
@@ -88,6 +97,8 @@ class Compiler {
           compilation.finish(err => {
             compilation.seal(err => {
               this.hooks.afterCompile.callAsync(compilation, err => {
+                // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，
+                // 不然运行流程将会一直卡在这不往下执行
                 return callback(null, compilation);
               });
             });
@@ -102,12 +113,11 @@ class Compiler {
       // afterEmit：文件已经写入磁盘完成
       this.hooks.afterEmit.callAsync(compilation, err => {
         if (err) return callback(err);
-
         return callback();
       });
     }
 
-    // emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
+    // emit：资源输出之前，文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
     this.hooks.emit.callAsync(compilation, err => {
       if (err) return callback(err);
       outputPath = compilation.getPath(this.outputPath, {});

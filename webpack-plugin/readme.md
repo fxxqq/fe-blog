@@ -4,26 +4,34 @@
 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
 写plugin 比写loader更难一点，可能需要你对webpack底层和构建流程的一些东西有一定的了解，以便在合适的时机插入合适的插件逻辑。所以要做好阅读源码的准备。
 
- 
-构建流程
-在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。Webpack的基本构建流程如下：
-1. 校验配置文件
-2. 生成Compiler对象
-3. 初始化默认插件
-4. run/watch：如果运行在watch模式则执行watch方法，否则执行run方法
-5. compilation：创建Compilation对象回调compilation相关钩子
-6. emit：文件内容准备完成，准备生成文件，这是最后一次修改最终文件的机会
-7. afterEmit：文件已经写入磁盘完成
-8. done：完成编译
+## webapck构建流程
+在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。
+Webpack的基本构建流程如下：
+1. 校验配置文件 ：读取命令行传入或者`webpack.config.js`文件，初始化本次构建的配置参数
+2. 生成`Compiler`对象：执行配置文件中的插件实例化语句`new MyWebpackPlugin()`，为`webpack`事件流挂上自定义`hooks`
+3. 进入`entryOption`阶段：（`webpack`开始读取配置的`Entries`，递归遍历所有的入口文件）
+4. `run/watch`：如果运行在`watch`模式则执行`watch`方法，否则执行`run`方法
+5. `compilation`：创建`Compilation`对象回调`compilation`相关钩子，依次进入每一个入口文件(entry)，使用loader对文件进行编译。通过`compilation`我可以可以读取到`module`的`resource`（资源路径）、`loaders`（使用的loader）等信息。再将编译好的文件内容使用`acorn`解析生成AST静态语法树。然后递归、重复的执行这个过程，直到将所有模块和依赖替换成`__webpack_require__`来模拟模块化操作.
+6. emit：所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的`compilation.assets `上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
+```js
+// 修改或添加资源
+compilation.assets['new-file.js'] = {
+  source() {
+    return 'var a=1';
+  },
+  size() {
+    return this.source().length;
+  }
+};
+```
+7. `afterEmit`：文件已经写入磁盘完成
+8. `done`：完成编译
 
-首先，webpack会读取你在命令行传入的配置以及项目里的 webpack.config.js 文件，初始化本次构建的配置参数，并且执行配置文件中的插件实例化语句，生成Compiler传入plugin的apply方法，为webpack事件流挂上自定义钩子。
-接下来到了entryOption阶段，webpack开始读取配置的Entries，递归遍历所有的入口文件
-Webpack接下来就开始了compilation过程。会依次进入其中每一个入口文件(entry)，先使用用户配置好的loader对文件内容进行编译（buildModule），我们可以从传入事件回调的compilation上拿到module的resource（资源路径）、loaders（经过的loaders）等信息；之后，再将编译好的文件内容使用acorn解析生成AST静态语法树（normalModuleLoader），分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的require语法替换成__webpack_require__来模拟模块化操作。
-emit阶段，所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的compilation.assets 上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
- 
-### 插件基本结构
+看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
 
-plugins是可以用自身原型方法apply来实例化的对象。apply只在安装插件被Webpack compiler执行一次。apply方法传入一个webpck compiler的引用，来访问编译器回调。
+## 插件基本结构
+
+`plugins`是可以用自身原型方法`apply`来实例化的对象。`apply`只在安装插件被`Webpack compiler`执行一次。`apply`方法传入一个`webpck compiler`的引用，来访问编译器回调。
 
 **一个简单的插件结构：**
 ```js
@@ -36,6 +44,13 @@ class HelloPlugin{
     // 在emit阶段插入钩子函数，用于特定时机处理额外的逻辑；
     compiler.hooks.emit.tap('HelloPlugin', (compilation) => {
       // 在功能流程完成后可以调用 webpack 提供的回调函数；
+    });
+    // 如果事件是异步的，会带两个参数，第二个参数为回调函数，在插件处理完任务时需要调用回调函数通知webpack，才会进入下一个处理流程。
+    compiler.plugin('emit',function(compilation, callback) {
+      // 支持处理逻辑
+      // 处理完毕后执行 callback 以通知 Webpack 
+      // 如果不执行 callback，运行流程将会一直卡在这不往下执行 
+      callback();
     });
   }
 }
@@ -54,27 +69,24 @@ var webpackConfig = {
 ```
 
 **先来分析一下webpack Plugin的工作原理**
-1. 读取配置的过程中会先执行 new HelloPlugin(options) 初始化一个 BasicPlugin 获得其实例。
-2. 初始化 compiler 对象后调用 HelloPlugin.apply(compiler) 给插件实例传入 compiler 对象。
-3. 插件实例在获取到 compiler 对象后，就可以通过 compiler.plugin(事件名称, 回调函数) 监听到 Webpack 广播出来的事件。
-并且可以通过 compiler 对象去操作 Webpack。
+1. 读取配置的过程中会先执行 `new HelloPlugin(options)` 初始化一个 `HelloPlugin` 获得其实例。
+2. 初始化 `compiler` 对象后调用 `HelloPlugin.apply(compiler)` 给插件实例传入 `compiler` 对象。
+3. 插件实例在获取到 `compiler` 对象后，就可以通过` compiler.plugin(事件名称, 回调函数)` 监听到 Webpack 广播出来的事件。
+并且可以通过 `compiler` 对象去操作 `Webpack`。
 
-webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable，webpack中最核心的负责编译的Compiler和负责创建bundles的Compilation都是Tapable的实例。Tapable暴露出挂载plugin的方法，使我们能 将plugin控制在webapack事件流上运行（如下图）。
 
-## 理解 webpack 的 compiler 和 compilation
+
+## 理解compiler
 
 开发插件首先要理解compiler 和 compilation 对象，理解他们的是扩展Webpack重要的一步。
-
-compiler对象包涵了Webpack环境所有的的配置信息，这个对象在Webpack启动时候被构建，并配置上所有的设置选项包括 options，loaders，plugins。当启用一个插件到Webpack环境的时候，这个插件就会接受一个指向compiler的参数。运用这个参数来获取到Webpack环境
+ 
 Compiler 对象包含了当前运行Webpack的配置，包括entry、output、loaders等配置，这个对象在启动Webpack时被实例化，而且是全局唯一的。Plugin可以通过该对象获取到Webpack的配置信息进行处理。
 
-compiler 对象代表了完整的 webpack 环境配置。这个对象在启动 webpack 时被一次性建立，并配置好所有可操作的设置，包括 options，loader 和 plugin。当在 webpack 环境中应用一个插件时，插件将收到此 compiler 对象的引用。可以使用它来访问 webpack 的主环境。
-这个对象在 Webpack 启动时候被实例化，它是全局唯一的，可以简单地把它理解为 Webpack 实例；
- compiler。这个对象包含了 webpack 环境所有的的配置信息，包含 options，loaders，plugins 这些信息，这个对象在 webpack 启动时候被实例化，它是全局唯一的，可以简单地把它理解为 webpack 实例。
-
-如果看完这段话，你还是没理解compiler是做啥的，不要怕，运行npm run build，把compiler的全部信息输出到控制台上console.log(Compiler)。
-为了能更直观的让大家看清楚compiler的结构，里面的大量代码使用省略号（...）代替。
+如果看完这段话，你还是没理解compiler是做啥的，不要怕，接着看。
+运行`npm run build`，把compiler的全部信息输出到控制台上`console.log(Compiler)`。
+![compiler](https://cdn.58fe.com/github/Compiler.jpg)
 ```js
+// 为了能更直观的让大家看清楚compiler的结构，里面的大量代码使用省略号（...）代替。
 Compiler {
   _pluginCompat: SyncBailHook {
     ...
@@ -218,14 +230,14 @@ Compiler {
 ```
 
 **Compiler源码简析**
-源码地址：https://github.com/webpack/webpack/blob/master/lib/Compiler.js(源代码948行)
+源码地址(948行)：https://github.com/webpack/webpack/blob/master/lib/Compiler.js
 ```js
-const { SyncHook,SyncBailHook,AsyncParallelHook,AsyncSeriesHook } = require("tapable");
-class Compiler{
-  constructor(){
+const { SyncHook, SyncBailHook, AsyncSeriesHook } = require("tapable");
+class Compiler {
+  constructor() {
     // 1. 定义生命周期钩子
-   this.hooks = Object.freeze({
-      ...
+    this.hooks = Object.freeze({
+      // ...只列举几个常用的常见钩子，更多hook就不列举了，有兴趣看源码
       done: new AsyncSeriesHook(["stats"]),
       beforeRun: new AsyncSeriesHook(["compiler"]),
       run: new AsyncSeriesHook(["compiler"]),
@@ -237,118 +249,148 @@ class Compiler{
       afterCompile: new AsyncSeriesHook(["compilation"]),
       watchRun: new AsyncSeriesHook(["compiler"]),
       failed: new SyncHook(["error"]),
-      invalid: new SyncHook(["filename", "changeTime"]),
       watchClose: new SyncHook([]),
       afterPlugins: new SyncHook(["compiler"]),
       entryOption: new SyncBailHook(["context", "entry"])
     });
   }
-
-  transfer(){
-    // 3. 在合适的时候 调用
-    this.hooks.entryOption.call() //在 webpack 选项中的 entry 配置项 处理过之后，执行插件。
-    this.hooks.afterPlugins.call() //设置完初始插件之后，执行插件。
-    this.hooks.beforeRun.call() //compiler.run() 执行之前，添加一个钩子。
-    this.hooks.run.call()//开始读取 records 之前，钩入(hook into) compiler。
-    
+  newCompilation() {
+    // 创建Compilation对象回调compilation相关钩子
+    const compilation = new Compilation(this);
+    //...一系列操作
+    this.hooks.compilation.call(compilation, params); //compilation对象创建完成 
+    return compilation
   }
-  watch(){
+  watch() {
+    //如果运行在watch模式则执行watch方法，否则执行run方法
     if (this.running) {
-			return handler(new ConcurrentCompilationError());
-		}
-		this.running = true;
-		this.watchMode = true;
-		return new Watching(this, watchOptions, handler);
-  }, 
-  run(){
-    if (this.running) {
-			return callback(new ConcurrentCompilationError());
+      return handler(new ConcurrentCompilationError());
     }
     this.running = true;
-  },
-  compile(){
- 
+    this.watchMode = true;
+    return new Watching(this, watchOptions, handler);
+  }
+  run(callback) {
+    if (this.running) {
+      return callback(new ConcurrentCompilationError());
+    }
+    this.running = true;
+    process.nextTick(() => {
+      this.emitAssets(compilation, err => {
+        if (err) {
+          // 在编译和输出的流程中遇到异常时，会触发 failed 事件 
+          this.hooks.failed.call(err)
+        };
+        if (compilation.hooks.needAdditionalPass.call()) {
+          // ...
+          // done：完成编译
+          this.hooks.done.callAsync(stats, err => {
+            // 创建compilation对象之前   
+            this.compile(onCompiled);
+          });
+        }
+        this.emitRecords(err => {
+          this.hooks.done.callAsync(stats, err => {
+
+          });
+        });
+      });
+    });
+
+    this.hooks.beforeRun.callAsync(this, err => {
+      this.hooks.run.callAsync(this, err => {
+        this.readRecords(err => {
+          this.compile(onCompiled);
+        });
+      });
+    });
+
+  }
+  compile(callback) {
     const params = this.newCompilationParams();
-		this.hooks.beforeCompile.callAsync(params, err => {
-			if (err) return callback(err);
+    this.hooks.beforeCompile.callAsync(params, err => {
+      this.hooks.compile.call(params);
+      const compilation = this.newCompilation(params);
+      this.hooks.make.callAsync(compilation, err => {
+        process.nextTick(() => {
+          compilation.finish(err => {
+            compilation.seal(err => {
+              this.hooks.afterCompile.callAsync(compilation, err => {
+                // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，
+                // 不然运行流程将会一直卡在这不往下执行
+                return callback(null, compilation);
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+  emitAssets(compilation, callback) {
+    const emitFiles = (err) => {
+      //...省略一系列代码
+      // afterEmit：文件已经写入磁盘完成
+      this.hooks.afterEmit.callAsync(compilation, err => {
+        if (err) return callback(err);
+        return callback();
+      });
+    }
 
-			this.hooks.compile.call(params);
-
-			const compilation = this.newCompilation(params);
-
-			const logger = compilation.getLogger("webpack.Compiler");
-
-			logger.time("make hook");
-			this.hooks.make.callAsync(compilation, err => {
-				logger.timeEnd("make hook");
-				if (err) return callback(err);
-
-				process.nextTick(() => {
-					logger.time("finish compilation");
-					compilation.finish(err => {
-						logger.timeEnd("finish compilation");
-						if (err) return callback(err);
-
-						logger.time("seal compilation");
-						compilation.seal(err => {
-							logger.timeEnd("seal compilation");
-							if (err) return callback(err);
-
-							logger.time("afterCompile hook");
-							this.hooks.afterCompile.callAsync(compilation, err => {
-								logger.timeEnd("afterCompile hook");
-								if (err) return callback(err);
-
-								return callback(null, compilation);
-							});
-						});
-					});
-				});
-			});
-		});
+    // emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改(这是最后一次修改最终文件的机会)
+    this.hooks.emit.callAsync(compilation, err => {
+      if (err) return callback(err);
+      outputPath = compilation.getPath(this.outputPath, {});
+      mkdirp(this.outputFileSystem, outputPath, emitFiles);
+    });
   }
 }
 ```
 
-compiler 暴露了和 Webpack 整个生命周期相关的钩子
-compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
-插件需要在其原型上绑定apply方法，才能访问 compiler 实例
-传给每个插件的 compiler 和 compilation对象都是同一个引用，若在一个插件中修改了它们身上的属性，会影响后面的插件
-找出合适的事件点去完成想要的功能
-emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改(emit 事件是修改 Webpack 输出资源的最后时机)
-watch-run 当依赖的文件发生变化时会触发
-异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
+apply方法中插入钩子的一般形式如下：
+```js
+// compiler提供了compiler.hooks，可以根据这些不同的时刻去让插件做不同的事情。
+compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 
-compiler可以理解为一个webpack的实例，该实例存储了webpack配置、打包过程等一系列的内容。compiler提供了compiler.hooks,在为 webpack 开发插件时，你可能需要知道每个钩子函数是在哪里调用的，具体就可以查阅官方文档。这里可以看到有很多时刻，我们可以根据这些不同的时刻去让插件做不同的事情。
+});
+compiler.run(callback)
+```
+## 理解compilation
+compilation 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。compilation 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
+和 compiler 用法相同，钩子类型不同，也可以在某些钩子上访问 tapAsync 和 tapPromise。
 
-
-compilation 模块会被 compiler 用来创建新的编译（或新的构建）。该实例存放的是本次打包编译的内容。
-
-
-compilation 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。compilation 对象也提供了很多关键时机的回调，以供插件做自定义处理时选择使用。
-
-compilation代表了一个单一构建版本的物料。在webpack中间件运行时，每当一个文件发生改变时就会产生一个新的compilation从而产生一个新的变异后的物料集合。compilation列出了很多关于当前模块资源的信息，编译后的资源信息，改动过的文件，以及监听过的依赖。compilation也提供了插件需要自定义功能的回调点。
-Compilation 对象包含了当前的模块资源、编译生成资源、变化的文件等。当 Webpack 以开发模式运行时，每当检测到一个文件变化，一次新的 Compilation 将被创建。Compilation 对象也提供了很多事件回调供插件做扩展。
+控制台输出`console.log(compilation) `
+![compilation](https://cdn.58fe.com/github/compilation.jpg)
 通过 Compilation 也能读取到 Compiler 对象。
-Compilation对象可以理解编译对象，包含了模块、依赖、文件等信息。在开发模式下运行Webpack时，每修改一次文件都会产生一个新的Compilation对象，Plugin可以访问到本次编译过程中的模块、依赖、文件内容等信息。
-
-这两个组件在所有的Webpack插件中都是不可分割的一部分（特别是compilation），所以对于开发者来说熟悉这两个组件的源文件将是你受益很多：
-
+源码：
 https://github.com/webpack/webpack/blob/master/lib/Compilation.js
-https://github.com/webpack/webpack/blob/master/lib/Compiler.js
+
+介绍几个常用的钩子
+entry-option 初始化option
+run 开始编译
+make 从entry开始递归的分析依赖，对每个依赖模块进行build
+
+before-resolve - after-resolve 对其中一个模块位置进行解析
+
+build-module 开始构建 (build) 这个module,这里将使用文件对应的loader加载
+
+normal-module-loader 对用loader加载完成的module(是一段js代码)进行编译,用 acorn 编译,生成ast抽象语法树。
+
+program 开始对ast进行遍历，当遇到require等一些调用表达式时，触发call require事件的handler执行，收集依赖，并。如：AMDRequireDependenciesBlockParserPlugin等
+
+seal 所有依赖build完成，下面将开始对chunk进行优化，比如合并,抽取公共模块,加hash
+
+bootstrap 生成启动代码
+
+emit 把各个chunk输出到结果文件
+ 
 
 
-访问 compilation
-使用compiler对象，你可能需要绑定带有各个新compilation的引用的回调函数。这些compilation提供回调函数连接成许多构建过程中的步骤。
-
-> 注意 Compiler 和 Compilattion 的区别
-
-Compiler: Compiler对象表示不变的webpack环境，是针对webpack的
-Compilation: compilation对象针对的是随时可变的项目文件，只要文件有改动，compilation就会被重新创建
-Compiler 代表了整个 Webpack 从启动到关闭的生命周期，而 Compilation 只是代表了一次新的编译。
-
-### 事件流Tabable
+## Compiler 和 Compilation 的区别
+`Compiler` 代表了整个 `Webpack` 从启动到关闭的生命周期，而 `Compilation` 只是代表了一次新的编译，只要文件有改动，`compilation`就会被重新创建。
+ 
+## 事件流Tabable
+webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable，webpack中最核心的负责编译的Compiler和负责创建bundles的Compilation都是Tapable的实例。Tapable暴露出挂载plugin的方法，使我们能 将plugin控制在webapack事件流上运行（如下图）。
 
 Tapable也是一个小型的 library，是Webpack的一个核心工具。类似于node中的events库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
 Webpack中许多对象扩展自Tapable类。Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
@@ -377,53 +419,20 @@ Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件
 Webpack 的事件流机制应用了观察者模式，和 Node.js 中的 EventEmitter 非常相似。Compiler 和 Compilation 都继承自 Tapable，可以直接在 Compiler 和 Compilation 对象上广播和监听事件，方法如下：
 ```js
 /**
-* 广播出事件
+* 广播事件
 * event-name 为事件名称，注意不要和现有的事件重名
-* params 为附带的参数
 */
-compiler.apply('event-name',
-   params
-);
-
+compiler.apply('event-name',params);
+compilation.apply('event-name',params);
 /**
-* 监听名称为 event-name 的事件，当 event-name 事件发生时，函数就会被执行。
-* 同时函数中的 params 参数为广播事件时附带的参数。
+* 监听事件
 */
-compiler.plugin('event-name',function(params){
-
-});
+compiler.plugin('event-name',function(params){});
+compilation.plugin('event-name', function(params){});
 ```
 
-常见钩子
-entryOption : 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。
-afterPlugins : 设置完初始插件之后，执行插件。
-compilation : 编译创建之后，生成文件之前，执行插件。。
-emit : 生成资源到 output 目录之前。
-done : 编译完成。
-Webpack会根据执行流程来回调对应的钩子，下面我们来看看都有哪些常见钩子，这些钩子支持的tap操作是什么。
-
-让我们来了解更多不同的钩子类(hook class)，以及它们是如何工作的。
-
-钩子	说明	参数	类型
-| 钩子         | 说明                                                    | 参数              | 类型 |
-|--------------|---------------------------------------------------------|-------------------|------|
-| entryOption  | 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。 |                   |      |
-| afterPlugins | 启动一次新的编译                                        | compiler          | 同步 |
-| compile      | 创建compilation对象之前                                 | compilationParams | 同步 |
-| compilation  | compilation对象创建完成                                 | compilation       | 同步 |
-| emit         | 资源生成完成，输出之前                                  | compilation       | 同步 |
-| afterEmit    | 资源输出到目录完成                                      | compilation       | 异步 |
-| done         | 在 webpack 选项中的 entry 配置项 处理过之后，执行插件。 | stats             | 同步 |
-
-apply方法中插入钩子的一般形式如下：
-```js
-compileer.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
-});
-```
-
-### 常用 API
+## 常用 API
 插件可以用来修改输出文件、增加输出文件、甚至可以提升 Webpack 性能、等等，总之插件通过调用 Webpack 提供的 API 能完成很多事情。 由于 Webpack 提供的 API 非常多，有很多 API 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
-
 
 **读取输出资源、代码块、模块及其依赖**
 
@@ -514,12 +523,40 @@ compiler.hooks.afterCompile.tap('MyPlugin', (compilation, callback) => {
   };
   callback();
 ```
-
-
-### 管理 Warnings 和 Errors
+**判断webpack使用了哪些插件**
+```js
+// 判断当前配置使用使用了 ExtractTextPlugin，
+// compiler 参数即为 Webpack 在 apply(compiler) 中传入的参数
+function hasExtractTextPlugin(compiler) {
+  // 当前配置所有使用的插件列表
+  const plugins = compiler.options.plugins;
+  // 去 plugins 中寻找有没有 ExtractTextPlugin 的实例
+  return plugins.find(plugin=>plugin.__proto__.constructor === ExtractTextPlugin) != null;
+}
+```
+**管理 Warnings 和 Errors**
 做一个实验，如果你在 apply 函数内插入 throw new Error("Message")，会发生什么，终端会打印出 Unhandled rejection Error: Message。然后 webpack 中断执行。
 为了不影响 webpack 的执行，要在编译期间向用户发出警告或错误消息，则应使用 compilation.warnings 和 compilation.errors。
+```js
 compilation.warnings.push("warning");
 compilation.errors.push("error");
+```
 
  
+
+### webpack打包过程或者插件代码里该如何调试？
+1. 在当前webpack项目工程文件夹下面，执行命令行：
+```
+node --inspect-brk ./node_modules/webpack/bin/webpack.js --inline --progress
+```
+其中参数--inspect-brk就是以调试模式启动node：
+
+终端会输出：
+```
+Debugger listening on ws://127.0.0.1:9229/1018c03f-7473-4d60-b62c-949a6404c81d
+For help, see: https://nodejs.org/en/docs/inspector
+```
+2. 谷歌浏览器输入chrome://inspect/#devices
+![点击inspect](https://cdn.58fe.com/github/inspect.jpg)
+3. 然后点一下Chrome调试器里的“继续执行”，断点就提留在我们设置在插件里的debugger断点了。
+![debugger](https://cdn.58fe.com/github/debugger.jpg)
