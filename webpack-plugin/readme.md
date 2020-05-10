@@ -382,6 +382,7 @@ seal 所有依赖build完成，下面将开始对chunk进行优化，比如合�
 
 bootstrap 生成启动代码
 
+
 emit 把各个chunk输出到结果文件
  
 
