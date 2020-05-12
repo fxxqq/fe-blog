@@ -95,6 +95,7 @@ class Compiler {
       this.hooks.make.callAsync(compilation, err => {
         process.nextTick(() => {
           compilation.finish(err => {
+            // 封装构建结果（seal），不可再更改
             compilation.seal(err => {
               this.hooks.afterCompile.callAsync(compilation, err => {
                 // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，

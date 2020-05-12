@@ -1,6 +1,4 @@
-
 ## 前言
- 
 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
 写plugin 比写loader更难一点，可能需要你对webpack底层和构建流程的一些东西有一定的了解，以便在合适的时机插入合适的插件逻辑。所以要做好阅读源码的准备。
 
@@ -74,9 +72,7 @@ var webpackConfig = {
 3. 插件实例在获取到 `compiler` 对象后，就可以通过` compiler.plugin(事件名称, 回调函数)` 监听到 Webpack 广播出来的事件。
 并且可以通过 `compiler` 对象去操作 `Webpack`。
 
-
-
-## 理解compiler
+## 理解Compiler（负责编译）
 
 开发插件首先要理解compiler 和 compilation 对象，理解他们的是扩展Webpack重要的一步。
  
@@ -229,7 +225,7 @@ Compiler {
 }
 ```
 
-**Compiler源码简析**
+**Compiler源码精简版代码解析**
 源码地址(948行)：https://github.com/webpack/webpack/blob/master/lib/Compiler.js
 ```js
 const { SyncHook, SyncBailHook, AsyncSeriesHook } = require("tapable");
@@ -238,14 +234,15 @@ class Compiler {
     // 1. 定义生命周期钩子
     this.hooks = Object.freeze({
       // ...只列举几个常用的常见钩子，更多hook就不列举了，有兴趣看源码
-      done: new AsyncSeriesHook(["stats"]),
+      done: new AsyncSeriesHook(["stats"]),//一次编译完成后执行，回调参数：stats
       beforeRun: new AsyncSeriesHook(["compiler"]),
-      run: new AsyncSeriesHook(["compiler"]),
-      emit: new AsyncSeriesHook(["compilation"]),
-      afterEmit: new AsyncSeriesHook(["compilation"]),
-      compilation: new SyncHook(["compilation", "params"]),
+      run: new AsyncSeriesHook(["compiler"]),//在编译器开始读取记录前执行
+      emit: new AsyncSeriesHook(["compilation"]),//在生成文件到output目录之前执行，回调参数： compilation
+      afterEmit: new AsyncSeriesHook(["compilation"]),//在生成文件到output目录之后执行
+      compilation: new SyncHook(["compilation", "params"]),//在一次compilation创建后执行插件
       beforeCompile: new AsyncSeriesHook(["params"]),
-      compile: new SyncHook(["params"]),
+      compile: new SyncHook(["params"]),//在一个新的compilation创建之前执行
+      make:new AsyncParallelHook(["compilation"]),//完成一次编译之前执行
       afterCompile: new AsyncSeriesHook(["compilation"]),
       watchRun: new AsyncSeriesHook(["compiler"]),
       failed: new SyncHook(["error"]),
@@ -253,6 +250,7 @@ class Compiler {
       afterPlugins: new SyncHook(["compiler"]),
       entryOption: new SyncBailHook(["context", "entry"])
     });
+    // ...省略代码
   }
   newCompilation() {
     // 创建Compilation对象回调compilation相关钩子
@@ -311,9 +309,11 @@ class Compiler {
     this.hooks.beforeCompile.callAsync(params, err => {
       this.hooks.compile.call(params);
       const compilation = this.newCompilation(params);
+      //触发make事件并调用addEntry，找到入口js，进行下一步
       this.hooks.make.callAsync(compilation, err => {
         process.nextTick(() => {
           compilation.finish(err => {
+            // 封装构建结果（seal），逐次对每个module和chunk进行整理，每个chunk对应一个入口文件
             compilation.seal(err => {
               this.hooks.afterCompile.callAsync(compilation, err => {
                 // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，
@@ -343,6 +343,7 @@ class Compiler {
       mkdirp(this.outputFileSystem, outputPath, emitFiles);
     });
   }
+  // ...省略代码
 }
 ```
 
@@ -354,45 +355,64 @@ compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 });
 compiler.run(callback)
 ```
-## 理解compilation
+## 理解Compilation 
+
 compilation 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。compilation 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
-和 compiler 用法相同，钩子类型不同，也可以在某些钩子上访问 tapAsync 和 tapPromise。
+简单来说,`Compilation`的职责就是构建模块和Chunk，并利用插件优化构建过程。
+
+和 `Compiler` 用法相同，钩子类型不同，也可以在某些钩子上访问 `tapAsync` 和 `tapPromise。`
 
 控制台输出`console.log(compilation) `
 ![compilation](https://cdn.58fe.com/github/compilation.jpg)
 通过 Compilation 也能读取到 Compiler 对象。
-源码：
+源码2000多行，没时间仔细阅读了，有兴趣的可以自己看看。
 https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
-介绍几个常用的钩子
-entry-option 初始化option
-run 开始编译
-make 从entry开始递归的分析依赖，对每个依赖模块进行build
-before-resolve - after-resolve 对其中一个模块位置进行解析
-
-build-module 开始构建 (build) 这个module,这里将使用文件对应的loader加载
-
-normal-module-loader 对用loader加载完成的module(是一段js代码)进行编译,用 acorn 编译,生成ast抽象语法树。
-
-program 开始对ast进行遍历，当遇到require等一些调用表达式时，触发call require事件的handler执行，收集依赖，并。如：AMDRequireDependenciesBlockParserPlugin等
-
-seal 所有依赖build完成，下面将开始对chunk进行优化，比如合并,抽取公共模块,加hash
-
-bootstrap 生成启动代码
-
-emit 把各个chunk输出到结果文件
- 
+**介绍几个常用的Compilation Hooks**
+| 钩子                 | 类型            | 什么时候调用                                                                                                                                                                                                  |
+|----------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| buildModule          | SyncHook        | 在模块开始编译之前触发，可以用于修改模块                                                                                                                                                                      |
+| succeedModule        | SyncHook        | 当一个模块被成功编译，会执行这个钩子                                                                                                                                                                          |
+| finishModules        | AsyncSeriesHook | 当所有模块都编译成功后被调用                                                                                                                                                                                  |
+| seal                 | SyncHook        | 当一次compilation停止接收新模块时触发                                                                                                                                                                         |
+| optimizeDependencies | SyncBailHook    | 在依赖优化的开始执行                                                                                                                                                                                          |
+| optimize             | SyncHook        | 在优化阶段的开始执行                                                                                                                                                                                          |
+| optimizeModules      | SyncBailHook    | 在模块优化阶段开始时执行，插件可以在这个钩子里执行对模块的优化，回调参数：modules                                                                                                                             |
+| optimizeChunks       | SyncBailHook    | 在代码块优化阶段开始时执行，插件可以在这个钩子里执行对代码块的优化，回调参数：chunks                                                                                                                          |
+| optimizeChunkAssets  | AsyncSeriesHook | 优化任何代码块资源，这些资源存放在 compilation.assets 上。一个 chunk 有一个 files 属性，它指向由一个chunk创建的所有文件。任何额外的 chunk 资源都存放在 compilation.additionalChunkAssets 上。回调参数：chunks |
+| optimizeAssets       | AsyncSeriesHook | 优化所有存放在 compilation.assets 的所有资源。回调参数：assets                                                                                                                                                |
 
 
 ## Compiler 和 Compilation 的区别
 `Compiler` 代表了整个 `Webpack` 从启动到关闭的生命周期，而 `Compilation` 只是代表了一次新的编译，只要文件有改动，`compilation`就会被重新创建。
  
-## 事件流Tabable
-webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable，webpack中最核心的负责编译的Compiler和负责创建bundles的Compilation都是Tapable的实例。Tapable暴露出挂载plugin的方法，使我们能 将plugin控制在webapack事件流上运行（如下图）。
+
+## 理解事件流机制 Tabable
+webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
+
+Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
 
 Tapable也是一个小型的 library，是Webpack的一个核心工具。类似于node中的events库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
-Webpack中许多对象扩展自Tapable类。Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
+
+webpack中最核心的负责编译的`Compiler`和负责创建bundles的`Compilation`都是Tapable的实例，可以直接在 `Compiler` 和 `Compilation` 对象上广播和监听事件，方法如下：
+
+```js
+/**
+* 广播事件
+* event-name 为事件名称，注意不要和现有的事件重名
+*/
+compiler.apply('event-name',params);
+compilation.apply('event-name',params);
+/**
+* 监听事件
+*/
+compiler.plugin('event-name',function(params){});
+compilation.plugin('event-name', function(params){});
+```
+
+Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
+ 
 tap 同步钩子
 ```js
 compiler.hooks.compile.tap('MyPlugin', params => {
@@ -413,21 +433,69 @@ compiler.hooks.run.tapPromise('MyPlugin', compiler => {
   })
 })
 ```
-Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
 
-Webpack 的事件流机制应用了观察者模式，和 Node.js 中的 EventEmitter 非常相似。Compiler 和 Compilation 都继承自 Tapable，可以直接在 Compiler 和 Compilation 对象上广播和监听事件，方法如下：
+##### Tabable用法
 ```js
-/**
-* 广播事件
-* event-name 为事件名称，注意不要和现有的事件重名
-*/
-compiler.apply('event-name',params);
-compilation.apply('event-name',params);
-/**
-* 监听事件
-*/
-compiler.plugin('event-name',function(params){});
-compilation.plugin('event-name', function(params){});
+const {
+	SyncHook,
+	SyncBailHook,
+	SyncWaterfallHook,
+	SyncLoopHook,
+	AsyncParallelHook,
+	AsyncParallelBailHook,
+	AsyncSeriesHook,
+	AsyncSeriesBailHook,
+	AsyncSeriesWaterfallHook
+ } = require("tapable");
+```
+![tapable](https://cdn.58fe.com/github/tapable.svg)
+想要深入了解tapable的文章可以看看这篇文章：
+可能是全网最全最新最细的 webpack-tapable-2.0 的源码分析:https://juejin.im/post/5c12046af265da612b1377aa
+##### tapable是如何将webapck/webpack插件关联的？
+**Compiler.js**
+```js
+const { AsyncSeriesHook ,SyncHook } = require("tapable");
+class Compiler {
+    constructor() {
+        this.hooks = {
+           run: new AsyncSeriesHook(["compiler"]), //异步钩子
+           compile: new SyncHook(["params"]),//同步钩子
+        };
+    },
+    run(){
+      //执行异步钩子
+      this.hooks.run.callAsync(this, err => {
+         this.compile(onCompiled);
+      });
+    },
+    compile(){
+      //执行同步钩子 并传参
+      this.hooks.compile.call(params);
+    }
+}
+module.exports = Compiler
+```
+**MyPlugin.js**
+```js
+const Compiler = require('./Compiler')
+const Compiler = require('./Compiler')
+
+class MyPlugin{
+    apply(conpiler){//接受 compiler参数
+        conpiler.hooks.break.tap("MyPlugin", () => console.log('插件执行成功...'));
+    }
+}
+
+//这里类似于webpack.config.js的plugins配置
+//向 plugins 属性传入 new 实例
+
+const myPlugin = new MyPlugin();
+
+const options = {
+    plugins: [myPlugin]
+}
+let compiler = new Compiler(options)
+compiler.run()
 ```
 
 ## 常用 API
@@ -541,9 +609,9 @@ compilation.warnings.push("warning");
 compilation.errors.push("error");
 ```
 
- 
 
-### webpack打包过程或者插件代码里该如何调试？
+## webpack打包过程或者插件代码里该如何调试？
+
 1. 在当前webpack项目工程文件夹下面，执行命令行：
 ```
 node --inspect-brk ./node_modules/webpack/bin/webpack.js --inline --progress
@@ -559,3 +627,7 @@ For help, see: https://nodejs.org/en/docs/inspector
 ![点击inspect](https://cdn.58fe.com/github/inspect.jpg)
 3. 然后点一下Chrome调试器里的“继续执行”，断点就提留在我们设置在插件里的debugger断点了。
 ![debugger](https://cdn.58fe.com/github/debugger.jpg)
+
+
+ 
+ 
