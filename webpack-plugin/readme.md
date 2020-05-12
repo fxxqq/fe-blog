@@ -369,7 +369,6 @@ https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 entry-option 初始化option
 run 开始编译
 make 从entry开始递归的分析依赖，对每个依赖模块进行build
-
 before-resolve - after-resolve 对其中一个模块位置进行解析
 
 build-module 开始构建 (build) 这个module,这里将使用文件对应的loader加载
