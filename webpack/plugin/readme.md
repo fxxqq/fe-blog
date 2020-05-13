@@ -1,4 +1,4 @@
-揭秘webpack plugin的工作原理
+揭秘webpack插件工作原理
 ## 前言
 
 通过插件我们可以扩展 webpack，在合适的时机通过 Webpack 提供的 API 改变输出结果，使 webpack 可以执行更广泛的任务，拥有更强的构建能力。
@@ -31,6 +31,51 @@ compilation.assets['new-file.js'] = {
 8. `done`：完成编译
 
 看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
+
+## 插件基本结构
+
+`plugins`是可以用自身原型方法`apply`来实例化的对象。`apply`只在安装插件被`Webpack compiler`执行一次。`apply`方法传入一个`webpck compiler`的引用，来访问编译器回调。
+
+#### 一个简单的插件结构：
+```js
+class HelloPlugin{
+  // 在构造函数中获取用户给该插件传入的配置
+  constructor(options){
+  }
+  // Webpack 会调用 HelloPlugin 实例的 apply 方法给插件实例传入 compiler 对象
+  apply(compiler) {
+    // 在emit阶段插入钩子函数，用于特定时机处理额外的逻辑；
+    compiler.hooks.emit.tap('HelloPlugin', (compilation) => {
+      // 在功能流程完成后可以调用 webpack 提供的回调函数；
+    });
+    // 如果事件是异步的，会带两个参数，第二个参数为回调函数，在插件处理完任务时需要调用回调函数通知webpack，才会进入下一个处理流程。
+    compiler.plugin('emit',function(compilation, callback) {
+      // 支持处理逻辑
+      // 处理完毕后执行 callback 以通知 Webpack 
+      // 如果不执行 callback，运行流程将会一直卡在这不往下执行 
+      callback();
+    });
+  }
+}
+
+module.exports = HelloPlugin;
+```
+
+安装插件时, 只需要将它的一个实例放到 Webpack config plugins 数组里面:
+```js
+const HelloPlugin = require('./hello-plugin.js');
+var webpackConfig = {
+  plugins: [
+    new HelloPlugin({options: true})
+  ]
+};
+```
+
+**先来分析一下webpack Plugin的工作原理**
+1. 读取配置的过程中会先执行 `new HelloPlugin(options)` 初始化一个 `HelloPlugin` 获得其实例。
+2. 初始化 `compiler` 对象后调用 `HelloPlugin.apply(compiler)` 给插件实例传入 `compiler` 对象。
+3. 插件实例在获取到 `compiler` 对象后，就可以通过` compiler.plugin(事件名称, 回调函数)` 监听到 Webpack 广播出来的事件。
+并且可以通过 `compiler` 对象去操作 `Webpack`。
 
 ## 理解事件流机制 Tabable
 webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
@@ -99,6 +144,7 @@ const {
 **Compiler.js**
 ```js
 const { AsyncSeriesHook ,SyncHook } = require("tapable");
+//创建类
 class Compiler {
     constructor() {
         this.hooks = {
@@ -119,13 +165,19 @@ class Compiler {
 }
 module.exports = Compiler
 ```
+
 **MyPlugin.js**
 ```js
 const Compiler = require('./Compiler')
 
 class MyPlugin{
-    apply(conpiler){//接受 compiler参数
-        conpiler.hooks.break.tap("MyPlugin", () => console.log('插件执行成功...'));
+    apply(compiler){//接受 compiler参数
+        compiler.hooks.run.tap("MyPlugin", () => console.log('开始编译...'));
+        compiler.hooks.kzAsyncHook.tapAsync('MyPlugin', (name, age) => {
+          setTimeout(() => {
+            console.log('编译中...')
+          }, 1000)
+        });
     }
 }
 
@@ -143,53 +195,7 @@ compiler.run()
 
 想要深入了解tapable的文章可以看看这篇文章：
 
-可能是全网最全最新最细的 webpack-tapable-2.0 的源码分析:https://juejin.im/post/5c12046af265da612b1377aa
-
-
-## 插件基本结构
-
-`plugins`是可以用自身原型方法`apply`来实例化的对象。`apply`只在安装插件被`Webpack compiler`执行一次。`apply`方法传入一个`webpck compiler`的引用，来访问编译器回调。
-
-#### 一个简单的插件结构：
-```js
-class HelloPlugin{
-  // 在构造函数中获取用户给该插件传入的配置
-  constructor(options){
-  }
-  // Webpack 会调用 HelloPlugin 实例的 apply 方法给插件实例传入 compiler 对象
-  apply(compiler) {
-    // 在emit阶段插入钩子函数，用于特定时机处理额外的逻辑；
-    compiler.hooks.emit.tap('HelloPlugin', (compilation) => {
-      // 在功能流程完成后可以调用 webpack 提供的回调函数；
-    });
-    // 如果事件是异步的，会带两个参数，第二个参数为回调函数，在插件处理完任务时需要调用回调函数通知webpack，才会进入下一个处理流程。
-    compiler.plugin('emit',function(compilation, callback) {
-      // 支持处理逻辑
-      // 处理完毕后执行 callback 以通知 Webpack 
-      // 如果不执行 callback，运行流程将会一直卡在这不往下执行 
-      callback();
-    });
-  }
-}
-
-module.exports = HelloPlugin;
-```
-
-安装插件时, 只需要将它的一个实例放到 Webpack config plugins 数组里面:
-```js
-const HelloPlugin = require('./hello-plugin.js');
-var webpackConfig = {
-  plugins: [
-    new HelloPlugin({options: true})
-  ]
-};
-```
-
-**先来分析一下webpack Plugin的工作原理**
-1. 读取配置的过程中会先执行 `new HelloPlugin(options)` 初始化一个 `HelloPlugin` 获得其实例。
-2. 初始化 `compiler` 对象后调用 `HelloPlugin.apply(compiler)` 给插件实例传入 `compiler` 对象。
-3. 插件实例在获取到 `compiler` 对象后，就可以通过` compiler.plugin(事件名称, 回调函数)` 监听到 Webpack 广播出来的事件。
-并且可以通过 `compiler` 对象去操作 `Webpack`。
+webpack4核心模块tapable源码解析:https://www.cnblogs.com/tugenhua0707/p/11317557.html
 
 ## 理解Compiler（负责编译）
 
