@@ -3,7 +3,7 @@
 
 ##### webpack系列
 1. <a href="https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/readme.md" target="_blank">常见loader源码简析，以及动手实现一个md2html-loader</a>
-2. [手写实现webpack-plugin]
+2. <a href="https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/readme.md" target="_blank">webpack插件工作原理剖析</a>
 3. [webpack原理]
 
 ##### react系列
