@@ -140,7 +140,7 @@ module.exports = function(content) {
 };
 ```
 **md通过正则切割的方法转成抽象语树**
-![md2ast](https://cdn.6fed.com/github/webpack/loader/md2ast.png)
+![md2ast](https://cdn.6fed.com/github/webpack/loader/md2ast.jpg)
 
 ```js
 const md = require('markdown-ast');//md通过正则匹配的方法把buffer转抽象语法树
