@@ -196,7 +196,7 @@ class MdParser {
 	}
 }
 ```
-[完整的代码参考这里](https://github.com/6fedcom/fe-blog/blob/master/webpack-loader/loaders/md-loader.js)
+[完整的代码参考这里](https://github.com/6fedcom/fe-blog/blob/master/webpack/loader/loaders/md-loader.js)
 
 **ast抽象语法数转成html字符串**
 ![md2html](https://cdn.6fed.com/github/webpack/loader/md2html.png)
@@ -422,6 +422,9 @@ import style0 from "./App.vue?vue&type=style&index=0&lang=scss&scope=true&"
 会将传入的`scopeId`追加到每个标签的上，最后作为vnode的配置属性传递给`createElemenet`方法，
 在render函数调用并渲染页面时，会将`scopeId`属性作为原始属性渲染到页面上
 4. 在`stylePostLoader`中，通过PostCSS解析style标签内容
+
+### 文中涉及的demo源码
+[点击github仓库](https://github.com/6fedcom/fe-blog/tree/master/webpack/loader)
 
 ### 参考文献
 1. [webpack官网loader api](https://www.webpackjs.com/api/loaders/)
