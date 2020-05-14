@@ -1,12 +1,11 @@
-揭秘webpack插件工作原理
+揭秘webpack插件工作流程和原理
 ## 前言
 
-通过插件我们可以扩展 webpack，在合适的时机通过 Webpack 提供的 API 改变输出结果，使 webpack 可以执行更广泛的任务，拥有更强的构建能力。
-本文将尝试探索 webpack plugin，揭秘它的工作原理。
-需要你对webpack底层和构建流程的一些东西有一定的了解。
+通过插件我们可以扩展`webpack`，在合适的时机通过`Webpack`提供的 API 改变输出结果，使`webpack`可以执行更广泛的任务，拥有更强的构建能力。
+本文将尝试探索 `webpack` 插件的工作流程，进而去揭秘它的工作原理。同时需要你对`webpack`底层和构建流程的一些东西有一定的了解。
 
 ## webapck构建流程
-在编写插件之前，还需要了解一下Webpack的构建流程，以便在合适的时机插入合适的插件逻辑。
+在编写插件之前，还需要了解一下`Webpack`的构建流程，以便在合适的时机插入合适的插件逻辑。
 Webpack的基本构建流程如下：
 1. 校验配置文件 ：读取命令行传入或者`webpack.config.js`文件，初始化本次构建的配置参数
 2. 生成`Compiler`对象：执行配置文件中的插件实例化语句`new MyWebpackPlugin()`，为`webpack`事件流挂上自定义`hooks`
@@ -14,8 +13,7 @@ Webpack的基本构建流程如下：
 4. `run/watch`：如果运行在`watch`模式则执行`watch`方法，否则执行`run`方法
 5. `compilation`：创建`Compilation`对象回调`compilation`相关钩子，依次进入每一个入口文件(`entry`)，使用loader对文件进行编译。通过`compilation`我可以可以读取到`module`的`resource`（资源路径）、`loaders`（使用的loader）等信息。再将编译好的文件内容使用`acorn`解析生成AST静态语法树。然后递归、重复的执行这个过程，
 所有模块和和依赖分析完成后，执行 `compilation` 的 `seal` 方法对每个 chunk 进行整理、优化、封装`__webpack_require__`来模拟模块化操作.
-
-6. emit：所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的`compilation.assets `上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
+6. `emit`：所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的`compilation.assets `上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
 ```js
 // 修改或添加资源
 compilation.assets['new-file.js'] = {
@@ -61,7 +59,7 @@ class HelloPlugin{
 module.exports = HelloPlugin;
 ```
 
-安装插件时, 只需要将它的一个实例放到 Webpack config plugins 数组里面:
+安装插件时, 只需要将它的一个实例放到` Webpack config plugins` 数组里面:
 ```js
 const HelloPlugin = require('./hello-plugin.js');
 var webpackConfig = {
@@ -78,11 +76,11 @@ var webpackConfig = {
 并且可以通过 `compiler` 对象去操作 `Webpack`。
 
 ## 理解事件流机制 Tabable
-webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
+`webpack`本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
 
-Webpack 的 Tapable 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
+`Webpack` 的 `Tapable` 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
 
-Tapable也是一个小型的 library，是Webpack的一个核心工具。类似于node中的events库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
+Tapable也是一个小型的 library，是`Webpack`的一个核心工具。类似于`node`中的`events`库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
 
 webpack中最核心的负责编译的`Compiler`和负责创建bundles的`Compilation`都是Tapable的实例，可以直接在 `Compiler` 和 `Compilation` 对象上广播和监听事件，方法如下：
 
@@ -137,7 +135,7 @@ const {
 	AsyncSeriesWaterfallHook
  } = require("tapable");
 ```
-![tapable](https://cdn.58fe.com/github/tapable.svg)
+![tapable](https://cdn.6fed.com/github/webpack/plugin/tapable.svg)
 
 ##### tapable是如何将webapck/webpack插件关联的？
 
@@ -199,14 +197,14 @@ webpack4核心模块tapable源码解析:https://www.cnblogs.com/tugenhua0707/p/1
 
 ## 理解Compiler（负责编译）
 
-开发插件首先要理解compiler 和 compilation 对象，理解他们的是扩展Webpack重要的一步。
+开发插件首先要知道`compiler `和 `compilation` 对象是做什么的 
  
-Compiler 对象包含了当前运行Webpack的配置，包括entry、output、loaders等配置，这个对象在启动Webpack时被实例化，而且是全局唯一的。Plugin可以通过该对象获取到Webpack的配置信息进行处理。
+`Compiler` 对象包含了当前运行`Webpack`的配置，包括`entry、output、loaders`等配置，这个对象在启动`Webpack`时被实例化，而且是全局唯一的。`Plugin`可以通过该对象获取到Webpack的配置信息进行处理。
 
-如果看完这段话，你还是没理解compiler是做啥的，不要怕，接着看。
-运行`npm run build`，把compiler的全部信息输出到控制台上`console.log(Compiler)`。
+如果看完这段话，你还是没理解`compiler`是做啥的，不要怕，接着看。
+运行`npm run build`，把`compiler`的全部信息输出到控制台上`console.log(Compiler)`。
 
-![compiler](https://cdn.58fe.com/github/Compiler.jpg)
+![compiler](https://cdn.6fed.com/github/webpack/plugin/Compiler.jpg)
 ```js
 // 为了能更直观的让大家看清楚compiler的结构，里面的大量代码使用省略号（...）代替。
 Compiler {
@@ -473,7 +471,7 @@ class Compiler {
 }
 ```
 
-apply方法中插入钩子的一般形式如下：
+`apply`方法中插入钩子的一般形式如下：
 ```js
 // compiler提供了compiler.hooks，可以根据这些不同的时刻去让插件做不同的事情。
 compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
@@ -483,15 +481,16 @@ compiler.run(callback)
 ```
 ## 理解Compilation 
 
-compilation 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。compilation 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
+`compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 `compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
 简单来说,`Compilation`的职责就是构建模块和Chunk，并利用插件优化构建过程。
 
 和 `Compiler` 用法相同，钩子类型不同，也可以在某些钩子上访问 `tapAsync` 和 `tapPromise。`
 
 控制台输出`console.log(compilation) `
-![compilation](https://cdn.58fe.com/github/compilation.jpg)
-通过 Compilation 也能读取到 Compiler 对象。
+![compilation](https://cdn.6fed.com/github/webpack/plugin/compilation.jpg)
+
+通过 `Compilation` 也能读取到 `Compiler` 对象。
 源码2000多行，看不动了- -，有兴趣的可以自己看看。
 https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
@@ -513,7 +512,7 @@ https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
 
 ## 常用 API
-插件可以用来修改输出文件、增加输出文件、甚至可以提升 Webpack 性能、等等，总之插件通过调用 Webpack 提供的 API 能完成很多事情。 由于 Webpack 提供的 API 非常多，有很多 API 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
+插件可以用来修改输出文件、增加输出文件、甚至可以提升 `Webpack` 性能、等等，总之插件通过调用` Webpack` 提供的 `API` 能完成很多事情。 由于 `Webpack `提供的 `API` 非常多，有很多 `API` 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
 
 #### 读取输出资源、代码块、模块及其依赖
 
@@ -556,9 +555,9 @@ class Plugin {
 ```
 
 #### 2、监听文件变化
-Webpack 会从配置的入口模块出发，依次找出所有的依赖模块，当入口模块或者其依赖的模块发生变化时， 就会触发一次新的 Compilation。
+`Webpack` 会从配置的入口模块出发，依次找出所有的依赖模块，当入口模块或者其依赖的模块发生变化时， 就会触发一次新的 `Compilation`。
 
-在开发插件时经常需要知道是哪个文件发生变化导致了新的 Compilation，为此可以使用如下代码：
+在开发插件时经常需要知道是哪个文件发生变化导致了新的 `Compilation`，为此可以使用如下代码：
 ```js
 // 当依赖的文件发生变化时会触发 watch-run 事件
 compiler.hooks.watchRun.tap('MyPlugin', (watching, callback) => {
@@ -572,7 +571,7 @@ compiler.hooks.watchRun.tap('MyPlugin', (watching, callback) => {
 });
 ```
 
-默认情况下 Webpack 只会监视入口和其依赖的模块是否发生变化，在有些情况下项目可能需要引入新的文件，例如引入一个 HTML 文件。 由于 JavaScript 文件不会去导入 HTML 文件，Webpack 就不会监听 HTML 文件的变化，编辑 HTML 文件时就不会重新触发新的 Compilation。 为了监听 HTML 文件的变化，我们需要把 HTML 文件加入到依赖列表中，为此可以使用如下代码：
+默认情况下 `Webpack` 只会监视入口和其依赖的模块是否发生变化，在有些情况下项目可能需要引入新的文件，例如引入一个 `HTML` 文件。 由于 `JavaScript` 文件不会去导入 `HTML` 文件，`Webpack` 就不会监听 `HTML` 文件的变化，编辑 `HTML` 文件时就不会重新触发新的 `Compilation`。 为了监听 `HTML` 文件的变化，我们需要把 `HTML` 文件加入到依赖列表中，为此可以使用如下代码：
 ```js
 compiler.hooks.afterCompile.tap('MyPlugin', (compilation, callback) => {
   // 把 HTML 文件添加到文件依赖列表，好让 Webpack 去监听 HTML 模块文件，在 HTML 模版文件发生变化时重新启动一次编译
@@ -583,11 +582,11 @@ compiler.hooks.afterCompile.tap('MyPlugin', (compilation, callback) => {
 
 #### 3、修改输出资源
 
-有些场景下插件需要修改、增加、删除输出的资源，要做到这点需要监听 emit 事件，因为发生 emit 事件时所有模块的转换和代码块对应的文件已经生成好， 需要输出的资源即将输出，因此emit事件是修改 Webpack 输出资源的最后时机。
+有些场景下插件需要修改、增加、删除输出的资源，要做到这点需要监听 `emit` 事件，因为发生 `emit` 事件时所有模块的转换和代码块对应的文件已经生成好， 需要输出的资源即将输出，因此emit事件是修改 Webpack 输出资源的最后时机。
 
-所有需要输出的资源会存放在 compilation.assets 中，compilation.assets 是一个键值对，键为需要输出的文件名称，值为文件对应的内容。
+所有需要输出的资源会存放在 `compilation.assets` 中，`compilation.assets` 是一个键值对，键为需要输出的文件名称，值为文件对应的内容。
 
-设置 compilation.assets 的代码如下：
+设置 `compilation.assets` 的代码如下：
 
 ```js
 // 设置名称为 fileName 的输出资源
@@ -617,16 +616,20 @@ function hasExtractTextPlugin(compiler) {
 ```
 #### 管理 Warnings 和 Errors
 
-做一个实验，如果你在 apply 函数内插入 throw new Error("Message")，会发生什么，终端会打印出 Unhandled rejection Error: Message。然后 webpack 中断执行。
-为了不影响 webpack 的执行，要在编译期间向用户发出警告或错误消息，则应使用 compilation.warnings 和 compilation.errors。
+做一个实验，如果你在 `apply `函数内插入 `throw new Error("Message")`，会发生什么，终端会打印出 `Unhandled rejection Error: Message`。然后 webpack 中断执行。
+为了不影响 `webpack` 的执行，要在编译期间向用户发出警告或错误消息，则应使用 compilation.warnings 和 compilation.errors。
 ```js
 compilation.warnings.push("warning");
 compilation.errors.push("error");
 ```
+## 文章中的案例demo代码展示
+
+[https://github.com/6fedcom/fe-blog/tree/master/webpack/plugin](https://github.com/6fedcom/fe-blog/tree/master/webpack/plugin)
 
 ## webpack打包过程或者插件代码里该如何调试？
 
 1. 在当前webpack项目工程文件夹下面，执行命令行：
+
 ```
 node --inspect-brk ./node_modules/webpack/bin/webpack.js --inline --progress
 ```
@@ -637,11 +640,11 @@ node --inspect-brk ./node_modules/webpack/bin/webpack.js --inline --progress
 Debugger listening on ws://127.0.0.1:9229/1018c03f-7473-4d60-b62c-949a6404c81d
 For help, see: https://nodejs.org/en/docs/inspector
 ```
-2. 谷歌浏览器输入chrome://inspect/#devices
-![点击inspect](https://cdn.58fe.com/github/inspect.jpg)
+
+2. 谷歌浏览器输入 chrome://inspect/#devices
+
+![点击inspect](https://cdn.6fed.com/github/webpack/plugin/inspect.jpg)
+
 3. 然后点一下Chrome调试器里的“继续执行”，断点就提留在我们设置在插件里的debugger断点了。
-![debugger](https://cdn.58fe.com/github/debugger.jpg)
 
-
- 
- 
+![debugger](https://cdn.6fed.com/github/webpack/plugin/debugger.jpg)
