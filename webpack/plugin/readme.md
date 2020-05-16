@@ -4,31 +4,11 @@
 通过插件我们可以扩展`webpack`，在合适的时机通过`Webpack`提供的 API 改变输出结果，使`webpack`可以执行更广泛的任务，拥有更强的构建能力。
 本文将尝试探索 `webpack` 插件的工作流程，进而去揭秘它的工作原理。同时需要你对`webpack`底层和构建流程的一些东西有一定的了解。
 
-## webapck构建流程
-在编写插件之前，还需要了解一下`Webpack`的构建流程，以便在合适的时机插入合适的插件逻辑。
-Webpack的基本构建流程如下：
-1. 校验配置文件 ：读取命令行传入或者`webpack.config.js`文件，初始化本次构建的配置参数
-2. 生成`Compiler`对象：执行配置文件中的插件实例化语句`new MyWebpackPlugin()`，为`webpack`事件流挂上自定义`hooks`
-3. 进入`entryOption`阶段：（`webpack`开始读取配置的`Entries`，递归遍历所有的入口文件）
-4. `run/watch`：如果运行在`watch`模式则执行`watch`方法，否则执行`run`方法
-5. `compilation`：创建`Compilation`对象回调`compilation`相关钩子，依次进入每一个入口文件(`entry`)，使用loader对文件进行编译。通过`compilation`我可以可以读取到`module`的`resource`（资源路径）、`loaders`（使用的loader）等信息。再将编译好的文件内容使用`acorn`解析生成AST静态语法树。然后递归、重复的执行这个过程，
-所有模块和和依赖分析完成后，执行 `compilation` 的 `seal` 方法对每个 chunk 进行整理、优化、封装`__webpack_require__`来模拟模块化操作.
-6. `emit`：所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的`compilation.assets `上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
-```js
-// 修改或添加资源
-compilation.assets['new-file.js'] = {
-  source() {
-    return 'var a=1';
-  },
-  size() {
-    return this.source().length;
-  }
-};
-```
-7. `afterEmit`：文件已经写入磁盘完成
-8. `done`：完成编译
-
-看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
+想要了解 webpack 的插件的机制，需要弄明白以下几个知识点：
+1. 一个简单的插件的构成
+2. `webpack `构建流程
+3. `Tapable`是如何把各个插件串联到一起的
+4. `compiler`以及`compilation`对象的使用以及它们对应的事件钩子。
 
 ## 插件基本结构
 
@@ -70,17 +50,50 @@ var webpackConfig = {
 ```
 
 **先来分析一下webpack Plugin的工作原理**
+
 1. 读取配置的过程中会先执行 `new HelloPlugin(options)` 初始化一个 `HelloPlugin` 获得其实例。
 2. 初始化 `compiler` 对象后调用 `HelloPlugin.apply(compiler)` 给插件实例传入 `compiler` 对象。
 3. 插件实例在获取到 `compiler` 对象后，就可以通过` compiler.plugin(事件名称, 回调函数)` 监听到 Webpack 广播出来的事件。
 并且可以通过 `compiler` 对象去操作 `Webpack`。
 
+## webapck 构建流程
+
+在编写插件之前，还需要了解一下`Webpack`的构建流程，以便在合适的时机插入合适的插件逻辑。
+
+Webpack的基本构建流程如下：
+1. 校验配置文件 ：读取命令行传入或者`webpack.config.js`文件，初始化本次构建的配置参数
+2. 生成`Compiler`对象：执行配置文件中的插件实例化语句`new MyWebpackPlugin()`，为`webpack`事件流挂上自定义`hooks`
+3. 进入`entryOption`阶段：（`webpack`开始读取配置的`Entries`，递归遍历所有的入口文件）
+4. `run/watch`：如果运行在`watch`模式则执行`watch`方法，否则执行`run`方法
+5. `compilation`：创建`Compilation`对象回调`compilation`相关钩子，依次进入每一个入口文件(`entry`)，使用loader对文件进行编译。通过`compilation`我可以可以读取到`module`的`resource`（资源路径）、`loaders`（使用的loader）等信息。再将编译好的文件内容使用`acorn`解析生成AST静态语法树。然后递归、重复的执行这个过程，
+所有模块和和依赖分析完成后，执行 `compilation` 的 `seal` 方法对每个 chunk 进行整理、优化、封装`__webpack_require__`来模拟模块化操作.
+6. `emit`：所有文件的编译及转化都已经完成，包含了最终输出的资源，我们可以在传入事件回调的`compilation.assets `上拿到所需数据，其中包括即将输出的资源、代码块Chunk等等信息。
+```js
+// 修改或添加资源
+compilation.assets['new-file.js'] = {
+  source() {
+    return 'var a=1';
+  },
+  size() {
+    return this.source().length;
+  }
+};
+```
+7. `afterEmit`：文件已经写入磁盘完成
+8. `done`：完成编译
+**奉上一张滴滴云博客的 WebPack 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆**
+[WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
+原图出自：https://blog.didiyun.com/index.php/2019/03/01/webpack/
+
+看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
+
 ## 理解事件流机制 Tabable
+
 `webpack`本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
 
 `Webpack` 的 `Tapable` 事件流机制保证了插件的有序性，将各个插件串联起来， Webpack 在运行过程中会广播事件，插件只需要监听它所关心的事件，就能加入到这条webapck机制中，去改变webapck的运作，使得整个系统扩展性良好。
 
-Tapable也是一个小型的 library，是`Webpack`的一个核心工具。类似于`node`中的`events`库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
+`Tapable`也是一个小型的 library，是`Webpack`的一个核心工具。类似于`node`中的`events`库，核心原理就是一个订阅发布模式。作用是提供类似的插件接口。
 
 webpack中最核心的负责编译的`Compiler`和负责创建bundles的`Compilation`都是Tapable的实例，可以直接在 `Compiler` 和 `Compilation` 对象上广播和监听事件，方法如下：
 
@@ -98,16 +111,16 @@ compiler.plugin('event-name',function(params){});
 compilation.plugin('event-name', function(params){});
 ```
 
-Tapable类暴露了tap、tapAsync和tapPromise方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
+`Tapable`类暴露了`tap`、`tapAsync`和`tapPromise`方法，可以根据钩子的同步/异步方式来选择一个函数注入逻辑。
  
-tap 同步钩子
+`tap` 同步钩子
 ```js
 compiler.hooks.compile.tap('MyPlugin', params => {
   console.log('以同步方式触及 compile 钩子。')
 })
 ```
-tapAsync 异步钩子，通过callback回调告诉Webpack异步执行完毕
-tapPromise 异步钩子，返回一个Promise告诉Webpack异步执行完毕
+`tapAsync` 异步钩子，通过`callback`回调告诉`Webpack`异步执行完毕
+`tapPromise` 异步钩子，返回一个`Promise`告诉`Webpack`异步执行完毕
 ```js
 compiler.hooks.run.tapAsync('MyPlugin', (compiler, callback) => {
   console.log('以异步方式触及 run 钩子。')
@@ -135,7 +148,7 @@ const {
 	AsyncSeriesWaterfallHook
  } = require("tapable");
 ```
-![tapable](https://cdn.6fed.com/github/webpack/plugin/tapable.svg)
+![tapable](https://cdn.6fed.com/github/webpack/plugin/tapable.jpg)
 
 ##### tapable是如何将webapck/webpack插件关联的？
 
@@ -191,9 +204,10 @@ let compiler = new Compiler(options)
 compiler.run()
 ```
 
-想要深入了解tapable的文章可以看看这篇文章：
+想要深入了解`tapable`的文章可以看看这篇文章：
 
-webpack4核心模块tapable源码解析:https://www.cnblogs.com/tugenhua0707/p/11317557.html
+`webpack4`核心模块`tapable`源码解析:
+https://www.cnblogs.com/tugenhua0707/p/11317557.html
 
 ## 理解Compiler（负责编译）
 
@@ -479,9 +493,9 @@ compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 });
 compiler.run(callback)
 ```
-## 理解Compilation 
+## 理解Compilation
 
-`compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 `compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
+`Compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 `Compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`Compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
 简单来说,`Compilation`的职责就是构建模块和Chunk，并利用插件优化构建过程。
 
@@ -491,27 +505,28 @@ compiler.run(callback)
 ![compilation](https://cdn.6fed.com/github/webpack/plugin/compilation.jpg)
 
 通过 `Compilation` 也能读取到 `Compiler` 对象。
+
 源码2000多行，看不动了- -，有兴趣的可以自己看看。
 https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
 #### 介绍几个常用的Compilation Hooks
-| 钩子                 | 类型            | 什么时候调用                                                                                                                                                                                                  |
-|----------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| buildModule          | SyncHook        | 在模块开始编译之前触发，可以用于修改模块                                                                                                                                                                      |
-| succeedModule        | SyncHook        | 当一个模块被成功编译，会执行这个钩子                                                                                                                                                                          |
-| finishModules        | AsyncSeriesHook | 当所有模块都编译成功后被调用                                                                                                                                                                                  |
-| seal                 | SyncHook        | 当一次compilation停止接收新模块时触发                                                                                                                                                                         |
-| optimizeDependencies | SyncBailHook    | 在依赖优化的开始执行                                                                                                                                                                                          |
-| optimize             | SyncHook        | 在优化阶段的开始执行                                                                                                                                                                                          |
-| optimizeModules      | SyncBailHook    | 在模块优化阶段开始时执行，插件可以在这个钩子里执行对模块的优化，回调参数：modules                                                                                                                             |
-| optimizeChunks       | SyncBailHook    | 在代码块优化阶段开始时执行，插件可以在这个钩子里执行对代码块的优化，回调参数：chunks                                                                                                                          |
-| optimizeChunkAssets  | AsyncSeriesHook | 优化任何代码块资源，这些资源存放在 compilation.assets 上。一个 chunk 有一个 files 属性，它指向由一个chunk创建的所有文件。任何额外的 chunk 资源都存放在 compilation.additionalChunkAssets 上。回调参数：chunks |
-| optimizeAssets       | AsyncSeriesHook | 优化所有存放在 compilation.assets 的所有资源。回调参数：assets                                                                                                                                                |
+| 钩子                 | 类型            | 什么时候调用                                                                                                                                                                                                     |
+|----------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| buildModule          | SyncHook        | 在模块开始编译之前触发，可以用于修改模块                                                                                                                                                                         |
+| succeedModule        | SyncHook        | 当一个模块被成功编译，会执行这个钩子                                                                                                                                                                             |
+| finishModules        | AsyncSeriesHook | 当所有模块都编译成功后被调用                                                                                                                                                                                     |
+| seal                 | SyncHook        | 当一次compilation停止接收新模块时触发                                                                                                                                                                            |
+| optimizeDependencies | SyncBailHook    | 在依赖优化的开始执行                                                                                                                                                                                             |
+| optimize             | SyncHook        | 在优化阶段的开始执行                                                                                                                                                                                             |
+| optimizeModules      | SyncBailHook    | 在模块优化阶段开始时执行，插件可以在这个钩子里执行对模块的优化，回调参数：`modules`                                                                                                                              |
+| optimizeChunks       | SyncBailHook    | 在代码块优化阶段开始时执行，插件可以在这个钩子里执行对代码块的优化，回调参数：`chunks`                                                                                                                           |
+| optimizeChunkAssets  | AsyncSeriesHook | 优化任何代码块资源，这些资源存放在`compilation.assets` 上。一个 chunk 有一个 files 属性，它指向由一个chunk创建的所有文件。任何额外的 chunk 资源都存放在 `compilation.additionalChunkAssets` 上。回调参数：chunks |
+| optimizeAssets       | AsyncSeriesHook | 优化所有存放在 `compilation.assets` 的所有资源。回调参数：`assets `                                                                                                                                              |
 ## Compiler 和 Compilation 的区别
 `Compiler` 代表了整个 `Webpack` 从启动到关闭的生命周期，而 `Compilation` 只是代表了一次新的编译，只要文件有改动，`compilation`就会被重新创建。
 
-
 ## 常用 API
+
 插件可以用来修改输出文件、增加输出文件、甚至可以提升 `Webpack` 性能、等等，总之插件通过调用` Webpack` 提供的 `API` 能完成很多事情。 由于 `Webpack `提供的 `API` 非常多，有很多 `API` 很少用的上，又加上篇幅有限，下面来介绍一些常用的 API。
 
 #### 读取输出资源、代码块、模块及其依赖
@@ -614,6 +629,8 @@ function hasExtractTextPlugin(compiler) {
   return plugins.find(plugin=>plugin.__proto__.constructor === ExtractTextPlugin) != null;
 }
 ```
+**以上4种方法来源于文章：**
+[Webpack学习－Plugin] :http://wushaobin.top/2019/03/15/webpackPlugin/
 #### 管理 Warnings 和 Errors
 
 做一个实验，如果你在 `apply `函数内插入 `throw new Error("Message")`，会发生什么，终端会打印出 `Unhandled rejection Error: Message`。然后 webpack 中断执行。
