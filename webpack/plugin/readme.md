@@ -63,7 +63,7 @@ var webpackConfig = {
 Webpack的基本构建流程如下：
 1. 校验配置文件 ：读取命令行传入或者`webpack.config.js`文件，初始化本次构建的配置参数
 2. 生成`Compiler`对象：执行配置文件中的插件实例化语句`new MyWebpackPlugin()`，为`webpack`事件流挂上自定义`hooks`
-3. 进入`entryOption`阶段：（`webpack`开始读取配置的`Entries`，递归遍历所有的入口文件）
+3. 进入`entryOption`阶段：`webpack`开始读取配置的`Entries`，递归遍历所有的入口文件
 4. `run/watch`：如果运行在`watch`模式则执行`watch`方法，否则执行`run`方法
 5. `compilation`：创建`Compilation`对象回调`compilation`相关钩子，依次进入每一个入口文件(`entry`)，使用loader对文件进行编译。通过`compilation`我可以可以读取到`module`的`resource`（资源路径）、`loaders`（使用的loader）等信息。再将编译好的文件内容使用`acorn`解析生成AST静态语法树。然后递归、重复的执行这个过程，
 所有模块和和依赖分析完成后，执行 `compilation` 的 `seal` 方法对每个 chunk 进行整理、优化、封装`__webpack_require__`来模拟模块化操作.
