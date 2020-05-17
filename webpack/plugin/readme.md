@@ -150,6 +150,32 @@ const {
 ```
 ![tapable](https://cdn.6fed.com/github/webpack/plugin/tapable.jpg)
 
+##### 简单实现一个 SyncHook
+
+```js
+class Hook{
+    constructor(args){
+        this.taps = []
+        this.interceptors = [] // 这个放在后面用
+        this._args = args 
+    }
+    tap(name,fn){
+        this.taps.push({name,fn})
+    }
+}
+class SyncHook extends Hook{
+    call(name,fn){
+        try {
+            this.taps.forEach(tap => tap.fn(name))
+            fn(null,name)
+        } catch (error) {
+            fn(error)
+        }
+
+    }
+}
+```
+
 ##### tapable是如何将webapck/webpack插件关联的？
 
 **Compiler.js**
