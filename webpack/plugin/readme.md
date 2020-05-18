@@ -519,7 +519,7 @@ compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 });
 compiler.run(callback)
 ```
-## 理解Compilation
+## 理解Compilation（负责创建bundles）
 
 `Compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 `Compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`Compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
