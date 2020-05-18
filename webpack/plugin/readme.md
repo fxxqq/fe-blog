@@ -81,7 +81,9 @@ compilation.assets['new-file.js'] = {
 ```
 7. `afterEmit`：文件已经写入磁盘完成
 8. `done`：完成编译
-**奉上一张滴滴云博客的 WebPack 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆**
+
+奉上一张滴滴云博客的`WebPack` 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆
+
 [WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
 原图出自：https://blog.didiyun.com/index.php/2019/03/01/webpack/
 
@@ -150,7 +152,7 @@ const {
 ```
 ![tapable](https://cdn.6fed.com/github/webpack/plugin/tapable.jpg)
 
-##### 简单实现一个 SyncHook
+#### 简单实现一个 SyncHook
 
 ```js
 class Hook{
@@ -176,7 +178,7 @@ class SyncHook extends Hook{
 }
 ```
 
-##### tapable是如何将webapck/webpack插件关联的？
+#### `tapable`是如何将`webapck/webpack`插件关联的？
 
 **Compiler.js**
 ```js
@@ -521,7 +523,7 @@ compiler.run(callback)
 ```
 ## 理解Compilation
 
-`Compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 `Compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`Compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
+`Compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 `compilation`，从而生成一组新的编译资源。一个 `Compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`Compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
 简单来说,`Compilation`的职责就是构建模块和Chunk，并利用插件优化构建过程。
 
@@ -536,18 +538,18 @@ compiler.run(callback)
 https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
 #### 介绍几个常用的Compilation Hooks
-| 钩子                 | 类型            | 什么时候调用                                                                                                                                                                                                     |
-|----------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| buildModule          | SyncHook        | 在模块开始编译之前触发，可以用于修改模块                                                                                                                                                                         |
-| succeedModule        | SyncHook        | 当一个模块被成功编译，会执行这个钩子                                                                                                                                                                             |
-| finishModules        | AsyncSeriesHook | 当所有模块都编译成功后被调用                                                                                                                                                                                     |
-| seal                 | SyncHook        | 当一次compilation停止接收新模块时触发                                                                                                                                                                            |
-| optimizeDependencies | SyncBailHook    | 在依赖优化的开始执行                                                                                                                                                                                             |
-| optimize             | SyncHook        | 在优化阶段的开始执行                                                                                                                                                                                             |
-| optimizeModules      | SyncBailHook    | 在模块优化阶段开始时执行，插件可以在这个钩子里执行对模块的优化，回调参数：`modules`                                                                                                                              |
-| optimizeChunks       | SyncBailHook    | 在代码块优化阶段开始时执行，插件可以在这个钩子里执行对代码块的优化，回调参数：`chunks`                                                                                                                           |
-| optimizeChunkAssets  | AsyncSeriesHook | 优化任何代码块资源，这些资源存放在`compilation.assets` 上。一个 chunk 有一个 files 属性，它指向由一个chunk创建的所有文件。任何额外的 chunk 资源都存放在 `compilation.additionalChunkAssets` 上。回调参数：chunks |
-| optimizeAssets       | AsyncSeriesHook | 优化所有存放在 `compilation.assets` 的所有资源。回调参数：`assets `                                                                                                                                              |
+| 钩子                 | 类型            | 什么时候调用                                                                                                                                                                                                       |
+|----------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| buildModule          | SyncHook        | 在模块开始编译之前触发，可以用于修改模块                                                                                                                                                                           |
+| succeedModule        | SyncHook        | 当一个模块被成功编译，会执行这个钩子                                                                                                                                                                               |
+| finishModules        | AsyncSeriesHook | 当所有模块都编译成功后被调用                                                                                                                                                                                       |
+| seal                 | SyncHook        | 当一次`compilation`停止接收新模块时触发                                                                                                                                                                            |
+| optimizeDependencies | SyncBailHook    | 在依赖优化的开始执行                                                                                                                                                                                               |
+| optimize             | SyncHook        | 在优化阶段的开始执行                                                                                                                                                                                               |
+| optimizeModules      | SyncBailHook    | 在模块优化阶段开始时执行，插件可以在这个钩子里执行对模块的优化，回调参数：`modules`                                                                                                                                |
+| optimizeChunks       | SyncBailHook    | 在代码块优化阶段开始时执行，插件可以在这个钩子里执行对代码块的优化，回调参数：`chunks`                                                                                                                             |
+| optimizeChunkAssets  | AsyncSeriesHook | 优化任何代码块资源，这些资源存放在`compilation.assets` 上。一个 chunk 有一个 files 属性，它指向由一个chunk创建的所有文件。任何额外的 chunk 资源都存放在 `compilation.additionalChunkAssets` 上。回调参数：`chunks` |
+| optimizeAssets       | AsyncSeriesHook | 优化所有存放在 `compilation.assets` 的所有资源。回调参数：`assets `                                                                                                                                                |
 ## Compiler 和 Compilation 的区别
 `Compiler` 代表了整个 `Webpack` 从启动到关闭的生命周期，而 `Compilation` 只是代表了一次新的编译，只要文件有改动，`compilation`就会被重新创建。
 
@@ -557,7 +559,7 @@ https://github.com/webpack/webpack/blob/master/lib/Compilation.js
 
 #### 读取输出资源、代码块、模块及其依赖
 
-有些插件可能需要读取 Webpack 的处理结果，例如输出资源、代码块、模块及其依赖，以便做下一步处理。
+有些插件可能需要读取 `Webpack` 的处理结果，例如输出资源、代码块、模块及其依赖，以便做下一步处理。
 在 emit 事件发生时，代表源文件的转换和组装已经完成，在这里可以读取到最终将输出的资源、代码块、模块及其依赖，并且可以修改输出资源的内容。
 插件代码如下：
 
@@ -595,7 +597,7 @@ class Plugin {
 
 ```
 
-#### 2、监听文件变化
+#### 监听文件变化
 `Webpack` 会从配置的入口模块出发，依次找出所有的依赖模块，当入口模块或者其依赖的模块发生变化时， 就会触发一次新的 `Compilation`。
 
 在开发插件时经常需要知道是哪个文件发生变化导致了新的 `Compilation`，为此可以使用如下代码：
@@ -621,7 +623,7 @@ compiler.hooks.afterCompile.tap('MyPlugin', (compilation, callback) => {
 });
 ```
 
-#### 3、修改输出资源
+#### 修改输出资源
 
 有些场景下插件需要修改、增加、删除输出的资源，要做到这点需要监听 `emit` 事件，因为发生 `emit` 事件时所有模块的转换和代码块对应的文件已经生成好， 需要输出的资源即将输出，因此emit事件是修改 Webpack 输出资源的最后时机。
 
@@ -655,8 +657,9 @@ function hasExtractTextPlugin(compiler) {
   return plugins.find(plugin=>plugin.__proto__.constructor === ExtractTextPlugin) != null;
 }
 ```
-**以上4种方法来源于文章：**
+以上4种方法来源于文章：
 [Webpack学习－Plugin] :http://wushaobin.top/2019/03/15/webpackPlugin/
+
 #### 管理 Warnings 和 Errors
 
 做一个实验，如果你在 `apply `函数内插入 `throw new Error("Message")`，会发生什么，终端会打印出 `Unhandled rejection Error: Message`。然后 webpack 中断执行。
