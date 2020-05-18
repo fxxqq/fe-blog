@@ -81,15 +81,14 @@ compilation.assets['new-file.js'] = {
 ```
 7. `afterEmit`：文件已经写入磁盘完成
 8. `done`：完成编译
+**奉上一张滴滴云博客的 WebPack 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆**
+![WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
 
-奉上一张滴滴云博客的`WebPack` 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆
-
-[WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
 原图出自：https://blog.didiyun.com/index.php/2019/03/01/webpack/
 
 看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
 
-## 理解事件流机制 Tabable
+## 理解事件流机制 tapable
 
 `webpack`本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
 
@@ -212,7 +211,7 @@ const Compiler = require('./Compiler')
 class MyPlugin{
     apply(compiler){//接受 compiler参数
         compiler.hooks.run.tap("MyPlugin", () => console.log('开始编译...'));
-        compiler.hooks.kzAsyncHook.tapAsync('MyPlugin', (name, age) => {
+        compiler.hooks.complier.tapAsync('MyPlugin', (name, age) => {
           setTimeout(() => {
             console.log('编译中...')
           }, 1000)
@@ -521,7 +520,7 @@ compiler.hooks.阶段.tap函数('插件名称', (阶段回调参数) => {
 });
 compiler.run(callback)
 ```
-## 理解Compilation
+## 理解Compilation（负责创建bundles）
 
 `Compilation`对象代表了一次资源版本构建。当运行 `webpack` 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 `compilation`，从而生成一组新的编译资源。一个 `Compilation` 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息，简单来讲就是把本次打包编译的内容存到内存里。`Compilation` 对象也提供了插件需要自定义功能的回调，以供插件做自定义处理时选择使用拓展。
 
