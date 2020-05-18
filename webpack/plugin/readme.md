@@ -82,12 +82,12 @@ compilation.assets['new-file.js'] = {
 7. `afterEmit`：文件已经写入磁盘完成
 8. `done`：完成编译
 **奉上一张滴滴云博客的 WebPack 编译流程图,不喜欢看文字讲解的可以看流程图理解记忆**
-[WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
+![WebPack 编译流程图](https://cdn.6fed.com/github/webpack/plugin/how_webpack_compile.jpg)
 原图出自：https://blog.didiyun.com/index.php/2019/03/01/webpack/
 
 看完之后，如果还是看不懂或者对缕不清webpack构建流程的话，建议通读一下全文，再回来看这段话，相信一定会对webpack构建流程有很更加深刻的理解。
 
-## 理解事件流机制 Tabable
+## 理解事件流机制 tapable
 
 `webpack`本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。
 
@@ -210,7 +210,7 @@ const Compiler = require('./Compiler')
 class MyPlugin{
     apply(compiler){//接受 compiler参数
         compiler.hooks.run.tap("MyPlugin", () => console.log('开始编译...'));
-        compiler.hooks.kzAsyncHook.tapAsync('MyPlugin', (name, age) => {
+        compiler.hooks.complier.tapAsync('MyPlugin', (name, age) => {
           setTimeout(() => {
             console.log('编译中...')
           }, 1000)
