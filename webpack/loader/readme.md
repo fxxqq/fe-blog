@@ -410,7 +410,9 @@ import script from "./App.vue?vue&type=script&lang=js&"
 export * from "./App.vue?vue&type=script&lang=js&"
 import style0 from "./App.vue?vue&type=style&index=0&lang=scss&scope=true&"
 ```
+
 **总结一下vue-loader的工作流程**
+
 1. 注册`VueLoaderPlugin`
 在插件中，会复制当前项目webpack配置中的rules项，当资源路径包含query.lang时通过resourceQuery匹配相同的rules并执行对应loader时
 插入一个公共的loader，并在pitch阶段根据query.type插入对应的自定义loader
