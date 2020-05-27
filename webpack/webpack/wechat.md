@@ -5,7 +5,7 @@ WebPack 如何控制事件执行流 | webpack系列之二Tapable
 https://mp.weixin.qq.com/s?__biz=MzU1ODEzNjI2NA==&mid=2247487174&amp;idx=3&amp;sn=6e0f9a17f3d8b182bc46fb064eaed141&source=41#wechat_redirect
 http://wushaobin.top/2019/02/12/webpackPrinciple/
 http://wushaobin.top/2019/02/17/webpackPrinciple1/
- 
+https://github.com/lihongxun945/diving-into-webpack
  
 webpack源码执行过程分析，loaders+plugin
  https://juejin.im/post/5cec9060f265da1ba431cd55
