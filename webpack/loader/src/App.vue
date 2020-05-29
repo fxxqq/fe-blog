@@ -13,8 +13,8 @@ export default {
 };
 </script>
 <style lang="scss" scope>
-.text {
-  color: red;
+.border-1px {
+  border: 1px solid red;
 }
 </style>
  

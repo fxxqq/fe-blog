@@ -36,6 +36,7 @@ module.exports = {
         test: /\.scss$/,
         exclude: /node_modules/,
         use: [
+          path.resolve(__dirname, "./loaders/css1px-loader.js"),
           // 'style-loader',
           'css-loader',
           'postcss-loader',

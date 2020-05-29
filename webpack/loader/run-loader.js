@@ -8,8 +8,10 @@ const VueLoader = require('vue-loader')
 let options = ['App.vue', VueLoader]
 
 runLoaders({
-    resource: `./src/${options[0]}`,
-    loaders: [path.resolve(__dirname, options[1])],
+    // resource: `./src/${options[0]}`,
+    resource: `./src/index.css}`,
+    // loaders: [path.resolve(__dirname, options[1])],
+    loaders: [path.resolve(__dirname, "./loaders/css1px-loader.js")],
     readResource: fs.readFile.bind(fs),
   },
   (err, result) =>
