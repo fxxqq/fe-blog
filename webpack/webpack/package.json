@@ -1,0 +1,12 @@
+{
+  "name": "webpack",
+  "version": "1.0.0",
+  "description": "Webpack 背景介绍：包括模块化所解决的问题、模块化标准的演进过程、ES Modules 标准规范。希望你通过这个模块，能够了解 Webpack 这类工具解决的到底是什么问题。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
