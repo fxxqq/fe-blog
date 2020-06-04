@@ -1,7 +1,7 @@
 
 https://github.com/impeiran/Blog/issues/6
 
-读取参数->实例化Compiler->EntryOptionPlugin->Loader处理对应文件->找到对应的依赖，递归编译处理->输出
+读取参数->实例化Compiler->EntryOptionPlugin->Loader编译对应文件->找到对应的依赖，递归编译处理->输出
 
 ### 初始化阶段
 
