@@ -418,9 +418,9 @@ import style0 from "./App.vue?vue&type=style&index=0&lang=scss&scope=true&"
 插入一个公共的loader，并在pitch阶段根据query.type插入对应的自定义loader
 2. 加载*.vue时会调用`vue-loader`,.vue文件被解析成一个`descriptor`对象，包含`template、script、styles`等属性对应各个标签，
 对于每个标签，会根据标签属性拼接`src?vue&query`引用代码，其中src为单页面组件路径，query为一些特性的参数，比较重要的有lang、type和scoped
-如果包含lang属性，会匹配与该后缀相同的rules并应用对应的loaders
+如果包含lang属性，会匹配与该后缀相同的rules并应用对应的`loaders`
 根据type执行对应的自定义loader，`template`将执行`templateLoader`、`style`将执行`stylePostLoader`
-3. 在`templateLoader`中，会通过`vue-template-compiler`将template转换为render函数，在此过程中，
+3. 在`templateLoader`中，会通过`vue-template-compiler`将`template`转换为`render`函数，在此过程中，
 会将传入的`scopeId`追加到每个标签的上，最后作为vnode的配置属性传递给`createElemenet`方法，
 在render函数调用并渲染页面时，会将`scopeId`属性作为原始属性渲染到页面上
 4. 在`stylePostLoader`中，通过PostCSS解析style标签内容
