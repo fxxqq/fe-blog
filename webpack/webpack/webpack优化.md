@@ -36,6 +36,16 @@ https://juejin.im/post/5c763885e51d457380771ab0
 https://mp.weixin.qq.com/s/uT-Qdg62I89DblBFqIZpjA
 
 热更新，Code Splitting, Tree-shaking 等是如何实现?
+https://mp.weixin.qq.com/s/LCqnIoRzIiy8zTyw6_avqA
 
 10. webpack优化解决项目体积大、打包时间长、刷新时间长问题！
 https://mp.weixin.qq.com/s/UpwID8qZjSrfyBhFBgpMug
+
+11. Webpack优化--将你的构建效率提速翻倍
+https://juejin.im/post/5d614dc96fb9a06ae3726b3e
+
+12. webpack调优总结
+https://mp.weixin.qq.com/s/x0kReTAEYUsj2Wr8vx7lCQ
+
+13. webpack4提升180%编译速度
+https://www.yuque.com/docs/share/9decb3ee-5630-4199-b757-62f83437202c?from=timeline

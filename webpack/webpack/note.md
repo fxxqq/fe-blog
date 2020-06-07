@@ -53,18 +53,17 @@ webpack事件流机制
 
 ### 命令行输入webpack的时候都发生了什么？ 
 
-##### 初始化阶段
+##### 初始化阶段 
 
 1. 初始化参数（webpack.config.js+shell options）
 
 ./node_modules/.bin/webpack
 ./node_modules/webpack/bin/webpack.js
 追加shell命令的参数，如-p , -w
-期间如果配置文件（如： webpack.config.js）中Plugins使用了new plugin()之类的语句，则会一并调用，实例化插件对象。
-
+同时实例化插件new Plugin()
 2. 实例化Compiler
 
-[源码出处：webpack.js](https://github.com/webpack/webpack/blob/d6e8e479bce9ed34827e08850764bfb225947f85/lib/webpack.js#L39)
+负责监听文件和启动编译，Compiler 代表了整个 Webpack 从启动到关闭的生命周期，一般全局只有一个Compiler实例
 
 ``` js
 // webpack入口
@@ -84,6 +83,7 @@ const webpack = (options, callback) => {
     return compiler;
 }
 ```
+[阅读完整源码点击这里：webpack.js](https://github.com/webpack/webpack/blob/d6e8e479bce9ed34827e08850764bfb225947f85/lib/webpack.js#L39)
 
 webpack 的入口文件其实就实例了 `Compiler` 并调用了 `run` 方法开启了编译, webpack的编译都按照下面的钩子调用顺序执行。
 before-run 清除缓存
@@ -96,7 +96,6 @@ seal 构建结果封装， 不可再更改
 after-compile 完成构建，缓存数据
 emit 输出到dist目录
 
-Compiler 代表了整个 Webpack 从启动到关闭的生命周期，一般全局只有一个compiler
 
 3. 注册NOdeEnvironmentPlugin插件 和 加载插件,为webpack事件流挂上自定义钩子
 
