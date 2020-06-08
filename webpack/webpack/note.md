@@ -36,7 +36,22 @@ https://github.com/impeiran/Blog/issues/6
 
   //  从入口文件开始执行
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
-})(/* modules */)
+})({
+  /* modules */
+  './src/moduleA.js': function (module, exports, __webpack_require__) {
+    eval(
+      'let b = __webpack_require__(/*! ./base/b.js */ "./src/base/b.js");\r\n\r\nmodule.exports = \'a\' + b;\r\n\r\n\r\n\r\n\n\n//# sourceURL=webpack:///./src/a.js?'
+    )
+  },
+  './src/moduleB.js': function (module, exports) {
+    eval("module.exports = 'b'\n\n//# sourceURL=webpack:///./src/base/b.js?")
+  },
+  './src/index.js': function (module, exports, __webpack_require__) {
+    eval(
+      'let str = __webpack_require__(/*! ./a.js */ "./src/a.js")\r\n\r\nconsole.log(str)\n\n//# sourceURL=webpack:///./src/index.js?'
+    )
+  },
+})
 ```
 
 那么我们可以看到，生成的 bundle.js 其实主要做了两件事：
@@ -173,7 +188,7 @@ webpack 中负责构建和编译都是 Compilation，每一次的编译（包括
 
 <details>
 
-    <summary>查看源码</summary>
+    <summary>点击展开源码</summary>
 
 ```js
 class Compilation extends Tapable {
