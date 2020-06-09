@@ -67,6 +67,8 @@ https://github.com/impeiran/Blog/issues/6
 
 ### 命令行输入 webpack 的时候都发生了什么？
 
+P.S. 以下的源码流程分析都基于 webpack 4.4.1
+
 ##### 初始化阶段
 
 1. 初始化参数（webpack.config.js+shell options）
@@ -101,7 +103,7 @@ const webpack = (options, callback) => {
 
 webpack 打包离不开 Compiler 和 Compilation,它们两个分工明确，理解它们是我们理清 webpack 构建流程重要的一步。
 
-Compiler 负责监听文件和启动编译，他可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例
+Compiler 负责监听文件和启动编译，他可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
 
 Compilation 每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。
 
