@@ -2,8 +2,6 @@ https://github.com/impeiran/Blog/issues/6
 
 先来看一下 webpack 打包好的代码是什么样子的。
 
-首先文件是这样的
-
 ### webpack 打包文件分析
 
 未压缩的 bundle.js 文件结构一般如下：
@@ -81,6 +79,7 @@ P.S. 以下的源码流程分析都基于 webpack 4.4.1
 ./node_modules/.bin/webpack
 ./node_modules/webpack/bin/webpack.js
 追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
+convert-yargs 把命令行参数转换成 Webpack 的配置选项对象
 同时实例化插件 new Plugin()
 
 2. 实例化 Compiler
@@ -370,4 +369,6 @@ createChunkAssets() {
 
 ##### 输出完成：
 
+done 成功完成一次完成的编译和输出流程。
+failed 编译失败，可以在本事件中获取到具体的错误原因
 在确定好输出内容后, 根据配置确定输出的路径和文件名, 把文件内容写入到文件系统。
