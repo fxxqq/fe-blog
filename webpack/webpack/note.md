@@ -4,7 +4,7 @@ https://github.com/impeiran/Blog/issues/6
 
 首先文件是这样的
 
-### bundle.js 内容
+### webpack 打包文件分析
 
 未压缩的 bundle.js 文件结构一般如下：
 
@@ -63,7 +63,12 @@ https://github.com/impeiran/Blog/issues/6
 
 ### 简单了解 Webpack 整体运行流程
 
-读取参数->实例化 Compiler->entryOption 阶段->Loader 编译对应文件->找到对应的依赖，递归编译处理->输出
+1. 读取参数
+2. 实例化 Compiler
+3. entryOption 阶段
+4. Loader 编译对应文件
+5. 找到对应依赖，递归编译处理
+6. 输出到 dist
 
 ### 命令行输入 webpack 的时候都发生了什么？
 
@@ -75,7 +80,7 @@ P.S. 以下的源码流程分析都基于 webpack 4.4.1
 
 ./node_modules/.bin/webpack
 ./node_modules/webpack/bin/webpack.js
-追加 shell 命令的参数，如-p , -w
+追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
 同时实例化插件 new Plugin()
 
 2. 实例化 Compiler
@@ -103,9 +108,11 @@ const webpack = (options, callback) => {
 
 webpack 打包离不开 Compiler 和 Compilation,它们两个分工明确，理解它们是我们理清 webpack 构建流程重要的一步。
 
-Compiler 负责监听文件和启动编译，他可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
+Compiler 负责监听文件和启动编译
+它可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
 
-Compilation 每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。
+Compilation 负责构建编译。
+每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
 
 webpack 的入口文件其实就实例了 `Compiler` 并调用了 `run` 方法开启了编译,
 webpack 的编译都按照下面的钩子调用顺序执行。
@@ -150,6 +157,7 @@ const createCompiler = (rawOptions) => {
   // 随即之后，触发一些Hook
   compiler.hooks.environment.call()
   compiler.hooks.afterEnvironment.call()
+  //创建内置插件
   new WebpackOptionsApply().process(options, compiler)
   compiler.hooks.initialize.call()
   return compiler
@@ -158,7 +166,7 @@ const createCompiler = (rawOptions) => {
 
 ### 编译阶段
 
-1. 启动编译
+##### 启动编译
 
 这里有个小逻辑区分是否是 watch，如果是非 watch，则会正常执行一次 compiler.run()。
 
@@ -176,17 +184,54 @@ function watch(watchOptions, handler) {
 }
 ```
 
-2. 触发 compile 事件
+如果不是监视模式就调用 Compiler 对象的 run 方法，开始构建整个应用。
 
-该事件是为了告诉插件一次新的编译将要启动，同时会给插件带上 compiler 对象。
+<details>
 
-2. 编译模块：
+    <summary>点击展开源码</summary>ƒ
 
-从入口文件出发, 调用所有配置的 Loader 对模块进行处理, 再找出该模块依赖的模块, 通过 acorn 库生成模块代码的 AST 语法树，形成依赖关系树（每个模块被处理后的最终内容以及它们之间的依赖关系），根据语法树分析这个模块是否还有依赖的模块，如果有则继续循环每个依赖；
+```js
+run(callback) {
+  // ...
+  this.hooks.beforeRun.callAsync(this, (err) => {
+    this.hooks.run.callAsync(this, (err) => {
+      this.readRecords((err) => {
+        this.compile(onCompiled)
+      })
+    })
+  })
+}
+compile(){
+  this.hooks.beforeCompile.callAsync(params, err => {
+      this.hooks.compile.call(params);
+      const compilation = this.newCompilation(params);
+      //触发make事件并调用addEntry，找到入口js，进行下一步
+      this.hooks.make.callAsync(compilation, err => {
+        process.nextTick(() => {
+          compilation.finish(err => {
+            // 封装构建结果（seal），逐次对每个module和chunk进行整理，每个chunk对应一个入口文件
+            compilation.seal(err => {
+              this.hooks.afterCompile.callAsync(compilation, err => {
+                // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，
+                // 不然运行流程将会一直卡在这不往下执行
+                return callback(null, compilation);
+              });
+            });
+          });
+        });
+      });
+    });
+}
 
-再递归本步骤直到所有入口依赖的文件都经过了对应的 loader 处理。
+```
 
-webpack 中负责构建和编译都是 Compilation，每一次的编译（包括 watch 检测到文件变化时），compiler 都会创建一个 Compilation 对象，标识当前的模块资源、编译生成资源、变化的文件等。同时也提供很多事件回调给插件进行拓展。
+</details>
+
+##### 编译模块：(make 阶段)
+
+- 从 entry 入口配置文件出发, 调用所有配置的 Loader 对模块进行处理,
+- 再找出该模块依赖的模块, 通过 acorn 库生成模块代码的 AST 语法树，形成依赖关系树（每个模块被处理后的最终内容以及它们之间的依赖关系），
+- 根据语法树分析这个模块是否还有依赖的模块，如果有则继续循环每个依赖；再递归本步骤直到所有入口依赖的文件都经过了对应的 loader 处理。
 
 <details>
 
@@ -309,12 +354,20 @@ createChunkAssets() {
 
 </details>
 
-Webpack 进入其中一个入口文件，开始 compilation 过程。先使用用户配置好的 loader 对文件内容进行编译（buildModule），我们可以从传入事件回调的 compilation 上拿到 module 的 resource（资源路径）、loaders（经过的 loaders）等信息；之后，再将编译好的文件内容使用 acorn 解析生成 AST 静态语法树（normalModuleLoader），分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成**webpack_require**来模拟模块化操作。
+概括一下 make 阶段单入口打包的流程，大致为 4 步骤
 
-3. 完成编译：
+1. 执行 SingleEntryPlugin，SingleEntryPlugin 中调用了 Compilation 对象的 addEntry 方法，添加入口模块，开始编译&构建
+2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
+3. buildModule 方法中，执行 Loader，利用 acorn 编译生成 AST
+4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成**webpack_require**来模拟模块化操作。
 
-输出资源：
+### 完成编译
+
+##### 输出资源：
+
 根据入口和模块之间的依赖关系, 组装成一个个包含多个模块的 Chunk,
 在 seal 执行后，便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
 
-输出完成：在确定好输出内容后, 根据配置确定输出的路径和文件名, 把文件内容写入到文件系统。
+##### 输出完成：
+
+在确定好输出内容后, 根据配置确定输出的路径和文件名, 把文件内容写入到文件系统。

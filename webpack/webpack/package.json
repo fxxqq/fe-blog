@@ -11,5 +11,8 @@
   "license": "ISC",
   "bin": {
     "webpack": "./bin/webpack.js"
+  },
+  "dependencies": {
+    "webpack-cli": "^3.3.11"
   }
 }

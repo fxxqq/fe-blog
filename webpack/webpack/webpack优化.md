@@ -59,3 +59,13 @@ https://juejin.im/post/5c9075305188252d5c743520
 
 性能优化：
 https://juejin.im/post/5c5a3a64f265da2d8532b606
+
+1. webpack 代码分析插件 webpack-bundle-analyzer
+2. webpack 性能分析插件 speed-measure-webpack-plugin
+3. js、css、图片压缩提取与合并
+4. 使用 dll 动态链接库，优化打包速度
+5. 多进程优化打包速度
+6. tree shaking
+7. scope hoisting
+8. 代码切割的 3 种方式
+9. webpack 懒加载和热更新
