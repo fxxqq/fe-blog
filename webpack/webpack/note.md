@@ -9,7 +9,7 @@ https://github.com/impeiran/Blog/issues/6
 ```js
 ;(function (modules) {
   // webpackBootstrap
-  // 缓存 __webpack_require__ 函数加载过的模块
+  // 缓存 __webpack_require__ 函数加载过的模块，提升性能
   var installedModules = {}
 
   /**
@@ -18,7 +18,7 @@ https://github.com/impeiran/Blog/issues/6
    * @returns {Object} exports 导出对象
    */
   function __webpack_require__(moduleId) {
-    // 重复加载则利用缓存
+    // 重复加载则利用缓存，有则直接从缓存中取得
     if (installedModules[moduleId]) {
       return installedModules[moduleId].exports
     }
@@ -28,20 +28,45 @@ https://github.com/impeiran/Blog/issues/6
       l: false,
       exports: {},
     })
-    // ...
+
+    // 把要加载的模块内容，挂载到module.exports上
+    modules[moduleId].call(
+      module.exports,
+      module,
+      module.exports,
+      __webpack_require__
+    )
+    module.l = true // 标记为已加载
+
+    // 返回加载的模块，调用方直接调用即可
+    return module.exports
   }
   // 在 __webpack_require__ 函数对象上挂载一些变量及函数 ...
+
+  // __webpack_require__对象下的r函数
+  // 在module.exports上定义__esModule为true，表明是一个模块对象
+  __webpack_require__.r = function (exports) {
+    Object.defineProperty(exports, '__esModule', { value: true })
+  }
 
   //  从入口文件开始执行
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
 })({
   /* modules */
-  './src/moduleA.js': function (module, exports, __webpack_require__) {
+  './src/moduleA.js': function (
+    module,
+    __webpack_exports__,
+    __webpack_require__
+  ) {
     eval(
       'let b = __webpack_require__(/*! ./base/b.js */ "./src/base/b.js");\r\n\r\nmodule.exports = \'a\' + b;\r\n\r\n\r\n\r\n\n\n//# sourceURL=webpack:///./src/a.js?'
     )
   },
-  './src/moduleB.js': function (module, exports) {
+  './src/moduleB.js': function (
+    module,
+    __webpack_exports__,
+    __webpack_require__
+  ) {
     eval("module.exports = 'b'\n\n//# sourceURL=webpack:///./src/base/b.js?")
   },
   './src/index.js': function (module, exports, __webpack_require__) {
@@ -355,7 +380,7 @@ createChunkAssets() {
 
 概括一下 make 阶段单入口打包的流程，大致为 4 步骤
 
-1. 执行 SingleEntryPlugin，SingleEntryPlugin 中调用了 Compilation 对象的 addEntry 方法，添加入口模块，开始编译&构建
+1. 执行 SingleEntryPlugin，SingleEntryPlugin 中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
 2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
 3. buildModule 方法中，执行 Loader，利用 acorn 编译生成 AST
 4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成**webpack_require**来模拟模块化操作。
