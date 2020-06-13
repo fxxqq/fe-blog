@@ -87,7 +87,9 @@ https://github.com/impeiran/Blog/issues/6
 5. 找到对应依赖，递归编译处理
 6. 输出到 dist
 
-### 命令行输入 webpack 的时候都发生了什么？
+### webpack 打包流程源码阅读
+
+命令行输入 webpack 的时候都发生了什么？
 
 P.S. 以下的源码流程分析都基于 webpack 4.4.1
 
@@ -175,7 +177,7 @@ const createCompiler = (rawOptions) => {
   // 随即之后，触发一些Hook
   compiler.hooks.environment.call()
   compiler.hooks.afterEnvironment.call()
-  //创建内置插件
+  // 内置的Plugin的引入，对webpack options进行初始化
   new WebpackOptionsApply().process(options, compiler)
   compiler.hooks.initialize.call()
   return compiler
@@ -375,6 +377,7 @@ seal(callback) {
     this.hooks.seal.call();
 
     // ...
+    //完成了Chunk的构建和依赖、Chunk、module等各方面的优化
     const chunk = this.addChunk(name);
     const entrypoint = new Entrypoint(name);
     entrypoint.setRuntimeChunk(chunk);
@@ -421,8 +424,24 @@ createModuleAssets() {
 }
 
 createChunkAssets() {
-    // ...
-}
+     asyncLib.forEach(
+        this.chunks,
+        (chunk, callback) => {
+            // manifest是数组结构，每个manifest元素都提供了 `render` 方法，提供后续的源码字符串生成服务。至于render方法何时初始化的，在`./lib/MainTemplate.js`中
+            let manifest = this.getRenderManifest()
+            asyncLib.forEach(
+                manifest,
+                (fileManifest, callback) => {
+                    ...
+                    source = fileManifest.render()
+                    this.emitAsset(file, source, assetInfo)
+                },
+                callback
+            )
+        },
+        callback
+    )
+ }
 }
 ```
 
@@ -430,9 +449,9 @@ createChunkAssets() {
 
 概括一下 make 阶段单入口打包的流程，大致为 4 步骤
 
-1. 执行 SingleEntryPlugin，SingleEntryPlugin 中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
+1. 执行 SingleEntryPlugin(单入口调用 SingleEntryPlugin，多入口调用 MultiEntryPlugin，异步调用 DynamicEntryPlugin)，SingleEntryPlugin 中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
 2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
-3. buildModule 方法中，执行 Loader，利用 acorn 编译生成 AST
+3. buildModule 方法中，调用了 NormalModule.build，创建模块之时，会调用 runLoaders，执行 Loader，利用 acorn 编译生成 AST
 4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成 `webpack_require` 来模拟模块化操作。
 
 ### 完成编译
