@@ -1,5 +1,5 @@
 let path = require('path');
-let P = require('./plugins/p.js'); // 引入插件
+// let myPlugins = require('./plugins/p.js'); // 引入插件
 
 module.exports = {
   mode: 'development',
@@ -18,6 +18,6 @@ module.exports = {
     }]
   },
   plugins: [
-    new P()
+    // new myPlugins()
   ]
 }

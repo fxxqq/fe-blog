@@ -7,7 +7,7 @@ https://github.com/impeiran/Blog/issues/6
 未压缩的 bundle.js 文件结构一般如下：
 
 ```js
-;(function (modules) {
+(function (modules) {
   // webpackBootstrap
   // 缓存 __webpack_require__ 函数加载过的模块，提升性能
   var installedModules = {}
@@ -53,27 +53,17 @@ https://github.com/impeiran/Blog/issues/6
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
 })({
   /* modules */
-  './src/moduleA.js': function (
-    module,
-    __webpack_exports__,
-    __webpack_require__
-  ) {
-    eval(
-      'let b = __webpack_require__(/*! ./base/b.js */ "./src/base/b.js");\r\n\r\nmodule.exports = \'a\' + b;\r\n\r\n\r\n\r\n\n\n//# sourceURL=webpack:///./src/a.js?'
-    )
-  },
-  './src/moduleB.js': function (
-    module,
-    __webpack_exports__,
-    __webpack_require__
-  ) {
-    eval("module.exports = 'b'\n\n//# sourceURL=webpack:///./src/base/b.js?")
-  },
-  './src/index.js': function (module, exports, __webpack_require__) {
-    eval(
-      'let str = __webpack_require__(/*! ./a.js */ "./src/a.js")\r\n\r\nconsole.log(str)\n\n//# sourceURL=webpack:///./src/index.js?'
-    )
-  },
+  {
+  "./src/index.js": (function (module, __webpack_exports__, __webpack_require__) {
+    // ...
+  }),
+  "./src/moduleA.js": (function (module, __webpack_exports__, __webpack_require__) {
+    // ...
+  }),
+  "./src/moduleB.js": (function (module, __webpack_exports__, __webpack_require__) {
+    // ...
+  })
+}
 })
 ```
 
@@ -196,18 +186,6 @@ const createCompiler = (rawOptions) => {
 
 如果是监听文件（如：--watch）的模式，则会传递监听的 watchOptions，生成 Watching 实例，每次变化都重新触发回调。
 
-```js
-function watch(watchOptions, handler) {
-  if (this.running) {
-    return handler(new ConcurrentCompilationError())
-  }
-
-  this.running = true
-  this.watchMode = true
-  return new Watching(this, watchOptions, handler)
-}
-```
-
 如果不是监视模式就调用 Compiler 对象的 run 方法，开始构建整个应用。
 
 <details>
@@ -215,38 +193,103 @@ function watch(watchOptions, handler) {
     <summary>点击展开源码</summary>ƒ
 
 ```js
-run(callback) {
-  // ...
-  this.hooks.beforeRun.callAsync(this, (err) => {
-    this.hooks.run.callAsync(this, (err) => {
-      this.readRecords((err) => {
-        this.compile(onCompiled)
+const { SyncHook, SyncBailHook, AsyncSeriesHook } = require('tapable')
+class Compiler {
+  constructor() {
+    // 1. 定义生命周期钩子
+    this.hooks = Object.freeze({
+      // ...只列举几个常用的常见钩子，更多hook就不列举了，有兴趣看源码
+      done: new AsyncSeriesHook(['stats']), //一次编译完成后执行，回调参数：stats
+      beforeRun: new AsyncSeriesHook(['compiler']),
+      run: new AsyncSeriesHook(['compiler']), //在编译器开始读取记录前执行
+      emit: new AsyncSeriesHook(['compilation']), //在生成文件到output目录之前执行，回调参数： compilation
+      afterEmit: new AsyncSeriesHook(['compilation']), //在生成文件到output目录之后执行
+      compilation: new SyncHook(['compilation', 'params']), //在一次compilation创建后执行插件
+      beforeCompile: new AsyncSeriesHook(['params']),
+      compile: new SyncHook(['params']), //在一个新的compilation创建之前执行
+      make: new AsyncParallelHook(['compilation']), //完成一次编译之前执行
+      afterCompile: new AsyncSeriesHook(['compilation']),
+      watchRun: new AsyncSeriesHook(['compiler']),
+      failed: new SyncHook(['error']),
+      watchClose: new SyncHook([]),
+      afterPlugins: new SyncHook(['compiler']),
+      entryOption: new SyncBailHook(['context', 'entry']),
+    })
+    // ...省略代码
+  }
+  newCompilation() {
+    // 创建Compilation对象回调compilation相关钩子
+    const compilation = new Compilation(this)
+    //...一系列操作
+    this.hooks.compilation.call(compilation, params) //compilation对象创建完成
+    return compilation
+  }
+  watch() {
+    //如果运行在watch模式则执行watch方法，否则执行run方法
+    if (this.running) {
+      return handler(new ConcurrentCompilationError())
+    }
+    this.running = true
+    this.watchMode = true
+    return new Watching(this, watchOptions, handler)
+  }
+  run(callback) {
+    if (this.running) {
+      return callback(new ConcurrentCompilationError())
+    }
+    this.running = true
+    process.nextTick(() => {
+      this.emitAssets(compilation, (err) => {
+        if (err) {
+          // 在编译和输出的流程中遇到异常时，会触发 failed 事件
+          this.hooks.failed.call(err)
+        }
+        if (compilation.hooks.needAdditionalPass.call()) {
+          // ...
+          // done：完成编译
+          this.hooks.done.callAsync(stats, (err) => {
+            // 创建compilation对象之前
+            this.compile(onCompiled)
+          })
+        }
+        this.emitRecords((err) => {
+          this.hooks.done.callAsync(stats, (err) => {})
+        })
       })
     })
-  })
-}
-compile(){
-  this.hooks.beforeCompile.callAsync(params, err => {
-      this.hooks.compile.call(params);
-      const compilation = this.newCompilation(params);
+
+    this.hooks.beforeRun.callAsync(this, (err) => {
+      this.hooks.run.callAsync(this, (err) => {
+        this.readRecords((err) => {
+          this.compile(onCompiled)
+        })
+      })
+    })
+  }
+  compile(callback) {
+    const params = this.newCompilationParams()
+    this.hooks.beforeCompile.callAsync(params, (err) => {
+      this.hooks.compile.call(params)
+      const compilation = this.newCompilation(params)
       //触发make事件并调用addEntry，找到入口js，进行下一步
-      this.hooks.make.callAsync(compilation, err => {
+      this.hooks.make.callAsync(compilation, (err) => {
         process.nextTick(() => {
-          compilation.finish(err => {
+          compilation.finish((err) => {
             // 封装构建结果（seal），逐次对每个module和chunk进行整理，每个chunk对应一个入口文件
-            compilation.seal(err => {
-              this.hooks.afterCompile.callAsync(compilation, err => {
+            compilation.seal((err) => {
+              this.hooks.afterCompile.callAsync(compilation, (err) => {
                 // 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，
                 // 不然运行流程将会一直卡在这不往下执行
-                return callback(null, compilation);
-              });
-            });
-          });
-        });
-      });
-    });
+                return callback(null, compilation)
+              })
+            })
+          })
+        })
+      })
+    })
+  }
+  emitAssets() {}
 }
-
 ```
 
 </details>
@@ -256,10 +299,13 @@ compile(){
 - 从 entry 入口配置文件出发, 调用所有配置的 Loader 对模块进行处理,
 - 再找出该模块依赖的模块, 通过 acorn 库生成模块代码的 AST 语法树，形成依赖关系树（每个模块被处理后的最终内容以及它们之间的依赖关系），
 - 根据语法树分析这个模块是否还有依赖的模块，如果有则继续循环每个依赖；再递归本步骤直到所有入口依赖的文件都经过了对应的 loader 处理。
+- 解析结束后，webpack 会把所有模块封装在一个函数里，并放入一个名为 modules 的数组里。
+- 将 modules 传入一个自执行函数中，自执行函数包含一个 installedModules 对象，已经执行的代码模块会保存在此对象中。
+- 最后自执行函数中加载函数（webpack\_\_require）载入模块。
 
-<details>
+  <details>
 
-    <summary>点击展开源码</summary>
+      <summary>点击展开源码</summary>
 
 ```js
 class Compilation extends Tapable {
@@ -383,7 +429,7 @@ createChunkAssets() {
 1. 执行 SingleEntryPlugin，SingleEntryPlugin 中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
 2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
 3. buildModule 方法中，执行 Loader，利用 acorn 编译生成 AST
-4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成**webpack_require**来模拟模块化操作。
+4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成 `webpack_require` 来模拟模块化操作。
 
 ### 完成编译
 
@@ -397,3 +443,23 @@ createChunkAssets() {
 done 成功完成一次完成的编译和输出流程。
 failed 编译失败，可以在本事件中获取到具体的错误原因
 在确定好输出内容后, 根据配置确定输出的路径和文件名, 把文件内容写入到文件系统。
+
+```js
+emitAssets(compilation, callback) {
+    const emitFiles = (err) => {
+      //...省略一系列代码
+      // afterEmit：文件已经写入磁盘完成
+      this.hooks.afterEmit.callAsync(compilation, (err) => {
+        if (err) return callback(err)
+        return callback()
+      })
+    }
+
+    // emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改(这是最后一次修改最终文件的机会)
+    this.hooks.emit.callAsync(compilation, (err) => {
+      if (err) return callback(err)
+      outputPath = compilation.getPath(this.outputPath, {})
+      mkdirp(this.outputFileSystem, outputPath, emitFiles)
+    })
+  }
+```
