@@ -7,7 +7,7 @@ https://github.com/impeiran/Blog/issues/6
 未压缩的 bundle.js 文件结构一般如下：
 
 ```js
-(function (modules) {
+;(function (modules) {
   // webpackBootstrap
   // 缓存 __webpack_require__ 函数加载过的模块，提升性能
   var installedModules = {}
@@ -52,18 +52,22 @@ https://github.com/impeiran/Blog/issues/6
   //  从入口文件开始执行
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
 })({
-  /* modules */
-  {
-  "./src/index.js": (function (module, __webpack_exports__, __webpack_require__) {
-    // ...
-  }),
-  "./src/moduleA.js": (function (module, __webpack_exports__, __webpack_require__) {
-    // ...
-  }),
-  "./src/moduleB.js": (function (module, __webpack_exports__, __webpack_require__) {
-    // ...
-  })
-}
+  './src/index.js': function (
+    module,
+    __webpack_exports__,
+    __webpack_require__
+  ) {
+    'use strict'
+    eval(
+      '__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleA */ "./src/moduleA.js");\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_moduleA__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./moduleB */ "./src/moduleB.js");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_moduleB__WEBPACK_IMPORTED_MODULE_1__);\n\n\n\n//# sourceURL=webpack:///./src/index.js?'
+    )
+  },
+  './src/moduleA.js': function (module, exports) {
+    eval('console.log("moduleA")\n\n//# sourceURL=webpack:///./src/moduleA.js?')
+  },
+  './src/moduleB.js': function (module, exports) {
+    eval('console.log("moduleB")\n\n//# sourceURL=webpack:///./src/moduleB.js?')
+  },
 })
 ```
 
