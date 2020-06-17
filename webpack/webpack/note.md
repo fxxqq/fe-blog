@@ -23,11 +23,11 @@ P.S. 以下的源码流程分析都基于 webpack 4.4.1
 1. 初始化参数（webpack.config.js+shell options）
 webpack的两种启动方式
 - 通过webpack-cli执行   ./node_modules/.bin/webpack-cli（执行）
-- 通过require("webpack")执行   ./node_modules/webpack/bin/webpack.js
+- 通过require("webpack")执行   ./node_modules/webpack/lib/webpack.js
 
 追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
 convert-yargs 把命令行参数转换成 Webpack 的配置选项对象
-同时实例化插件 new Plugin()
+同时实例化插件 new Plugin(),也就是激活webpack插件的加载
 
 2. 实例化 Compiler
 
@@ -62,7 +62,7 @@ Compilation 负责构建编译。
 
 webpack 的入口文件其实就实例了 `Compiler` 并调用了 `run` 方法开启了编译,
  
-3. 注册 NOdeEnvironmentPlugin 插件
+3. 注册 NodeEnvironmentPlugin 插件，挂载plugin插件，使用WebpackOptionsApply初始化基础插件
 
 在此期间会 apply 所有 webpack 内置的插件,为 webpack 事件流挂上自定义钩子
 
@@ -102,13 +102,14 @@ const createCompiler = (rawOptions) => {
 
 ##### 编译阶段
 
-1. 启动编译
+1. 启动编译（run/watch阶段）
 
 这里有个小逻辑区分是否是 watch，如果是非 watch，则会正常执行一次 compiler.run()。
 
 如果是监听文件（如：--watch）的模式，则会传递监听的 watchOptions，生成 Watching 实例，每次变化都重新触发回调。
 
-如果不是监视模式就调用 Compiler 对象的 run 方法，开始构建整个应用。
+如果不是监视模式就调用 Compiler 对象的 run 方法，`befornRun->beforeCompile->compile->thisCompilation->compilation`开始构建整个应用。
+
 
 <details>
 
@@ -365,19 +366,19 @@ createChunkAssets() {
 
 概括一下 make 阶段单入口打包的流程，大致为 4 步骤
 
-1. 执行 SingleEntryPlugin(单入口调用 SingleEntryPlugin，多入口调用 MultiEntryPlugin，异步调用 DynamicEntryPlugin)，SingleEntryPlugin 中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
+1. 执行 SingleEntryPlugin(单入口调用 SingleEntryPlugin，多入口调用 MultiEntryPlugin，异步调用 DynamicEntryPlugin)，EntryPlugin 方法中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
 2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
-3. buildModule 方法中，调用了 NormalModule.build，创建模块之时，会调用 runLoaders，执行 Loader，利用 acorn 编译生成 AST
+3. 然后在buildModule 方法中，调用了 NormalModule.build，创建模块之时，会调用 runLoaders，执行 Loader，利用 acorn 编译生成 AST
 4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成 `webpack_require` 来模拟模块化操作。
 
 ### 完成编译
 
-##### 输出资源：
+##### 输出资源：（seal阶段）
 
 根据入口和模块之间的依赖关系, 组装成一个个包含多个模块的 Chunk,
-在 seal 执行后，便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
+在 compilation.seal 执行后，便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
 
-##### 输出完成：
+##### 输出完成：（done/failed阶段）
 
 done 成功完成一次完成的编译和输出流程。
 failed 编译失败，可以在本事件中获取到具体的错误原因
@@ -444,32 +445,42 @@ emitAssets(compilation, callback) {
     return module.exports
   }
   // 在 __webpack_require__ 函数对象上挂载一些变量及函数 ...
-
+  __webpack_require__.m = modules;
+  __webpack_require__.c = installedModules;
+  __webpack_require__.d = function(exports, name, getter) {
+    if (!__webpack_require__.o(exports, name)) {
+      Object.defineProperty(exports, name, {
+        enumerable: true,
+        get: getter
+      })
+    }
+  };
   // __webpack_require__对象下的r函数
   // 在module.exports上定义__esModule为true，表明是一个模块对象
   __webpack_require__.r = function (exports) {
-    Object.defineProperty(exports, '__esModule', { value: true })
+    if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+			Object.defineProperty(exports, Symbol.toStringTag, {
+				value: 'Module'
+			})
+		}
+		Object.defineProperty(exports, '__esModule', {
+			value: true
+		})
   }
 
   //  从入口文件开始执行
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
 })({
-  './src/index.js': function (
-    module,
-    __webpack_exports__,
-    __webpack_require__
-  ) {
-    'use strict'
-    eval(
-      '__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleA */ "./src/moduleA.js");\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_moduleA__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./moduleB */ "./src/moduleB.js");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_moduleB__WEBPACK_IMPORTED_MODULE_1__);\n\n\n\n//# sourceURL=webpack:///./src/index.js?'
-    )
-  },
-  './src/moduleA.js': function (module, exports) {
-    eval('console.log("moduleA")\n\n//# sourceURL=webpack:///./src/moduleA.js?')
-  },
-  './src/moduleB.js': function (module, exports) {
-    eval('console.log("moduleB")\n\n//# sourceURL=webpack:///./src/moduleB.js?')
-  },
+	"./src/index.js": (function(module, __webpack_exports__, __webpack_require__) {
+		"use strict";
+		eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleA */ \"./src/moduleA.js\");\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_moduleA__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./moduleB */ \"./src/moduleB.js\");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_moduleB__WEBPACK_IMPORTED_MODULE_1__);\n\n\n\n//# sourceURL=webpack:///./src/index.js?")
+	}),
+	"./src/moduleA.js": (function(module, exports) {
+		eval("console.log(\"moduleA\")\n\n//# sourceURL=webpack:///./src/moduleA.js?")
+	}),
+	"./src/moduleB.js": (function(module, exports) {
+		eval("console.log(\"moduleB\")\n\n//# sourceURL=webpack:///./src/moduleB.js?")
+	}),
 })
 ```
 
