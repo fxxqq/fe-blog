@@ -524,6 +524,8 @@ emitAssets(compilation, callback) {
 
 2. 使用加载函数加载入口模块 "./src/index.js"，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 exports。
 
+接下来从 0 实现一个 webpack 的雏形，让大家更深入的了解 webpack
+
 ### 实现一个简单的 webpack
 
 ```js
