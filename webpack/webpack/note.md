@@ -1,7 +1,3 @@
-https://github.com/impeiran/Blog/issues/6
-
-先来看一下 webpack 打包好的代码是什么样子的。
-
 ### 简单概述Webpack 整体运行流程
 
 1. 读取参数
@@ -13,17 +9,20 @@ https://github.com/impeiran/Blog/issues/6
 
 ### webpack 打包主流程源码阅读
 通过打断点的方式阅读源码,来看一下命令行输入 webpack 的时候都发生了什么？
-P.S. 以下的源码流程分析都基于 webpack 4.4.1
+P.S. 以下的源码流程分析都基于 webpack4 
 
 先附上一张我自己绘制的执行流程图
-[]()
+[](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
 
 ##### 初始化阶段
 
 1. 初始化参数（webpack.config.js+shell options）
-webpack的两种启动方式
-- 通过webpack-cli执行   ./node_modules/.bin/webpack-cli（执行）
-- 通过require("webpack")执行   ./node_modules/webpack/lib/webpack.js
+
+webpack的几种启动方式
+
+- 通过webpack-cli执行 会走到  ./node_modules/.bin/webpack-cli（执行）
+- 通过shell 执行 ，会走到 ./bin/webpack.js
+- 通过require("webpack")执行  会走到 ./node_modules/webpack/lib/webpack.js
 
 追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
 convert-yargs 把命令行参数转换成 Webpack 的配置选项对象
@@ -46,19 +45,18 @@ const webpack = (options, callback) => {
   }
   // ...
   // 若options.watch === true && callback 则开启watch线程
-  compiler.watch(watchOptions, callback)
-  compiler.run(callback)
+  if (watch) {
+			compiler.watch(watchOptions, callback);
+	} else {
+    compiler.run((err, stats) => {
+      compiler.close(err2 => {
+        callback(err || err2, stats);
+      });
+    });
+  }
   return compiler
 }
 ```
-
-webpack 打包离不开 Compiler 和 Compilation,它们两个分工明确，理解它们是我们理清 webpack 构建流程重要的一步。
-
-Compiler 负责监听文件和启动编译
-它可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
-
-Compilation 负责构建编译。
-每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
 
 webpack 的入口文件其实就实例了 `Compiler` 并调用了 `run` 方法开启了编译,
  
@@ -193,8 +191,10 @@ class Compiler {
     const params = this.newCompilationParams()
     this.hooks.beforeCompile.callAsync(params, (err) => {
       this.hooks.compile.call(params)
+      //已完成complication的实例化
       const compilation = this.newCompilation(params)
       //触发make事件并调用addEntry，找到入口js，进行下一步
+      // make：表示一个新的complication创建完毕
       this.hooks.make.callAsync(compilation, (err) => {
         process.nextTick(() => {
           compilation.finish((err) => {
@@ -224,7 +224,7 @@ class Compiler {
 - 根据语法树分析这个模块是否还有依赖的模块，如果有则继续循环每个依赖；再递归本步骤直到所有入口依赖的文件都经过了对应的 loader 处理。
 - 解析结束后，webpack 会把所有模块封装在一个函数里，并放入一个名为 modules 的数组里。
 - 将 modules 传入一个自执行函数中，自执行函数包含一个 installedModules 对象，已经执行的代码模块会保存在此对象中。
-- 最后自执行函数中加载函数（webpack\_\_require）载入模块。
+- 最后自执行函数中加载函数（`webpack__require`）载入模块。
 
   <details>
 
@@ -370,13 +370,20 @@ createChunkAssets() {
 2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
 3. 然后在buildModule 方法中，调用了 NormalModule.build，创建模块之时，会调用 runLoaders，执行 Loader，利用 acorn 编译生成 AST
 4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成 `webpack_require` 来模拟模块化操作。
+##### Compiler和Compilation的区别
+webpack 打包离不开 Compiler 和 Compilation,它们两个分工明确，理解它们是我们理清 webpack 构建流程重要的一步。
+
+Compiler 负责监听文件和启动编译
+它可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
+
+Compilation 负责构建编译。
+每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
 
 ### 完成编译
 
 ##### 输出资源：（seal阶段）
 
-根据入口和模块之间的依赖关系, 组装成一个个包含多个模块的 Chunk,
-在 compilation.seal 执行后，便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
+在编译完成后，调用 compilation.seal方法封闭，生成资源，这些资源保存在 compilation.assets, compilation.chunk,然后便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
 
 ##### 输出完成：（done/failed阶段）
 
@@ -403,6 +410,8 @@ emitAssets(compilation, callback) {
     })
   }
 ```
+
+然后，我们来看一下 webpack 打包好的代码是什么样子的。
 
 ### webpack 输出文件代码分析
 
@@ -455,6 +464,13 @@ emitAssets(compilation, callback) {
       })
     }
   };
+  __webpack_require__.n = function(module) {
+ 		var getter = module && module.__esModule ?
+ 			function getDefault() { return module['default']; } :
+ 			function getModuleExports() { return module; };
+ 		__webpack_require__.d(getter, 'a', getter);
+ 		return getter;
+ 	};
   // __webpack_require__对象下的r函数
   // 在module.exports上定义__esModule为true，表明是一个模块对象
   __webpack_require__.r = function (exports) {
@@ -467,7 +483,7 @@ emitAssets(compilation, callback) {
 			value: true
 		})
   }
-
+  __webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
   //  从入口文件开始执行
   return __webpack_require__((__webpack_require__.s = './src/index.js'))
 })({
@@ -479,16 +495,118 @@ emitAssets(compilation, callback) {
 		eval("console.log(\"moduleA\")\n\n//# sourceURL=webpack:///./src/moduleA.js?")
 	}),
 	"./src/moduleB.js": (function(module, exports) {
+    // 代码字符串可以通过eval 函数运行
 		eval("console.log(\"moduleB\")\n\n//# sourceURL=webpack:///./src/moduleB.js?")
 	}),
 })
 ```
 
-上述代码的实现了⼀个webpack_require 来实现⾃⼰的模块化把代码都缓存在 installedModules ⾥，代码⽂件以对象传递进来，key 是路径，value 是包裹的代码字符串，并且代码内部的 require，都被替换成了 webpack_require
+上述代码的实现了⼀个webpack_require 来实现⾃⼰的模块化把代码都缓存在 installedModules ⾥，代码⽂件以对象传递进来，key 是路径，value 是包裹的代码字符串，并且代码内部的 require，都被替换成了 webpack_require,代码字符串可以通过eval 函数去执行。
 
-总结一下，生成的 bundle.js只包含一个立即执行函数（IIFE），它其实主要做了两件事：
+总结一下，生成的 bundle.js只包含一个立即调用函数（IIFE），这个函数会接受一个对象为参数，它其实主要做了两件事：
 
 1. 定义一个模块加载函数 webpack_require。
 
-2. 使用加载函数加载入口模块 "./src/index.js"。
+2. 使用加载函数加载入口模块 "./src/index.js"，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的exports。
 
+### 实现一个简单的webpack
+```js
+const fs = require("fs");
+const path = require("path");
+const parser = require("@babel/parser");//解析
+const traverse = require("@babel/traverse").default;//遍历
+const { transformFromAst } = require("@babel/core");//转换
+class Webpack {
+  constructor(options) {
+    const { entry, output } = options;
+    this.entry = entry;
+    this.output = output;
+    this.modules = [];
+  }
+  // 构建启动
+  run() {
+    const info = this.build(this.entry);
+    this.modules.push(info);
+    this.modules.forEach(({ dependecies }) => {
+      if (dependecies) {
+        for (const dependency in dependecies) {
+          this.modules.push(this.build(dependecies[dependency]));
+        }
+      }
+    });
+    const dependencyGraph = this.modules.reduce(
+      (graph, item) => ({
+        ...graph,
+        [item.filename]: {
+          dependecies: item.dependecies,
+          code: item.code
+        }
+      }),
+      {}
+    );
+    this.generate(dependencyGraph);
+  }
+  build(filename) {
+    const ast = this.getAst(filename);
+    const dependecies = this.getDependecies(ast, filename);
+    const code = this.getCode(ast);
+    return {
+      filename,
+      dependecies,
+      code
+    };
+  }
+  getAst(path){
+    const content = fs.readFileSync(path, "utf-8");
+    return parser.parse(content, {
+      sourceType: "module"
+    });
+  }
+  getDependecies(ast, filename) => {
+    const dependecies = {};
+     // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
+    traverse(ast, {
+      ImportDeclaration({ node }) {
+        const dirname = path.dirname(filename);
+        // 保存依赖模块路径,之后生成依赖关系图需要用到
+        const filepath = "./" + path.join(dirname, node.source.value);
+        dependecies[node.source.value] = filepath;
+      }
+    });
+    return dependecies;
+  },
+  getCode: ast => {
+    const { code } = transformFromAst(ast, null, {
+      presets: ["@babel/preset-env"]
+    });
+    return code;
+  }
+  generate(code) {
+    const filePath = path.join(this.output.path, this.output.filename);
+    const bundle = `(function(graph){
+      //require函数的本质是执行一个模块的代码，然后将相应变量挂载到exports对象上
+      function require(moduleId){ 
+        function localRequire(relativePath){
+          return require(graph[moduleId].dependecies[relativePath])
+        }
+        var exports = {};
+        (function(require,exports,code){
+          eval(code)
+        })(localRequire,exports,graph[moduleId].code);
+        return exports;
+         //函数返回指向局部变量，形成闭包，exports变量在函数执行后不会被摧毁
+      }
+      require('${this.entry}')
+    })(${JSON.stringify(code)})`;
+    fs.writeFileSync(filePath, bundle, "utf-8");
+  }
+}
+
+module.exports = Webpack;
+```
+
+调用
+```js
+const options = require("./webpack.config");
+new Webpack(options).run();
+```

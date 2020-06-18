@@ -94,7 +94,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleA */ \"./src/moduleA.js\");\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_moduleA__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./moduleB */ \"./src/moduleB.js\");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_moduleB__WEBPACK_IMPORTED_MODULE_1__);\n\n\n\n//# sourceURL=webpack:///./src/index.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleA__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleA */ \"./src/moduleA.js\");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./moduleB */ \"./src/moduleB.js\");\n/* harmony import */ var _moduleB__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_moduleB__WEBPACK_IMPORTED_MODULE_1__);\n\n\n\n//# sourceURL=webpack:///./src/index.js?");
 
 /***/ }),
 
@@ -102,10 +102,11 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _mod
 /*!************************!*\
   !*** ./src/moduleA.js ***!
   \************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-eval("console.log(\"moduleA\")\n\n//# sourceURL=webpack:///./src/moduleA.js?");
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _moduleC__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./moduleC */ \"./src/moduleC.js\");\n/* harmony import */ var _moduleC__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_moduleC__WEBPACK_IMPORTED_MODULE_0__);\n\n\nconsole.log(\"moduleA\")\n\n//# sourceURL=webpack:///./src/moduleA.js?");
 
 /***/ }),
 
@@ -117,6 +118,17 @@ eval("console.log(\"moduleA\")\n\n//# sourceURL=webpack:///./src/moduleA.js?");
 /***/ (function(module, exports) {
 
 eval("console.log(\"moduleB\")\n\n//# sourceURL=webpack:///./src/moduleB.js?");
+
+/***/ }),
+
+/***/ "./src/moduleC.js":
+/*!************************!*\
+  !*** ./src/moduleC.js ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("console.log('moduleC')\n\n//# sourceURL=webpack:///./src/moduleC.js?");
 
 /***/ })
 
