@@ -535,6 +535,7 @@ module.exports = class Webpack {
         const info = this.analysis(this.entry)
         this.modulesArr.push(info)
         for(let i=0;i<this.modulesArr.length;i++) {
+           // 判断有依赖对象,递归解析所有依赖项
             const item = this.modulesArr[i]
             const { dependencies } = item;
             if(dependencies) {
@@ -552,16 +553,18 @@ module.exports = class Webpack {
                 code:item.code
             }
         })
-        this.file(obj)
+        this.emitFile(obj)
     }
     analysis(entryFile){
         const conts = fs.readFileSync(entryFile,'utf-8')
         const ast = parser.parse(conts, {
             sourceType: "module"
           });
-        //   console.log(ast)
+        //  console.log(ast)
+         // 遍历所有的 import 模块,存入dependecies
           const dependencies = {}
           traverse(ast,{
+            // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
             ImportDeclaration({node}){
                 const newPath = "./" + path.join(
                     path.dirname(entryFile),
@@ -580,7 +583,7 @@ module.exports = class Webpack {
             code
         }
     }
-    file(code){
+    emitFile(code){
         // console.log(code)
         //生成bundle.js
         const filePath = path.join(this.output.path,this.output.filename)

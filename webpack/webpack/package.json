@@ -10,7 +10,8 @@
   "author": "",
   "license": "ISC",
   "bin": {
-    "my-webpack": "./bin/my-webpack.js"
+    "my-webpack": "./bin/my-webpack.js",
+    "webpack": "./bin/webpack.js"
   },
   "dependencies": {
     "@babel/core": "^7.10.2",

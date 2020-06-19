@@ -31,7 +31,7 @@ module.exports = class Webpack {
                 code:item.code
             }
         })
-        this.file(obj)
+        this.emitFile(obj)
     }
     analysis(entryFile){
         const conts = fs.readFileSync(entryFile,'utf-8')
@@ -59,7 +59,7 @@ module.exports = class Webpack {
             code
         }
     }
-    file(code){
+    emitFile(code){
         // console.log(code)
         //生成bundle.js   =>./dist/main.js
         const filePath = path.join(this.output.path,this.output.filename)
