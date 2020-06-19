@@ -22,7 +22,7 @@ P.S. 以下的源码流程分析都基于 webpack4
 webpack 的几种启动方式
 
 - 通过 webpack-cli 执行 会走到 ./node_modules/.bin/webpack-cli（执行）
-- 通过 shell 执行 ，会走到 ./bin/webpack.js
+- 通过 shell 执行webpack ，会走到 ./bin/webpack.js
 - 通过 require("webpack")执行 会走到 ./node_modules/webpack/lib/webpack.js
 
 追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
