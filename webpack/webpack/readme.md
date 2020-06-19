@@ -12,7 +12,7 @@
 通过打断点的方式阅读源码,来看一下命令行输入 webpack 的时候都发生了什么？
 P.S. 以下的源码流程分析都基于 webpack4
 
-先附上一张我自己绘制的执行流程图
+先附上一张自己绘制的执行流程图
 ![webpack4 执行流程图](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
 
 ##### 初始化阶段
@@ -582,7 +582,7 @@ module.exports = class Webpack {
     }
     file(code){
         // console.log(code)
-        //生成bundle.js   =>./dist/main.js
+        //生成bundle.js
         const filePath = path.join(this.output.path,this.output.filename)
         const newCode = JSON.stringify(code)
         const bundle = `(function(graph){
@@ -610,3 +610,5 @@ const options = require('./webpack.config')
 new Webpack(options).run()
 ```
 
+输入到浏览器看一下执行结果
+![my-webpack执行结果](https://cdn.6fed.com/github/webpack/webpack/my-webpack-done.jpg)
