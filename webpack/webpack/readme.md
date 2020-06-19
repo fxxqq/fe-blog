@@ -1,35 +1,35 @@
 ### 简单概述 Webpack 整体运行流程
 
 1. 读取参数
-2. 实例化 Compiler
-3. entryOption 阶段，读取入口文件
-4. Loader 编译对应文件，解析成 AST
-5. 找到对应依赖，递归编译处理，生成 chunk
-6. 输出到 dist
+2. 实例化 `Compiler`
+3. `entryOption` 阶段，读取入口文件
+4. `Loader` 编译对应文件，解析成 `AST`
+5. 找到对应依赖，递归编译处理，生成 `chunk`
+6. 输出到 `dist`
 
 ### webpack 打包主流程源码阅读
 
 通过打断点的方式阅读源码,来看一下命令行输入 webpack 的时候都发生了什么？
-P.S. 以下的源码流程分析都基于 webpack4
+P.S. 以下的源码流程分析都基于 `webpack4`
 
 先附上一张自己绘制的执行流程图
 ![webpack4 执行流程图](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
 
 ##### 初始化阶段
 
-1. 初始化参数（webpack.config.js+shell options）
+1. 初始化参数（`webpack.config.js+shell options`）
 
-webpack 的几种启动方式
+`webpack` 的几种启动方式
 
-- 通过 webpack-cli 执行 会走到 ./node_modules/.bin/webpack-cli（执行）
-- 通过 shell 执行webpack ，会走到 ./bin/webpack.js
-- 通过 require("webpack")执行 会走到 ./node_modules/webpack/lib/webpack.js
+- 通过 `webpack-cli `执行 会走到 `./node_modules/.bin/webpack-cli`（执行）
+- 通过 `shell` 执行`webpack` ，会走到 `./bin/webpack.js`
+- 通过 `require("webpack")`执行 会走到 `./node_modules/webpack/lib/webpack.js`
 
-追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
-convert-yargs 把命令行参数转换成 Webpack 的配置选项对象
-同时实例化插件 new Plugin()
+追加 `shell` 命令的参数，如`-p , -w，`通过 `yargs` 解析命令行参数
+`convert-yargs` 把命令行参数转换成 Webpack 的配置选项对象
+同时实例化插件 `new Plugin()`
 
-2. 实例化 Compiler
+2. 实例化 `Compiler`
 
 [阅读完整源码点击这里：webpack.js](https://github.com/webpack/webpack/blob/d6e8e479bce9ed34827e08850764bfb225947f85/lib/webpack.js#L39)
 
@@ -61,9 +61,9 @@ const webpack = (options, callback) => {
 
 webpack 的入口文件其实就实例了 `Compiler` 并调用了 `run` 方法开启了编译,
 
-3. 注册 NodeEnvironmentPlugin 插件，挂载 plugin 插件，使用 WebpackOptionsApply 初始化基础插件
+3. 注册 `NodeEnvironmentPlugin` 插件，挂载 plugin 插件，使用 WebpackOptionsApply 初始化基础插件
 
-在此期间会 apply 所有 webpack 内置的插件,为 webpack 事件流挂上自定义钩子
+在此期间会 `apply` 所有 `webpack` 内置的插件,为 `webpack` 事件流挂上自定义钩子
 
 源码仍然在[webpack.js](https://github.com/webpack/webpack/blob/d6e8e479bce9ed34827e08850764bfb225947f85/lib/webpack.js#L39)文件
 
@@ -101,13 +101,13 @@ const createCompiler = (rawOptions) => {
 
 ##### 编译阶段
 
-1. 启动编译（run/watch 阶段）
+1. 启动编译（`run/watch` 阶段）
 
-这里有个小逻辑区分是否是 watch，如果是非 watch，则会正常执行一次 compiler.run()。
+这里有个小逻辑区分是否是 `watch`，如果是非 `watch`，则会正常执行一次 `compiler.run()`。
 
-如果是监听文件（如：--watch）的模式，则会传递监听的 watchOptions，生成 Watching 实例，每次变化都重新触发回调。
+如果是监听文件（如：`--watch`）的模式，则会传递监听的 `watchOptions`，生成 `Watching` 实例，每次变化都重新触发回调。
 
-如果不是监视模式就调用 Compiler 对象的 run 方法，`befornRun->beforeCompile->compile->thisCompilation->compilation`开始构建整个应用。
+如果不是监视模式就调用 `Compiler` 对象的 `run` 方法，`befornRun->beforeCompile->compile->thisCompilation->compilation`开始构建整个应用。
 
 ```js
 const { SyncHook, SyncBailHook, AsyncSeriesHook } = require('tapable')
@@ -211,13 +211,13 @@ class Compiler {
 }
 ```
 
-2. 编译模块：(make 阶段)
+2. 编译模块：(`make` 阶段)
 
-- 从 entry 入口配置文件出发, 调用所有配置的 Loader 对模块进行处理,
-- 再找出该模块依赖的模块, 通过 acorn 库生成模块代码的 AST 语法树，形成依赖关系树（每个模块被处理后的最终内容以及它们之间的依赖关系），
+- 从 entry 入口配置文件出发, 调用所有配置的 `Loader` 对模块进行处理,
+- 再找出该模块依赖的模块, 通过 `acorn` 库生成模块代码的 `AST` 语法树，形成依赖关系树（每个模块被处理后的最终内容以及它们之间的依赖关系），
 - 根据语法树分析这个模块是否还有依赖的模块，如果有则继续循环每个依赖；再递归本步骤直到所有入口依赖的文件都经过了对应的 loader 处理。
-- 解析结束后，webpack 会把所有模块封装在一个函数里，并放入一个名为 modules 的数组里。
-- 将 modules 传入一个自执行函数中，自执行函数包含一个 installedModules 对象，已经执行的代码模块会保存在此对象中。
+- 解析结束后，`webpack` 会把所有模块封装在一个函数里，并放入一个名为 `modules` 的数组里。
+- 将 `modules` 传入一个自执行函数中，自执行函数包含一个 `installedModules` 对象，已经执行的代码模块会保存在此对象中。
 - 最后自执行函数中加载函数（`webpack__require`）载入模块。
 
 ```js
@@ -352,35 +352,33 @@ createChunkAssets() {
 }
 ```
 
- 
+概括一下 `make` 阶段单入口打包的流程，大致为 4 步骤
 
-概括一下 make 阶段单入口打包的流程，大致为 4 步骤
-
-1. 执行 SingleEntryPlugin(单入口调用 SingleEntryPlugin，多入口调用 MultiEntryPlugin，异步调用 DynamicEntryPlugin)，EntryPlugin 方法中调用了 Compilation.addEntry 方法，添加入口模块，开始编译&构建
-2. addEntry 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
-3. 然后在 buildModule 方法中，调用了 NormalModule.build，创建模块之时，会调用 runLoaders，执行 Loader，利用 acorn 编译生成 AST
-4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 require 语法替换成 `webpack_require` 来模拟模块化操作。
+1. 执行 `SingleEntryPlugin`(单入口调用 `SingleEntryPlugin`，多入口调用 `MultiEntryPlugin`，异步调用 `DynamicEntryPlugin`)，`EntryPlugin` 方法中调用了 `Compilation.addEntry` 方法，添加入口模块，开始编译&构建
+2. `addEntry` 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
+3. 然后在 `buildModule` 方法中，调用了 `NormalModule.build`，创建模块之时，会调用 `runLoaders`，执行 `Loader`，利用 `acorn` 编译生成 `AST`
+4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 `require` 语法替换成 `webpack_require` 来模拟模块化操作。
 
 ##### Compiler 和 Compilation 的区别
 
-webpack 打包离不开 Compiler 和 Compilation,它们两个分工明确，理解它们是我们理清 webpack 构建流程重要的一步。
+`webpack` 打包离不开 `Compiler` 和 `Compilation`,它们两个分工明确，理解它们是我们理清 `webpack` 构建流程重要的一步。
 
-Compiler 负责监听文件和启动编译
-它可以读取到 webpack 的 config 信息，整个 Webpack 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 run,make,compile,finish,seal,emit 等，我们写的插件就是作用在这些暴露方法的 hook 上
+`Compiler` 负责监听文件和启动编译
+它可以读取到 `webpack` 的 config 信息，整个 `Webpack` 从启动到关闭的生命周期，一般只有一个 Compiler 实例，整个生命周期里暴露了很多方法，常见的 `run`,`make`,`compile`,`finish`,`seal`,`emit` 等，我们写的插件就是作用在这些暴露方法的 hook 上
 
-Compilation 负责构建编译。
-每一次编译（文件只要发生变化，）就会生成一个 Compilation 实例，Compilation 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
+`Compilation` 负责构建编译。
+每一次编译（文件只要发生变化，）就会生成一个 `Compilation` 实例，`Compilation` 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
 
 ### 完成编译
 
 ##### 输出资源：（seal 阶段）
 
-在编译完成后，调用 compilation.seal 方法封闭，生成资源，这些资源保存在 compilation.assets, compilation.chunk,然后便会调用 emit 钩子，根据 webpack config 文件的 output 配置的 path 属性，将文件输出到指定的 path.
+在编译完成后，调用 `compilation.seal` 方法封闭，生成资源，这些资源保存在 `compilation.assets`, `compilation.chunk`,然后便会调用 `emit` 钩子，根据 `webpack config` 文件的 `output` 配置的 `path` 属性，将文件输出到指定的 `path`.
 
-##### 输出完成：（done/failed 阶段）
+##### 输出完成：`done/failed` 阶段
 
-done 成功完成一次完成的编译和输出流程。
-failed 编译失败，可以在本事件中获取到具体的错误原因
+`done` 成功完成一次完成的编译和输出流程。
+`failed` 编译失败，可以在本事件中获取到具体的错误原因
 在确定好输出内容后, 根据配置确定输出的路径和文件名, 把文件内容写入到文件系统。
 
 ```js
@@ -413,7 +411,6 @@ emitAssets(compilation, callback) {
 ;(function (modules) {
   // webpackBootstrap
   // 缓存 __webpack_require__ 函数加载过的模块，提升性能，
-
   var installedModules = {}
 
   /**
@@ -442,7 +439,7 @@ emitAssets(compilation, callback) {
     )
     module.l = true // 标记为已加载
 
-    // 返回加载的模块，调用方直接调用即可
+    // 返回加载的模块，直接调用即可
     return module.exports
   }
   // 在 __webpack_require__ 函数对象上挂载一些变量及函数 ...
@@ -506,15 +503,15 @@ emitAssets(compilation, callback) {
 })
 ```
 
-上述代码的实现了⼀个 webpack_require 来实现⾃⼰的模块化把代码都缓存在 installedModules ⾥，代码⽂件以对象传递进来，key 是路径，value 是包裹的代码字符串，并且代码内部的 require，都被替换成了 webpack_require,代码字符串可以通过 eval 函数去执行。
+上述代码的实现了⼀个 `webpack_require` 来实现⾃⼰的模块化把代码都缓存在 `installedModules` ⾥，代码⽂件以对象传递进来，`key` 是路径，`value` 是包裹的代码字符串，并且代码内部的 `require`，都被替换成了 `webpack_require`,代码字符串可以通过 eval 函数去执行。
 
-总结一下，生成的 bundle.js 只包含一个立即调用函数（IIFE），这个函数会接受一个对象为参数，它其实主要做了两件事：
+总结一下，生成的 `bundle.js`只包含一个立即调用函数（IIFE），这个函数会接受一个对象为参数，它其实主要做了两件事：
 
-1. 定义一个模块加载函数 webpack_require。
+1. 定义一个模块加载函数 `webpack_require。`
 
-2. 使用加载函数加载入口模块 "./src/index.js"，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 exports。
+2. 使用加载函数加载入口模块 `"./src/index.js"`，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 `exports`。
 
-接下来从 0 开始实践一个 Webpack 的雏形，能够让大家更加深入了解 Webpack
+接下来从 0 开始实践一个 `Webpack` 的雏形，能够让大家更加深入了解 `Webpack`
 
 ### 实现一个简单的 webpack
 

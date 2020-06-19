@@ -11,6 +11,7 @@ class MdParser {
     this.data = this.traverse(this.data);
   }
   traverse(ast) {
+    console.log(ast)
     let body = '';
     ast.map(item => {
       switch (item.type) {

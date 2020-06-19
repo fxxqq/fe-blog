@@ -4,6 +4,7 @@
   "description": "手写实现一个简单的webpack",
   "main": "index.js",
   "scripts": {
+    "webpack":"webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
