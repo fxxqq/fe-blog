@@ -1,10 +1,10 @@
 #! /usr/bin/env node
 
 let path = require('path');
+let { resolve } = path;
 let webpackConfig = require(path.resolve('webpack.config.js'));
-let Compiler = require('./lib/Compiler.js'); // 负责编译的Compiler
-let compiler = new Compiler(config);
-console.log("---开始打包---")
+let Webpack = require('./myWebpack.js');  
+
 const defaultConfig = {
   entry: 'src/index.js',
   output: {
@@ -17,4 +17,5 @@ const config = {
   ...webpackConfig
 }
 
-compiler.run()
+const options = require('./webpack.config')
+new Webpack(options).run()

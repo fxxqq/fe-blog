@@ -1,2 +1,2 @@
-import modulesA from './moduleA'
-import modulesB from './moduleB'
+import modulesA from './moduleA.js'
+import modulesB from './moduleB.js'

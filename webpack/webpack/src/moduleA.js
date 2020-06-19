@@ -1,3 +1,2 @@
-import moduleC from './moduleC'
-
+import moduleC from './moduleC.js'
 console.log("moduleA")

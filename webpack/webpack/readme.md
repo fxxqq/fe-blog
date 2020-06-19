@@ -13,7 +13,7 @@
 P.S. 以下的源码流程分析都基于 webpack4
 
 先附上一张我自己绘制的执行流程图
-[](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
+![webpack4 执行流程图](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
 
 ##### 初始化阶段
 
@@ -27,7 +27,7 @@ webpack 的几种启动方式
 
 追加 shell 命令的参数，如-p , -w，通过 yargs 解析命令行参数
 convert-yargs 把命令行参数转换成 Webpack 的配置选项对象
-同时实例化插件 new Plugin(),也就是激活 webpack 插件的加载
+同时实例化插件 new Plugin()
 
 2. 实例化 Compiler
 
@@ -524,103 +524,93 @@ emitAssets(compilation, callback) {
 
 2. 使用加载函数加载入口模块 "./src/index.js"，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 exports。
 
-接下来从 0 实现一个 webpack 的雏形，让大家更深入的了解 webpack
+接下来从 0 开始实践一个 Webpack 的雏形，能够让大家更加深入了解 Webpack
 
 ### 实现一个简单的 webpack
 
 ```js
-const fs = require("fs");
-const path = require("path");
-const parser = require("@babel/parser");//解析
-const traverse = require("@babel/traverse").default;//遍历
-const { transformFromAst } = require("@babel/core");//转换
-class Webpack {
-  constructor(options) {
-    const { entry, output } = options;
-    this.entry = entry;
-    this.output = output;
-    this.modules = [];
-  }
-  // 构建启动
-  run() {
-    const info = this.build(this.entry);
-    this.modules.push(info);
-    this.modules.forEach(({ dependecies }) => {
-      if (dependecies) {
-        for (const dependency in dependecies) {
-          this.modules.push(this.build(dependecies[dependency]));
+const fs = require("fs")
+const path = require("path")
+const parser = require("@babel/parser")//解析成ast
+const traverse = require("@babel/traverse").default//遍历ast
+const { transformFromAst } = require("@babel/core")//ES6转换ES5
+module.exports = class Webpack {
+    constructor(options){
+        const { entry, output } = options
+        this.entry = entry
+        this.output = output
+        this.modulesArr = []
+    }
+    run(){
+        const info = this.analysis(this.entry)
+        this.modulesArr.push(info)
+        for(let i=0;i<this.modulesArr.length;i++) {
+            const item = this.modulesArr[i]
+            const { dependencies } = item;
+            if(dependencies) {
+                for(let j in dependencies){
+                    this.modulesArr.push(this.analysis(dependencies[j]))
+                }
+            }
         }
-      }
-    });
-    const dependencyGraph = this.modules.reduce(
-      (graph, item) => ({
-        ...graph,
-        [item.filename]: {
-          dependecies: item.dependecies,
-          code: item.code
+        // console.log(this.modules)
+        //数组结构转换
+        const obj = {}
+        this.modulesArr.forEach((item) => {
+            obj[item.entryFile] = {
+                dependencies:item.dependencies,
+                code:item.code
+            }
+        })
+        this.file(obj)
+    }
+    analysis(entryFile){
+        const conts = fs.readFileSync(entryFile,'utf-8')
+        const ast = parser.parse(conts, {
+            sourceType: "module"
+          });
+        //   console.log(ast)
+          const dependencies = {}
+          traverse(ast,{
+            ImportDeclaration({node}){
+                const newPath = "./" + path.join(
+                    path.dirname(entryFile),
+                    node.source.value
+                    )
+                dependencies[node.source.value] = newPath
+                // console.log(dependencies)
+            }
+        })
+        const {code} = transformFromAst(ast,null,{
+            presets: ["@babel/preset-env"]
+        })
+        return {
+            entryFile,
+            dependencies,
+            code
         }
-      }),
-      {}
-    );
-    this.generate(dependencyGraph);
-  }
-  build(filename) {
-    const ast = this.getAst(filename);
-    const dependecies = this.getDependecies(ast, filename);
-    const code = this.getCode(ast);
-    return {
-      filename,
-      dependecies,
-      code
-    };
-  }
-  getAst(path){
-    const content = fs.readFileSync(path, "utf-8");
-    return parser.parse(content, {
-      sourceType: "module"
-    });
-  }
-  getDependecies(ast, filename) => {
-    const dependecies = {};
-     // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
-    traverse(ast, {
-      ImportDeclaration({ node }) {
-        const dirname = path.dirname(filename);
-        // 保存依赖模块路径,之后生成依赖关系图需要用到
-        const filepath = "./" + path.join(dirname, node.source.value);
-        dependecies[node.source.value] = filepath;
-      }
-    });
-    return dependecies;
-  },
-  getCode: ast => {
-    const { code } = transformFromAst(ast, null, {
-      presets: ["@babel/preset-env"]
-    });
-    return code;
-  }
-  generate(code) {
-    const filePath = path.join(this.output.path, this.output.filename);
-    const bundle = `(function(graph){
-      //require函数的本质是执行一个模块的代码，然后将相应变量挂载到exports对象上
-      function require(moduleId){
-        function localRequire(relativePath){
-          return require(graph[moduleId].dependecies[relativePath])
-        }
-        var exports = {};
-        (function(require,exports,code){
-          eval(code)
-        })(localRequire,exports,graph[moduleId].code);
-        return exports;
-         //函数返回指向局部变量，形成闭包，exports变量在函数执行后不会被摧毁
-      }
-      require('${this.entry}')
-    })(${JSON.stringify(code)})`;
-    fs.writeFileSync(filePath, bundle, "utf-8");
-  }
+    }
+    file(code){
+        // console.log(code)
+        //生成bundle.js   =>./dist/main.js
+        const filePath = path.join(this.output.path,this.output.filename)
+        const newCode = JSON.stringify(code)
+        const bundle = `(function(graph){
+            function require(moduleId){
+                function localRequire(relativePath){
+                   return require(graph[moduleId].dependencies[relativePath]) 
+                }
+                var exports = {};
+                (function(require,exports,code){
+                    eval(code)
+                })(localRequire,exports,graph[moduleId].code)
+                return exports;
+            }
+            require('${this.entry}')
+        })(${newCode})`
+        fs.writeFileSync(filePath,bundle,'utf-8')
+    }
 }
-
-module.exports = Webpack;
 ```
 
 调用
@@ -629,3 +619,4 @@ module.exports = Webpack;
 const options = require('./webpack.config')
 new Webpack(options).run()
 ```
+
