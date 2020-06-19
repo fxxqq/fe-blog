@@ -109,10 +109,6 @@ const createCompiler = (rawOptions) => {
 
 如果不是监视模式就调用 Compiler 对象的 run 方法，`befornRun->beforeCompile->compile->thisCompilation->compilation`开始构建整个应用。
 
-<details>
-
-    <summary>点击展开源码</summary>ƒ
-
 ```js
 const { SyncHook, SyncBailHook, AsyncSeriesHook } = require('tapable')
 class Compiler {
@@ -215,8 +211,6 @@ class Compiler {
 }
 ```
 
-</details>
-
 2. 编译模块：(make 阶段)
 
 - 从 entry 入口配置文件出发, 调用所有配置的 Loader 对模块进行处理,
@@ -225,10 +219,6 @@ class Compiler {
 - 解析结束后，webpack 会把所有模块封装在一个函数里，并放入一个名为 modules 的数组里。
 - 将 modules 传入一个自执行函数中，自执行函数包含一个 installedModules 对象，已经执行的代码模块会保存在此对象中。
 - 最后自执行函数中加载函数（`webpack__require`）载入模块。
-
-  <details>
-
-      <summary>点击展开源码</summary>
 
 ```js
 class Compilation extends Tapable {
@@ -362,7 +352,7 @@ createChunkAssets() {
 }
 ```
 
-</details>
+ 
 
 概括一下 make 阶段单入口打包的流程，大致为 4 步骤
 
