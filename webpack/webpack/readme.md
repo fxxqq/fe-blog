@@ -21,7 +21,7 @@ P.S. 以下的源码流程分析都基于 `webpack4`
 
 `webpack` 的几种启动方式
 
-- 通过 `webpack-cli `执行 会走到 `./node_modules/.bin/webpack-cli`（执行）
+- 通过 `webpack-cli`执行 会走到 `./node_modules/.bin/webpack-cli`（执行）
 - 通过 `shell` 执行`webpack` ，会走到 `./bin/webpack.js`
 - 通过 `require("webpack")`执行 会走到 `./node_modules/webpack/lib/webpack.js`
 
@@ -511,81 +511,84 @@ emitAssets(compilation, callback) {
 
 2. 使用加载函数加载入口模块 `"./src/index.js"`，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 `exports`。
 
+所以我们只需要实现 2 个功能就可以实现一个简单的打包编译工具
+
+1. 从入口开始递归分析依赖
+2.
+
 接下来从 0 开始实践一个 `Webpack` 的雏形，能够让大家更加深入了解 `Webpack`
 
 ### 实现一个简单的 webpack
 
 ```js
-const fs = require("fs")
-const path = require("path")
-const parser = require("@babel/parser")//解析成ast
-const traverse = require("@babel/traverse").default//遍历ast
-const { transformFromAst } = require("@babel/core")//ES6转换ES5
+const fs = require('fs')
+const path = require('path')
+const parser = require('@babel/parser') //解析成ast
+const traverse = require('@babel/traverse').default //遍历ast
+const { transformFromAst } = require('@babel/core') //ES6转换ES5
 module.exports = class Webpack {
-    constructor(options){
-        const { entry, output } = options
-        this.entry = entry
-        this.output = output
-        this.modulesArr = []
-    }
-    run(){
-        const info = this.analysis(this.entry)
-        this.modulesArr.push(info)
-        for(let i=0;i<this.modulesArr.length;i++) {
-           // 判断有依赖对象,递归解析所有依赖项
-            const item = this.modulesArr[i]
-            const { dependencies } = item;
-            if(dependencies) {
-                for(let j in dependencies){
-                    this.modulesArr.push(this.analysis(dependencies[j]))
-                }
-            }
+  constructor(options) {
+    const { entry, output } = options
+    this.entry = entry
+    this.output = output
+    this.modulesArr = []
+  }
+  run() {
+    const info = this.build(this.entry)
+    this.modulesArr.push(info)
+    for (let i = 0; i < this.modulesArr.length; i++) {
+      // 判断有依赖对象,递归解析所有依赖项
+      const item = this.modulesArr[i]
+      const { dependencies } = item
+      if (dependencies) {
+        for (let j in dependencies) {
+          this.modulesArr.push(this.build(dependencies[j]))
         }
-        // console.log(this.modules)
-        //数组结构转换
-        const obj = {}
-        this.modulesArr.forEach((item) => {
-            obj[item.entryFile] = {
-                dependencies:item.dependencies,
-                code:item.code
-            }
-        })
-        this.emitFile(obj)
+      }
     }
-    analysis(entryFile){
-        const conts = fs.readFileSync(entryFile,'utf-8')
-        const ast = parser.parse(conts, {
-            sourceType: "module"
-          });
-        //  console.log(ast)
-         // 遍历所有的 import 模块,存入dependecies
-          const dependencies = {}
-          traverse(ast,{
-            // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
-            ImportDeclaration({node}){
-                const newPath = "./" + path.join(
-                    path.dirname(entryFile),
-                    node.source.value
-                    )
-                dependencies[node.source.value] = newPath
-                // console.log(dependencies)
-            }
-        })
-        const {code} = transformFromAst(ast,null,{
-            presets: ["@babel/preset-env"]
-        })
-        return {
-            entryFile,
-            dependencies,
-            code
-        }
+    //数组结构转换
+    const obj = {}
+    this.modulesArr.forEach((item) => {
+      obj[item.entryFile] = {
+        dependencies: item.dependencies,
+        code: item.code,
+      }
+    })
+    this.emitFile(obj)
+  }
+  build(entryFile) {
+    const conts = fs.readFileSync(entryFile, 'utf-8')
+    const ast = parser.parse(conts, {
+      sourceType: 'module',
+    })
+    //  console.log(ast)
+    // 遍历所有的 import 模块,存入dependecies
+    const dependencies = {}
+    traverse(ast, {
+      // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
+      ImportDeclaration({ node }) {
+        const newPath =
+          './' + path.join(path.dirname(entryFile), node.source.value)
+        dependencies[node.source.value] = newPath
+        // console.log(dependencies)
+      },
+    })
+    // 将转化后 ast 的代码重新转化成代码
+    // 并通过配置 @babel/preset-env 预置插件编译成 es5
+    const { code } = transformFromAst(ast, null, {
+      presets: ['@babel/preset-env'],
+    })
+    return {
+      entryFile,
+      dependencies,
+      code,
     }
-    emitFile(code){
-        // console.log(code)
-        //生成bundle.js
-        const filePath = path.join(this.output.path,this.output.filename)
-        const newCode = JSON.stringify(code)
-        const bundle = `(function(graph){
+  }
+  emitFile(code) {
+    //生成bundle.js
+    const filePath = path.join(this.output.path, this.output.filename)
+    const newCode = JSON.stringify(code)
+    const bundle = `(function(graph){
             function require(moduleId){
                 function localRequire(relativePath){
                    return require(graph[moduleId].dependencies[relativePath]) 
@@ -598,8 +601,8 @@ module.exports = class Webpack {
             }
             require('${this.entry}')
         })(${newCode})`
-        fs.writeFileSync(filePath,bundle,'utf-8')
-    }
+    fs.writeFileSync(filePath, bundle, 'utf-8')
+  }
 }
 ```
 
