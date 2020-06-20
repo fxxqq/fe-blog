@@ -222,133 +222,154 @@ class Compiler {
 
 ```js
 class Compilation extends Tapable {
-    constructor(compiler) {
-        super();
-        this.hooks = {};
-        // ...
-        this.compiler = compiler;
-        // ...
-        // 构建生成的资源
-        this.chunks = [];
-        this.chunkGroups = [];
-        this.modules = [];
-        this.additionalChunkAssets = [];
-        this.assets = {};
-        this.children = [];
-        // ...
-    }
-    //
-    buildModule(module, optional, origin, dependencies, thisCallback) {
-        // ...
-        // 调用module.build方法进行编译代码，build中 其实是利用acorn编译生成AST
-        this.hooks.buildModule.call(module);
-        module.build( /**param*/ );
-    }
-    // 将模块添加到列表中，并编译模块
-    _addModuleChain(context, dependency, onModule, callback) {
-        // ...
-        // moduleFactory.create创建模块，这里会先利用loader处理文件，然后生成模块对象
-        moduleFactory.create({
-                contextInfo: {
-                    issuer: "",
-                    compiler: this.compiler.name
-                },
-                context: context,
-                dependencies: [dependency]
-            },
-            (err, module) => {
-                const addModuleResult = this.addModule(module);
-                module = addModuleResult.module;
-                onModule(module);
-                dependency.module = module;
+	constructor(compiler) {
+		super();
+		this.hooks = {};
+		// ...
+		this.compiler = compiler;
+		// ...
+		// 构建生成的资源
+		this.chunks = [];
+		this.chunkGroups = [];
+		this.modules = [];
+		this.additionalChunkAssets = [];
+		this.assets = {};
+		this.children = [];
+		// ...
+	}
+	//
+	buildModule(module, optional, origin, dependencies, thisCallback) {
+		// ...
+		// 调用module.build方法进行编译代码，build中 其实是利用acorn编译生成AST
+		this.hooks.buildModule.call(module);
+		module.build( /**param*/ );
+	}
+	// 将模块添加到列表中，并编译模块
+	_addModuleChain(context, dependency, onModule, callback) {
+		// ...
+		// moduleFactory.create创建模块，这里会先利用loader处理文件，然后生成模块对象
+		moduleFactory.create({
+			contextInfo: {
+				issuer: "",
+				compiler: this.compiler.name
+			},
+			context: context,
+			dependencies: [dependency]
+		}, (err, module) = > {
+			const addModuleResult = this.addModule(module);
+			module = addModuleResult.module;
+			onModule(module);
+			dependency.module = module;
 
-                // ...
-                // 调用buildModule编译模块
-                this.buildModule(module, false, null, null, err => {});
-            }
-        });
+			// ...
+			// 调用buildModule编译模块
+			this.buildModule(module, false, null, null, err = > {});
+		});
+	}
+	// 添加入口模块，开始编译&构建
+	addEntry(context, entry, name, callback) {
+		// ...
+		this._addModuleChain( // 调用_addModuleChain添加模块
+		context, entry, module = > {
+			this.entries.push(module);
+		},
+		// ...
+		);
+	}
+	seal(callback) {
+		this.hooks.seal.call();
+
+		// ...
+		//完成了Chunk的构建和依赖、Chunk、module等各方面的优化
+		const chunk = this.addChunk(name);
+		const entrypoint = new Entrypoint(name);
+		entrypoint.setRuntimeChunk(chunk);
+		entrypoint.addOrigin(null, name, preparedEntrypoint.request);
+		this.namedChunkGroups.set(name, entrypoint);
+		this.entrypoints.set(name, entrypoint);
+		this.chunkGroups.push(entrypoint);
+
+		GraphHelpers.connectChunkGroupAndChunk(entrypoint, chunk);
+		GraphHelpers.connectChunkAndModule(chunk, module);
+
+		chunk.entryModule = module;
+		chunk.name = name;
+
+		// ...
+		this.hooks.beforeHash.call();
+		this.createHash();
+		this.hooks.afterHash.call();
+		this.hooks.beforeModuleAssets.call();
+		this.createModuleAssets();
+		if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
+			this.hooks.beforeChunkAssets.call();
+			this.createChunkAssets();
+		}
+		// ...
+	}
+
+	createHash() {
+		// ...
+	}
+
+	// 生成 assets 资源并 保存到 Compilation.assets 中 给webpack写插件的时候会用到
+	createModuleAssets() {
+		for (let i = 0; i < this.modules.length; i++) {
+			const module = this.modules[i];
+			if (module.buildInfo.assets) {
+				for (const assetName of Object.keys(module.buildInfo.assets)) {
+					const fileName = this.getPath(assetName);
+					this.assets[fileName] = module.buildInfo.assets[assetName];
+					this.hooks.moduleAsset.call(module, fileName);
+				}
+			}
+		}
+	}
+
+	createChunkAssets() {
+		asyncLib.forEach(
+		this.chunks, (chunk, callback) = > {
+			// manifest是数组结构，每个manifest元素都提供了 `render` 方法，提供后续的源码字符串生成服务。至于render方法何时初始化的，在`./lib/MainTemplate.js`中
+			let manifest = this.getRenderManifest()
+			asyncLib.forEach(
+			manifest, (fileManifest, callback) = > {...
+				source = fileManifest.render()
+				this.emitAsset(file, source, assetInfo)
+			}, callback)
+		}, callback)
+	}
 }
-// 添加入口模块，开始编译&构建
-addEntry(context, entry, name, callback) {
-    // ...
-    this._addModuleChain( // 调用_addModuleChain添加模块
-        context,
-        entry,
-        module => {
-            this.entries.push(module);
-        },
-        // ...
-    );
-}
-seal(callback) {
-    this.hooks.seal.call();
+```
 
-    // ...
-    //完成了Chunk的构建和依赖、Chunk、module等各方面的优化
-    const chunk = this.addChunk(name);
-    const entrypoint = new Entrypoint(name);
-    entrypoint.setRuntimeChunk(chunk);
-    entrypoint.addOrigin(null, name, preparedEntrypoint.request);
-    this.namedChunkGroups.set(name, entrypoint);
-    this.entrypoints.set(name, entrypoint);
-    this.chunkGroups.push(entrypoint);
-
-    GraphHelpers.connectChunkGroupAndChunk(entrypoint, chunk);
-    GraphHelpers.connectChunkAndModule(chunk, module);
-
-    chunk.entryModule = module;
-    chunk.name = name;
-
-    // ...
-    this.hooks.beforeHash.call();
-    this.createHash();
-    this.hooks.afterHash.call();
-    this.hooks.beforeModuleAssets.call();
-    this.createModuleAssets();
-    if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
-        this.hooks.beforeChunkAssets.call();
-        this.createChunkAssets();
-    }
-    // ...
-}
-
-createHash() {
-    // ...
-}
-
-// 生成 assets 资源并 保存到 Compilation.assets 中 给webpack写插件的时候会用到
-createModuleAssets() {
-    for (let i = 0; i < this.modules.length; i++) {
-        const module = this.modules[i];
-        if (module.buildInfo.assets) {
-            for (const assetName of Object.keys(module.buildInfo.assets)) {
-                const fileName = this.getPath(assetName);
-                this.assets[fileName] = module.buildInfo.assets[assetName];
-                this.hooks.moduleAsset.call(module, fileName);
-            }
-        }
-    }
-}
-
-createChunkAssets() {
-     asyncLib.forEach(
-        this.chunks,
-        (chunk, callback) => {
-            // manifest是数组结构，每个manifest元素都提供了 `render` 方法，提供后续的源码字符串生成服务。至于render方法何时初始化的，在`./lib/MainTemplate.js`中
-            let manifest = this.getRenderManifest()
-            asyncLib.forEach(
-                manifest,
-                (fileManifest, callback) => {
-                    ...
-                    source = fileManifest.render()
-                    this.emitAsset(file, source, assetInfo)
-                },
-                callback
-            )
-        },
-        callback
+```js
+class SingleEntryPlugin {
+  apply(compiler) {
+    compiler.hooks.compilation.tap(
+      'SingleEntryPlugin',
+      (compilation, { normalModuleFactory }) => {
+        compilation.dependencyFactories.set(
+          SingleEntryDependency,
+          normalModuleFactory
+        )
+      }
     )
- }
+
+    compiler.hooks.make.tapAsync(
+      'SingleEntryPlugin',
+      (compilation, callback) => {
+        const { entry, name, context } = this
+
+        const dep = SingleEntryPlugin.createDependency(entry, name)
+        compilation.addEntry(context, dep, name, callback)
+      }
+    )
+  }
+
+  static createDependency(entry, name) {
+    const dep = new SingleEntryDependency(entry)
+    dep.loc = { name }
+    return dep
+  }
 }
 ```
 
@@ -358,6 +379,12 @@ createChunkAssets() {
 2. `addEntry` 中调用 `_addModuleChain`,将模块添加到依赖列表中，并编译模块
 3. 然后在 `buildModule` 方法中，调用了 `NormalModule.build`，创建模块之时，会调用 `runLoaders`，执行 `Loader`，利用 `acorn` 编译生成 `AST`
 4. 分析文件的依赖关系逐个拉取依赖模块并重复上述过程，最后将所有模块中的 `require` 语法替换成 `webpack_require` 来模拟模块化操作。
+
+##### 从源码的角度，思考一下， `loader` 为什么是自右向左执行的，`loader` 中有 `pitch` 也会从右到左执行的么？
+
+`runLoaders` 方法调用 `iteratePitchingLoaders` 去递归查找执行有 `pich` 属性的 `loader` ；若存在多个 `pitch` 属性的 `loader` 则依次执行所有带 `pitch` 属性的 `loader` ，执行完后逆向执行所有带 `pitch` 属性的 `normal` 的 `normal loader` 后返回 `result`，没有 `pitch` 属性的 `loader` 就不会再执行；若 `loaders` 中没有 `pitch` 属性的 `loader` 则逆向执行 `loader；执行正常` loader 是在 `iterateNormalLoaders` 方法完成的，处理完所有 `loader` 后返回 `result`。
+
+出自文章[你真的掌握了 loader 么？- loader 十问(https://juejin.im/post/5bc1a73df265da0a8d36b74f)](https://juejin.im/post/5bc1a73df265da0a8d36b74f)
 
 ##### Compiler 和 Compilation 的区别
 
@@ -505,20 +532,22 @@ emitAssets(compilation, callback) {
 
 上述代码的实现了⼀个 `webpack_require` 来实现⾃⼰的模块化把代码都缓存在 `installedModules` ⾥，代码⽂件以对象传递进来，`key` 是路径，`value` 是包裹的代码字符串，并且代码内部的 `require`，都被替换成了 `webpack_require`,代码字符串可以通过 eval 函数去执行。
 
+`bundle.js` 能直接运行在浏览器中的原因在于输出的文件中通过 **webpack_require** 函数定义了一个可以在浏览器中执行的加载函数来模拟 `Node.js` 中的 `require` 语句。
+
 总结一下，生成的 `bundle.js`只包含一个立即调用函数（IIFE），这个函数会接受一个对象为参数，它其实主要做了两件事：
 
 1. 定义一个模块加载函数 `webpack_require。`
 
 2. 使用加载函数加载入口模块 `"./src/index.js"`，从入口文件开始递归解析依赖，在解析的过程中，分别对不同的模块进行处理，返回模块的 `exports`。
 
-所以我们只需要实现 2 个功能就可以实现一个简单的打包编译工具
+所以我们只需要实现 2 个功能就可以实现一个简单的仿 `webpack` 打包 `js` 的编译工具
 
 1. 从入口开始递归分析依赖
-2.
-
-接下来从 0 开始实践一个 `Webpack` 的雏形，能够让大家更加深入了解 `Webpack`
+2. 借助依赖图谱来生成真正能在浏览器上运行的代码
 
 ### 实现一个简单的 webpack
+
+接下来从 0 开始实践一个 `Webpack` 的雏形，能够让大家更加深入了解 `Webpack`
 
 ```js
 const fs = require('fs')
@@ -565,7 +594,8 @@ module.exports = class Webpack {
     // 遍历所有的 import 模块,存入dependecies
     const dependencies = {}
     traverse(ast, {
-      // 类型为 ImportDeclaration 的 AST 节点 (即为import 语句)
+      //  类型为 ImportDeclaration 的 AST 节点，
+      // 其实就是我们的 import xxx from xxxx
       ImportDeclaration({ node }) {
         const newPath =
           './' + path.join(path.dirname(entryFile), node.source.value)
@@ -588,15 +618,16 @@ module.exports = class Webpack {
     //生成bundle.js
     const filePath = path.join(this.output.path, this.output.filename)
     const newCode = JSON.stringify(code)
-    const bundle = `(function(graph){
+    const bundle = `(function(modules){
+           // moduleId 为传入的 filename ，即模块的唯一标识符
             function require(moduleId){
                 function localRequire(relativePath){
-                   return require(graph[moduleId].dependencies[relativePath]) 
+                   return require(modules[moduleId].dependencies[relativePath]) 
                 }
                 var exports = {};
                 (function(require,exports,code){
                     eval(code)
-                })(localRequire,exports,graph[moduleId].code)
+                })(localRequire,exports,modules[moduleId].code)
                 return exports;
             }
             require('${this.entry}')
@@ -609,9 +640,32 @@ module.exports = class Webpack {
 调用
 
 ```js
+let path = require('path')
+let { resolve } = path
+let webpackConfig = require(path.resolve('webpack.config.js'))
+let Webpack = require('./myWebpack.js')
+
+const defaultConfig = {
+  entry: 'src/index.js',
+  output: {
+    path: resolve(__dirname, '../dist'),
+    filename: 'bundle.js',
+  },
+}
+const config = {
+  ...defaultConfig,
+  ...webpackConfig,
+}
+
 const options = require('./webpack.config')
 new Webpack(options).run()
 ```
 
 输入到浏览器看一下执行结果
 ![my-webpack执行结果](https://cdn.6fed.com/github/webpack/webpack/my-webpack-done.jpg)
+
+参考：
+
+1. [快狗打车：实现一个简单的 `webpack`](https://juejin.im/post/5e0d52716fb9a047f0002407)
+2. [`tapable` 详解+`webpack` 流程](https://juejin.im/post/5beb8875e51d455e5c4dd83f#heading-5)
+3. [本文调试以及打断点用到的源码](https://github.com/6fedcom/fe-blog/tree/master/webpack/webpack)
