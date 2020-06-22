@@ -15,7 +15,7 @@ P.S. 以下的源码流程分析都基于 `webpack4`
 先附上一张自己绘制的执行流程图
 ![webpack4 执行流程图](https://cdn.6fed.com/github/webpack/webpack/webpack-process.png)
 
-##### 初始化阶段
+#### 初始化阶段
 
 1. 初始化参数（`webpack.config.js+shell options`）
 
@@ -99,7 +99,7 @@ const createCompiler = (rawOptions) => {
 }
 ```
 
-##### 编译阶段
+#### 编译阶段
 
 1. 启动编译（`run/watch` 阶段）
 
@@ -396,13 +396,13 @@ class SingleEntryPlugin {
 `Compilation` 负责构建编译。
 每一次编译（文件只要发生变化，）就会生成一个 `Compilation` 实例，`Compilation` 可以读取到当前的模块资源，编译生成资源，变化的文件，以及依赖跟踪等状态信息。同时也提供很多事件回调给插件进行拓展。
 
-### 完成编译
+#### 完成编译
 
-##### 输出资源：（seal 阶段）
+1. 输出资源：（seal 阶段）
 
 在编译完成后，调用 `compilation.seal` 方法封闭，生成资源，这些资源保存在 `compilation.assets`, `compilation.chunk`,然后便会调用 `emit` 钩子，根据 `webpack config` 文件的 `output` 配置的 `path` 属性，将文件输出到指定的 `path`.
 
-##### 输出完成：`done/failed` 阶段
+2. 输出完成：`done/failed` 阶段
 
 `done` 成功完成一次完成的编译和输出流程。
 `failed` 编译失败，可以在本事件中获取到具体的错误原因
