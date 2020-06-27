@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSRF-demo</title>
+    <style>
+        .wrap {
+            height: 500px;
+            width: 300px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            width: 300px;
+        }
+        
+        .payInfo {
+            display: none;
+        }
+        
+        .money {
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="loginInfo">
+            <h3>登陆</h3>
+            <input type="text" placeholder="用户名" class="userName">
+            <br>
+            <input type="password" placeholder="密码" class="password">
+            <br>
+            <br>
+            <button class="btn">登陆</button>
+        </div>
+
+
+        <div class="payInfo">
+            <h3>转账信息</h3>
+            <p>当前账户余额为 <span class="money">0</span>元</p>
+            <!-- <input type="text" placeholder="收款方" class="account"> -->
+            <button class="pay">支付10元</button>
+            <br>
+            <br>
+            <a href="http://127.0.0.1:3100/bad.html" target="_blank">
+        听说点击这个链接的人都赚大钱了，你还不来看一下么
+      </a>
+        </div>
+    </div>
+</body>
+<script>
+    const btn = document.querySelector('.btn');
+    const loginInfo = document.querySelector('.loginInfo');
+    const payInfo = document.querySelector('.payInfo');
+    const money = document.querySelector('.money');
+    let currentName = '';
+    // 第一次进入判断是否已经登陆
+    Fetch('http://127.0.0.1:3200/isLogin', 'POST', {})
+        .then((res) => {
+            if (res.data) {
+                payInfo.style.display = "block"
+                loginInfo.style.display = 'none';
+                Fetch('http://127.0.0.1:3200/pay', 'POST', {
+                        userName: currentName,
+                        money: 0
+                    })
+                    .then((res) => {
+                        money.innerHTML = res.data.money;
+                    })
+            } else {
+                payInfo.style.display = "none"
+                loginInfo.style.display = 'block';
+            }
+
+        })
+        // 点击登陆
+    btn.onclick = function() {
+            var userName = document.querySelector('.userName').value;
+            currentName = userName;
+            var password = document.querySelector('.password').value;
+            Fetch('http://127.0.0.1:3200/login', 'POST', {
+                    userName,
+                    password
+                })
+                .then((res) => {
+                    payInfo.style.display = "block";
+                    loginInfo.style.display = 'none';
+                    money.innerHTML = res.data.money;
+                })
+        }
+        // 点击支付10元
+    const pay = document.querySelector('.pay');
+    pay.onclick = function() {
+            Fetch('http://127.0.0.1:3200/pay', 'POST', {
+                    userName: currentName,
+                    money: 10
+                })
+                .then((res) => {
+                    console.log(res);
+                    money.innerHTML = res.data.money;
+                })
+        }
+        // 封装的请求方法
+    function Fetch(url, method = 'POST', data) {
+        return new Promise((resolve, reject) => {
+            let options = {};
+            if (method !== 'GET') {
+                options = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                }
+            }
+            fetch(url, {
+                mode: 'cors', // no-cors, cors, *same-origin
+                method,
+                ...options,
+                credentials: 'include',
+            }).then((res) => {
+                return res.json();
+            }).then(res => {
+                resolve(res);
+            }).catch(err => {
+                reject(err);
+            });
+        })
+    }
+</script>
+
+</html>
