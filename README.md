@@ -24,7 +24,7 @@ csrf
 
 ##### react 系列
 
-1. [React16 常用 api 解析以及原理剖析](https://github.com/6fedcom/fe-blog/tree/master/blog/React16-commonly-used-API-analysis)
+1. [React16 常用 api 解析以及原理剖析](https://github.com/6fedcom/fe-blog/tree/master/react/React16-commonly-used-API-analysis)
 
 ##### 手写代码系列
 
