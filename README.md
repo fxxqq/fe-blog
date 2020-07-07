@@ -31,4 +31,6 @@ csrf
 1. [hash 去重](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/hash%E5%8E%BB%E9%87%8D.js)
 2. [防抖节流](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.js)
 3. [手写实现 promise](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/Promise.js)
-4. [手写实现 instanceof]()
+4. [手写实现 instanceof](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/instanceof.js)
+5. [实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/curry.js)
+6. [数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
