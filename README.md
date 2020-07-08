@@ -32,5 +32,9 @@ csrf
 2. [防抖节流](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.js)
 3. [手写实现 promise](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/Promise.js)
 4. [手写实现 instanceof](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/instanceof.js)
-5. [实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/curry.js)
+5. [实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/currying.js)
 6. [数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
+
+### 前端基础
+
+[prototype 和*proto*以及原型链的关系](https://github.com/6fedcom/fe-blog/blob/master/js%E5%9F%BA%E7%A1%80/prototype%E5%92%8C_proto_%E4%BB%A5%E5%8F%8A%E5%8E%9F%E5%9E%8B%E9%93%BE%E7%9A%84%E5%85%B3%E7%B3%BB.md)
