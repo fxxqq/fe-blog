@@ -40,7 +40,7 @@ console.log(newPerson.__proto__.__proto__.__proto__)
 当访问 p 中的一个非自有属性的时候，就会通过 `__proto__` 作为桥梁连接起来的一系列原型、原型的原型、原型的原型的原型直到 Object 构造函数为止。
 这个搜索的过程形成的链状关系就是原型链
 
-[原型链](https://cdn.6fed.com/github/js-basis/%E5%8E%9F%E5%9E%8B%E9%93%BE.jpg)
+![原型链](https://cdn.6fed.com/github/js-basis/%E5%8E%9F%E5%9E%8B%E9%93%BE.jpg)
 
 参考
 [图解原型和原型链](https://juejin.im/post/5c8a692af265da2d8763b744)
