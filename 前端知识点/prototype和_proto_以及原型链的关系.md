@@ -37,7 +37,7 @@ console.log(newPerson.__proto__.__proto__.__proto__)
 原型同样也可以通过 `__proto__`访问到原型的原型
 比方说这里有个构造函数 Person1 然后“继承”前者的有一个构造函数 Person2 ，然后 new Person1 得到实例 newPerson
 
-当访问 p 中的一个非自有属性的时候，就会通过 `__proto__` 作为桥梁连接起来的一系列原型、原型的原型、原型的原型的原型直到 Object 构造函数为止。
+当访问 newPerson 中的一个非自有属性的时候，就会通过 `__proto__` 作为桥梁连接起来的一系列原型、原型的原型、原型的原型的原型直到 Object 构造函数为止。
 这个搜索的过程形成的链状关系就是原型链
 
 ![原型链](https://cdn.6fed.com/github/js-basis/%E5%8E%9F%E5%9E%8B%E9%93%BE.jpg)
