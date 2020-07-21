@@ -37,4 +37,6 @@ csrf
 
 ### 前端知识点
 
-[prototype 和*proto*以及原型链的关系](https://github.com/6fedcom/fe-blog/blob/master/前端知识点/prototype和_proto_以及原型链的关系.md)
+[prototype 和`_proto_`以及原型链的关系](https://github.com/6fedcom/fe-blog/blob/master/前端知识点/prototype和_proto_以及原型链的关系.md)
+[js 事件循环]()
+[前端性能优化]()
