@@ -9,6 +9,7 @@
 // 7. 返回结果。
 // https://juejin.im/post/5ef8377f6fb9a07e693a6061?#heading-72
 // call函数实现
+
 Function.prototype.myCall = function(context) {
   // 判断调用对象
   if (typeof this !== "function") {
