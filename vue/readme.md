@@ -6,3 +6,4 @@
 4. compute 和 watch 原理
 5. nexttick 原理
 6. keeplive 实现原理
+7. vue Composition api 速成课

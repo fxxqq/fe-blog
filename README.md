@@ -34,6 +34,7 @@ csrf
 4. [手写实现 instanceof](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/instanceof.js)
 5. [实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/currying.js)
 6. [数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
+7. [new 的内部机制，自己实现一个 new](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现new.js)
 
 ### 前端知识点
 
