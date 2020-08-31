@@ -10,8 +10,4 @@ https://www.zhihu.com/question/34074946
 
 3. 首部压缩
 
-4. 多路复用 (Multiplexing)
-
-多路复用允许同时通过单一的 HTTP/2 连接发起多重的请求-响应消息。
-
-5. 服务端推送（Server Push）
+4. 服务端推送（Server Push）
