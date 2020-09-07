@@ -20,10 +20,10 @@ let index = 1
 var treeHeight = (tree) => {
   if (tree.children) {
     console.log("index", index)
-    index++1
+    index += 1
     treeHeight(tree.children)
   }
 
   return index
 }
-console.log("result", treeHeight(tree))
+console.log("22", treeHeight(tree))

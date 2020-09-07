@@ -24,3 +24,4 @@ function currying() {
 
   return fn
 }
+console.log(currying(2, 2)(3)(4))
