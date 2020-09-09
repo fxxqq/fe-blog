@@ -26,6 +26,7 @@ function getDepth(tree) {
     }
     arr = [];
     for (var i = 0; i < temp.length; i++) {
+
       if (temp[i].children) {
         for (var j = 0; j < temp[i].children.length; j++) {
           arr.push(temp[i].children[j]);
@@ -41,3 +42,12 @@ function getDepth(tree) {
 }
 
 console.log(getDepth(tree));
+var depth = 0
+
+function getDepth2() {
+  if (tree.children && tree.children.length) {
+    depth++
+    getDepth(tree.children)
+  }
+}
+console.log(getDepth2())
