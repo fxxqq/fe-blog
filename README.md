@@ -43,7 +43,7 @@ csrf
 5. [new 的内部机制，自己实现一个 new](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现new.js)
 6. [拼多多面试题：实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/currying.js)
 7. [快手面试题：数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
-8. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度js)
+8. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度.js)
 
 ---
 

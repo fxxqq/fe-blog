@@ -15,51 +15,25 @@ const tree = {
   ]
 }
 
+
 function getDepth(tree) {
-  var arr = [];
-  arr.push(tree);
-  var depth = 0;
-  while (arr.length > 0) {
-    var temp = [];
-    for (var i = 0; i < arr.length; i++) {
-      temp.push(arr[i]);
-    }
-    arr = [];
-    for (var i = 0; i < temp.length; i++) {
-
-      if (temp[i].children) {
-        for (var j = 0; j < temp[i].children.length; j++) {
-          arr.push(temp[i].children[j]);
-        }
-      }
-    }
-
-    if (arr.length >= 0) {
-      depth++;
-    }
-  }
-  return depth;
-}
-
-console.log(getDepth(tree));
-
-function getDepth2(tree) {
-  depth = 0
+  let depth = 0
 
   if (tree) {
     let arr = [tree]
     let temp = arr
     while (temp.length) {
+      arr = temp
       temp = []
       for (let i = 0; i < arr.length; i++) {
         if (arr[i].children && arr[i].children.length) {
           for (let j = 0; j < arr[i].children.length; j++) {
-            console.log("222")
             temp.push(arr[i].children[j])
           }
         }
       }
-      if (temp.length) {
+
+      if (temp.length >= 0) {
         depth++
       }
     }
@@ -67,4 +41,4 @@ function getDepth2(tree) {
 
   return depth
 }
-console.log(getDepth2(tree))
+console.log(getDepth(tree))
