@@ -1,21 +1,3 @@
-Composition API
-
-### 核心 api
-
-reactive：接收一个普通对象然后返回该普通对象的响应式代理。
-
-ref：接受一个参数值并返回一个响应式且可改变的 ref 对象。ref 对象拥有一个指向内部值的单一属性 .value。
-
-computed：传入一个 getter 函数，返回一个默认不可手动修改的 ref 对象。
-
-readonly：传入一个对象（响应式或普通）或 ref，返回一个原始对象的只读代理。一个只读的代理是“深层的”，对象内部任何嵌套的属性也都是只读的。
-
-watchEffect：立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。可显式的调用返回值以停止侦听。
-
-watch：全等效于 2.x this.\$watch （以及 watch 中相应的选项）。
-
-### 逻辑提取与复用
-
 ### 变化侦测
 
 vue2 中覆盖了 Array 原型中的 7 个方法，分别是：push、pop、shift、unshift、splice、sort、reverse，所以当直接通过索引改变数组时，vue 是追踪不到变化的。

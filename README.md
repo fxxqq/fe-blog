@@ -2,12 +2,18 @@
 
 ### vue 系列写作方向
 
+**vue2**
+
 1. Vue 依赖收集过程源码阅读以及实现
 2. Vue 响应式更新原理源码阅读以及实现
 3. Vue patch Diff 算法源码阅读以及实现
 4. compute 和 watch 原理
 5. nexttick 原理
 6. keeplive 实现原理
+
+**vue3**
+
+1. [vue composition-api 速成课](https://github.com/6fedcom/fe-blog/tree/master/vue/@vue/composition-api.md)
 
 ---
 
