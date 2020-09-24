@@ -1,5 +1,9 @@
-`Composition API` 将是 Vue 3 的核心功能，
-但你也可以在 `Vue 2` 中通过 npm 插件`@vue/composition-api` 使用它。
+`Composition API` 将是 Vue 3 的核心功能，它具有许多更改和性能改进。但你也可以在 `Vue 2` 中通过 npm 插件`@vue/composition-api` 使用它。
+本人重点将带你了解：
+
+1. `@vue/composition-api`常见 api 使用
+2. vue3 代码逻辑提取和复用
+3. 如何使用`provide+inject`替代`vuex`方案
 
 ### vue2 使用 composition-api
 
@@ -34,19 +38,18 @@ Vue.use(VueCompositionAPI)
 `setup` 函数是一个新的组件选项。作为在组件内使用 `Composition API` 的入口点。
 先看个简单 demo
 
-```vue
+```html
 <template>
   <button @click="increase">count is: {{ count }}</button>
 </template>
-
 <script>
-export default {
-  setup() {
-    let count = 0
-    const increase = () => count++
-    return { count, increase }
-  },
-}
+  export default {
+    setup() {
+      let count = 0
+      const increase = () => count++
+      return { count, increase }
+    },
+  }
 </script>
 ```
 
@@ -104,7 +107,7 @@ const MyComponent = {
 但是页面并没有发生改变，这是因为 `setup` 函数返回的对象中 `count` 不是响应式数据，
 那么如何创建响应式数据呢？此时就要掌握响应式系统 API，我们可以使用 `ref` 和 `reactive` 创建。
 
-```vue
+```html
 <template>
   <button @click="increase">
     count is: {{ count }}, state.count is {{ state.count }}
@@ -112,18 +115,18 @@ const MyComponent = {
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
-export default {
-  setup() {
-    let count = ref(0) // { value: 0 }
-    let state = reactive({ number: 0 })
-    const increase = () => {
-      count.value++
-      state.count++
-    }
-    return { count, state, increase }
-  },
-}
+  import { ref, reactive } from 'vue'
+  export default {
+    setup() {
+      let count = ref(0) // { value: 0 }
+      let state = reactive({ number: 0 })
+      const increase = () => {
+        count.value++
+        state.count++
+      }
+      return { count, state, increase }
+    },
+  }
 </script>
 ```
 
@@ -143,30 +146,30 @@ Vue 本身已经有 "`ref`" 的概念了。
 
 不要解构返回的代理对象，那样会使其失去响应性：
 
-```vue
+```html
 <template>
   <button @click="increase">count is: {{ count }}</button>
 </template>
 
 <script>
-import { ref, reactive } from '@vue/composition-api'
-export default {
-  setup() {
-    let state = reactive({ count: 0 })
-    const increase = () => state.count++
-    return { ...state, increase } // 展开state属性将失去响应式
-  },
-}
+  import { ref, reactive } from '@vue/composition-api'
+  export default {
+    setup() {
+      let state = reactive({ count: 0 })
+      const increase = () => state.count++
+      return { ...state, increase } // 展开state属性将失去响应式
+    },
+  }
 </script>
 ```
 
-### toRef 和 toRefs
+#### toRef 和 toRefs
 
 那如果我们真的想展开 `state` 的属性，在模板使用 count 而不是 state.count 的写法那怎么办呢？我们可以使用 `toRef` 和 `toRefs` 这两个 API，进行转换成 ref 对象，之前已经介绍了 ref 对象是可以直接在模板中使用的。
 
 `toRef` 可以用来为一个 `reactive` 对象的属性创建一个 ref。这个 ref 可以被传递并且能够保持响应性。
 
-```vue
+```html
 <template>
   <button @click="increase">
     count is: {{ count }},count2 is: {{ count2 }}
@@ -174,21 +177,33 @@ export default {
 </template>
 
 <script>
-import { ref, reactive, toRef, toRefs } from '@vue/composition-api'
-export default {
-  setup() {
-    let state = reactive({ count: 0 })
-    let countRef = toRef(state, 'count')
-    let state2 = reactive({ count2: 0 })
-    const increase = () => state.count++
-    let stateAsRefs = toRefs(state2)
-    return { count: countRef, increase, ...stateAsRefs }
-  },
-}
+  import { ref, reactive, toRef, toRefs } from '@vue/composition-api'
+  export default {
+    setup() {
+      let state = reactive({ count: 0 })
+      let countRef = toRef(state, 'count')
+      let state2 = reactive({ count2: 0 })
+      const increase = () => state.count++
+      let stateAsRefs = toRefs(state2)
+      return { count: countRef, increase, ...stateAsRefs }
+    },
+  }
 </script>
 ```
 
 把一个响应式对象转换成普通对象，该普通对象的每个 `property` 都是一个 `ref` ，和响应式对象 `property` 一一对应。
+
+#### computed & watch
+
+```js
+const countDouble = computed(() => count.value * 2)
+watch(
+  () => state.count,
+  (count, prevCount) => {
+    /* ... */
+  }
+)
+```
 
 ### 代码逻辑提取和复用
 
@@ -230,7 +245,7 @@ console.log(count) //输出0
 
 有效的解决了 `mixins` 复用命名冲突，难以识别命名来自哪个 `mixin` 文件的问题。
 
-### 使用 provide 和 inject 替代 vuex 状态管理
+### 替代 vuex 状态管理
 
 状态 `store` 可以放在一个单一的文件或者目录里,比如设置一个全局组件可以只用的配置 `config`
 
