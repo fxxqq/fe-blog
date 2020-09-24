@@ -1,4 +1,4 @@
-`Composition API` 将是 Vue 3 的核心功能，它具有许多更改和性能改进。但你也可以在 `Vue 2` 中通过 npm 插件`@vue/composition-api` 使用它。
+`Composition API` 将是 Vue 3 的核心功能，它具有许多更改和性能改进。我们可以在 `Vue 2` 中通过 npm 插件`@vue/composition-api` 使用它。
 本人重点将带你了解：
 
 1. `@vue/composition-api`常见 api 使用
