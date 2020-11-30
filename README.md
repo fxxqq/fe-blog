@@ -51,7 +51,8 @@ csrf
 5. [new 的内部机制，自己实现一个 new](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现new.js)
 6. [拼多多面试题：实现柯里化函数](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/currying.js)
 7. [快手面试题：数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
-8. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度.js)
+8. [快手面试题：浏览器最大请求并非限制](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/浏览器最大请求并非限制.js)
+9. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度.js)
 
 ---
 
@@ -70,3 +71,7 @@ csrf
 [14.最长公共前缀.md](https://github.com/6fedcom/fe-blog/blob/master/leetcode/14.最长公共前缀.md)
 
 [771.宝石与石头.md](https://github.com/6fedcom/fe-blog/blob/master/leetcode/771.宝石与石头.md)
+
+[5.最长回文子串.md](https://github.com/6fedcom/fe-blog/blob/master/leetcode/5.最长回文子串.md)
+
+[20.有效的括号.md](https://github.com/6fedcom/fe-blog/blob/master/leetcode/20.有效的括号.md)
