@@ -53,6 +53,7 @@ csrf
 7. [快手面试题：数组全排列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/数组全排列.js)
 8. [快手面试题：浏览器最大请求并非限制](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/浏览器最大请求并非限制.js)
 9. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度.js)
+10. [蚂蚁面试题：编写高阶函数，连续触发时，若上一次 promise 执行未结束则直接废弃，只有最后一次 promise 会触发 then/reject](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/lastPromise.js)
 
 ---
 
