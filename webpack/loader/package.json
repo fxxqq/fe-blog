@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "cwebp": "^2.0.5",
-    "highlight.js": "^9.18.1",
+  
     "markdown-ast": "^0.2.1",
     "marked": "^0.8.2",
     "schema-utils": "^2.6.5",
