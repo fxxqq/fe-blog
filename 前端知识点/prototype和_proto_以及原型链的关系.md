@@ -16,6 +16,8 @@ console.dir(Person.prototype)
 function Person() {}
 //实例化函数
 var person = new Person()
+console.log('person', person)
+console.log('Person', Person)
 console.log(person.__proto__ === Person.prototype) //true
 console.log(Person.prototype.constructor === Person) //true
 ```
