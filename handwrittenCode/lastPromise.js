@@ -38,7 +38,7 @@ const lastPromise = (promise) => {
   }
 }
 
-let lastFn = lastPromise(promiseFunction)
+let lastFn = lastPromise(promiseFunction).promise
 
 lastFn().then(console.log) // 无输出
 lastFn().then(console.log) // 无输出
