@@ -25,9 +25,9 @@ Object,Array,Function
 
 栈优点：存取速度比堆快，仅次于直接位于 CPU 中的寄存器，数据可以共享；
 栈缺点：存在栈中的数据大小与生存期必须是确定的，缺乏灵活性。
+栈中存放局部变量，内存的释放是系统控制实现的。（局部变量的存活时间是这个函数调用完之后）
 堆的空间大，栈的空间小
 堆中存放对象，需要手动释放内存。（垃圾回收机制）
-栈中存放局部变量，内存的释放是系统控制实现的。（局部变量的存活时间是这个函数调用完之后）
 
 https://segmentfault.com/a/1190000008472264
 
@@ -43,13 +43,32 @@ a. 闭包的使用场景
 
 ### React 生命周期及自己的理解
 
+挂载 更新 卸载
+挂载
+
 1. constructor
    初始化 state 对象
    给自定义方法绑定 this
 2. getDerivedStateFromProps
+3. componentWillMount/UNSAFE_componentWillMount
+4. render
+5. componentDidMount
+
+更新
+
+1. componentWillReceiveProps/UNSAFE_componentWillReceiveProps
+2. getDerivedStateFromProps
+3. shouldComponentUpdate
+4. componentWillUpdate/UNSAFE_componentWillUpdate
+5. render
+6. getSnapshotBeforeUpdate
+7. componentDidUpdate
+
+卸载
+
+1. componentWillUnmount
 
 a. React 中 setState 后发生了什么
-
 b. 虚拟 DOM 主要做了什么
 c. 虚拟 DOM 本身是什么（JS 对象）
 https://xixili.online/2020/03/18/%E5%89%8D%E7%AB%AF%E5%9F%BA%E6%9C%AC%E4%B9%8B%E8%99%9A%E6%8B%9Fdom%EF%BC%88virtual%20DOM%EF%BC%89%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/
