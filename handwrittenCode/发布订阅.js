@@ -58,10 +58,9 @@ function EventEmitter() {
   }
   return {
     //返回一个对象
-    on: on,
-    once: once,
-    emit: emit,
-    remove,
+    on,
+    once,
+    emit,
     remove,
   }
 }
@@ -76,3 +75,31 @@ emitter.emit('someTask', 1) //1
 emitter.emit('onceTask', 1) //第二次不输出
 emitter.remove('someTask', log) //删除事件
 emitter.emit('someTask', 1) //删除事件后不输出
+class pubSub {
+  constructor() {
+    this.events = {}
+  }
+  subcribe(event, callback) {
+    if (this.events[event]) {
+      // 如果有人订阅过了，这个键已经存在，就往里面加就好了
+      this.events[event].push(callback)
+    } else {
+      // 没人订阅过，就建一个数组，回调放进去
+      this.events[event] = [callback]
+    }
+  }
+  publish(event, ...args) {
+    const subcribedEvents = this.events[event]
+    if (subcribedEvents && subcribedEvents.length) {
+      subcribedEvents.forEach((callback) => {
+        callback.call(this, ...args)
+      })
+    }
+  }
+  unsubscribe(event, callback) {
+    const subscribedEvents = this.events[event]
+    if (subscribedEvents && subscribedEvents.length) {
+      this.events[event] = this.events[event].filter((cb) => cb !== callback)
+    }
+  }
+}
