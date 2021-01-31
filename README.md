@@ -52,6 +52,7 @@
 9. [头条面试题：计算树的深度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/计算树的深度.js)
 10. [蚂蚁面试题：编写高阶函数，连续触发时，若上一次 promise 执行未结束则直接废弃，只有最后一次 promise 会触发 then/reject](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/lastPromise.js)
 11. [发布订阅.js](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/发布订阅.js)
+12. [头条：原生 ajax 封装成 async await 调用](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/原生ajax封装成async-await调用.js)
 
 ### 前端知识点
 
