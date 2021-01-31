@@ -28,9 +28,8 @@
 
 ### 前端安全
 
-xss
-
-csrf
+1. [xss](https://github.com/6fedcom/fe-blog/blob/master/前端安全/xss/readme.md)
+2. [csrf](https://github.com/6fedcom/fe-blog/tree/master/前端安全/csrf/readme.md)
 
 ---
 
