@@ -53,7 +53,7 @@
 10. [蚂蚁面试题：编写高阶函数，连续触发时，若上一次 promise 执行未结束则直接废弃，只有最后一次 promise 会触发 then/reject](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/lastPromise.js)
 11. [发布订阅.js](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/发布订阅.js)
 12. [头条：原生 ajax 封装成 async await 调用](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/原生ajax封装成async-await调用.js)
-13. [实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
+13. [阿里：实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
 
 ### 前端知识点
 
