@@ -4,5 +4,8 @@ F.a = 100
 F.prototype.b = 10
 
 let z = new F()
-console.log(z.a)
-console.log(z.b)
+console.log(z.a) //undefined
+console.log(z.b) //8
+
+
+
