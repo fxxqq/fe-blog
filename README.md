@@ -54,6 +54,7 @@
 11. [发布订阅.js](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/发布订阅.js)
 12. [头条：原生 ajax 封装成 async await 调用](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/原生ajax封装成async-await调用.js)
 13. [阿里：实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
+14. [腾讯：腾讯面试题new一个函数发生了什么](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题new一个函数发生了什么.js)
 
 ### 前端知识点
 
