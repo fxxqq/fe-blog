@@ -55,7 +55,7 @@
 12. [头条：原生 ajax 封装成 async await 调用](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/原生ajax封装成async-await调用.js)
 13. [阿里：实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
 14. [腾讯：腾讯面试题new一个函数发生了什么](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题new一个函数发生了什么.js)
-15. [蚂蚁：输入：[['a', 'b'], ['苹果', '梨', '香蕉'], ['红', '黑'] ];输出：['a-苹果-红', 'a-苹果-黑', 'a-梨-红', 'a-梨-黑', 'a-香蕉-红', 'a-香蕉-黑','b-苹果-红', 'b-苹果-黑', 'b-梨-红', 'b-梨-黑', 'b-香蕉-红', 'b-香蕉-黑']](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/'苹果', '梨', '香蕉'.js);
+15. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js);
 
 ### 前端知识点
 
