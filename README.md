@@ -8,7 +8,7 @@
 2. Vue 响应式更新原理源码阅读以及实现
 3. Vue patch Diff 算法源码阅读以及实现
 4. compute 和 watch 原理
-5. nexttick 原理
+5. [nexttick 原理](https://juejin.cn/post/6844903911673823246)
 6. keeplive 实现原理
 
 **vue3**
