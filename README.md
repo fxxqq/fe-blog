@@ -22,7 +22,7 @@
 1. [常见 loader 源码简析，以及动手实现一个 md2html-loader](https://github.com/6fedcom/fe-blog/tree/master/webpack/loader)
 2. [webpack 插件工作原理剖析](https://github.com/6fedcom/fe-blog/tree/master/webpack/plugin)
 3. [webpack 主流程源码阅读以及实现一个 webpack](https://github.com/6fedcom/fe-blog/tree/master/webpack/webpack)
-4. [webpack 打包优化实践（未完成待整理）]
+4. [webpack 打包优化实践](https://github.com/6fedcom/fe-blog/tree/master/webpack/webpack%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96)
 
 ---
 
