@@ -68,7 +68,7 @@
 
 ---
 
-### leetCode
+### leetCode(简单)
 
 [1.两数之和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/1.两数之和.md)
 
@@ -76,9 +76,15 @@
 
 [14.最长公共前缀](https://github.com/6fedcom/fe-blog/blob/master/leetcode/14.最长公共前缀.md)
 
-[18. 删除链表的节点](https://github.com/6fedcom/fe-blog/blob/master/leetcode/18.删除链表的节点.md)
+[18.删除链表的节点](https://github.com/6fedcom/fe-blog/blob/master/leetcode/18.删除链表的节点.md)
 
 [20.有效的括号](https://github.com/6fedcom/fe-blog/blob/master/leetcode/20.有效的括号.md)
+
+[21.合并两个有序链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/21.合并两个有序链表.md)
+
+[53.最大子序和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/53.最大子序和.md)
+
+[70.爬楼梯](https://github.com/6fedcom/fe-blog/blob/master/leetcode/70.爬楼梯.md)
 
 [206.反转链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/206.反转链表.md)
 
