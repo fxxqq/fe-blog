@@ -57,6 +57,7 @@
 14. [阿里：实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
 15. [腾讯：腾讯面试题 new 一个函数发生了什么](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题new一个函数发生了什么.js)
 16. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js)
+17. [字节：字节面试题 Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
 
 ### 前端知识点
 
