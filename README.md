@@ -89,6 +89,8 @@
 
 [101.对称二叉树](https://github.com/6fedcom/fe-blog/blob/master/leetcode/101.对称二叉树.md)
 
+[136.只出现一次的数字](https://github.com/6fedcom/fe-blog/blob/master/leetcode/136.只出现一次的数字.md)
+
 [206.反转链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/206.反转链表.md)
 
 [543.二叉树的直径](https://github.com/6fedcom/fe-blog/blob/master/leetcode/543.二叉树的直径.md)
