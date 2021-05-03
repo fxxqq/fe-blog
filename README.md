@@ -69,7 +69,7 @@
 
 ---
 
-### leetCode(简单)
+### leetCode(easy)
 
 [1.两数之和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/1.两数之和.md)
 
