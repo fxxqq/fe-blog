@@ -56,9 +56,11 @@
 13. [阿里：实现带有超时功能的 Promise](实现带有超时功能的Promise.js)
 14. [阿里：实现一个函数，可以将数组转化为树状数据结构](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/实现一个函数，可以将数组转化为树状数据结构.js)
 15. [腾讯：腾讯面试题 new 一个函数发生了什么](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题new一个函数发生了什么.js)
-16. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js)
-17. [字节：字节面试题 Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
-18. [拼多多面试题：设计一个支持 push ，pop ，top 操作，并能在常数时间内检索到最小元素的栈](https://github.com/6fedcom/fe-blog/blob/master/leetcode/155.最小栈.md)
+16. [腾讯面试题:三个元素之和为指定数 n 的各个组合](https://github.com/6fedcom/fe-blog/blob/master/leetcode/腾讯面试题:三个元素之和为指定数n的各个组合.js)
+17. [生成长度为 n 的 int 型随机数组，数组元素范围为 0~n-1](https://github.com/6fedcom/fe-blog/blob/master/leetcode/腾讯面试题3.js)
+18. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js)
+19. [字节：字节面试题 Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
+20. [拼多多面试题：设计一个支持 push ，pop ，top 操作，并能在常数时间内检索到最小元素的栈](https://github.com/6fedcom/fe-blog/blob/master/leetcode/155.最小栈.md)
 
 ### 前端知识点
 
