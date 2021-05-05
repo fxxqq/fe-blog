@@ -93,6 +93,8 @@
 
 [101.对称二叉树](https://github.com/6fedcom/fe-blog/blob/master/leetcode/101.对称二叉树.md)
 
+[112.路径总和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/112.路径总和.md)
+
 [136.只出现一次的数字](https://github.com/6fedcom/fe-blog/blob/master/leetcode/136.只出现一次的数字.md)
 
 [155.最小栈](https://github.com/6fedcom/fe-blog/blob/master/leetcode/155.最小栈.md)
