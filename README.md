@@ -76,7 +76,9 @@
 
 ---
 
-### leetCode Hot100(easy)
+### leetCode Hot100
+
+#### easy
 
 [1.两数之和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/1.两数之和.md)
 
@@ -108,7 +110,7 @@
 
 [771.宝石与石头](https://github.com/6fedcom/fe-blog/blob/master/leetcode/771.宝石与石头.md)
 
-### leetcode(middle)
+#### middle
 
 [5.最长回文子串](https://github.com/6fedcom/fe-blog/blob/master/leetcode/5.最长回文子串.md)
 
