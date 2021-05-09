@@ -42,7 +42,7 @@
 
 ---
 
-##### 手写代码系列
+##### 大厂手写代码题
 
 1. [hash 去重](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/hash%E5%8E%BB%E9%87%8D.js)
 2. [防抖节流](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.js)
@@ -80,7 +80,7 @@
 
 ### leetCode Hot100
 
-#### easy
+##### easy
 
 [1.两数之和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/1.两数之和.md)
 
@@ -104,6 +104,8 @@
 
 [155.最小栈](https://github.com/6fedcom/fe-blog/blob/master/leetcode/155.最小栈.md)
 
+[160.相交链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/160.相交链表md)
+
 [206.反转链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/206.反转链表.md)
 
 [234.回文链表](https://github.com/6fedcom/fe-blog/blob/master/leetcode/234.回文链表.md)
@@ -115,6 +117,23 @@
 #### middle
 
 [5.最长回文子串](https://github.com/6fedcom/fe-blog/blob/master/leetcode/5.最长回文子串.md)
-[912.排序数组](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
+
+##### LeetCode 排序 解法题目
+
+[35.搜索插入位置（easy）](https://github.com/6fedcom/fe-blog/blob/master/leetcode/35.搜索插入位置.md)
+
+[88.合并两个有序数组（easy）]
+
+191.位 1 的个数（easy）https://leetcode-cn.com/problems/number-of-1-bits/
+
+581.最短无序连续子数组（easy）https://leetcode-cn.com/problems/shortest-unsorted-continuous-subarray/
+
+1331.数组序号转换（easy）https://leetcode-cn.com/problems/rank-transform-of-an-array/
+
+56.合并区间（medium）https://leetcode-cn.com/problems/merge-intervals/
+
+215.数组中的第 K 个最大元素(medium) https://leetcode-cn.com/problems/kth-largest-element-in-an-array/
+
+[912.排序数组 middle](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
 
 𓆌𓆉𓆈𓃻𓄿𓅜𓃹𓆉𓆈𓃻𓄿𓅜𓆌𓆉𓆈𓃻𓄿𓅜𓃹𓆉𓃲𓃟𓃠𓃗𓃵𓆉𓇼𓆡𓆜𓆉𓃹𓃡𓃟𓃵𓆏𓅦𓄿𓅜𓆌𓆉𓆈𓃻𓄿𓅜
