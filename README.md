@@ -64,7 +64,8 @@
 18. [腾讯:生成长度为 n 的 int 型随机数组，数组元素范围为 0~n-1](https://github.com/6fedcom/fe-blog/blob/master/leetcode/腾讯面试题3.js)
 19. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js)
 20. [字节：字节面试题 Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
-21. [字节：二叉树&完整路径和]
+21. [字节：二叉树&完整路径和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/112.路径总和.md)
+22. [常见排序算法以及复杂度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
 
 ### 前端知识点
 
