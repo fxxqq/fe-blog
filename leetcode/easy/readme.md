@@ -1,3 +1,5 @@
+精选 100 道力扣（LeetCode）上最热门的题目，本篇文章只有 easy 级别的，适合初识算法与数据结构的新手和想要在短时间内高效提升的人。
+
 ## 1.两数之和
 
 https://leetcode-cn.com/problems/two-sum
@@ -518,3 +520,23 @@ var diameterOfBinaryTree = function (root) {
 ```
 
 注：部分题解参考 LeetCode 最佳题解，有需要的同学可以自行去 LeetCode 官网查看。
+
+## 617.合并二叉树
+
+https://leetcode-cn.com/problems/merge-two-binary-trees/
+
+```js
+var mergeTrees = function (root1, root2) {
+  if (root1 == null && root2) {
+    return root2
+  } else if (root2 == null && root1) {
+    return root1
+  } else if (root1 && root2) {
+    root1.val = root1.val + root2.val
+    //递归合并每一个节点
+    root1.left = mergeTrees(root1.left, root2.left)
+    root1.right = mergeTrees(root1.right, root2.right)
+  }
+  return root1
+}
+```

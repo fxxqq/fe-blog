@@ -112,6 +112,8 @@
 
 [543.二叉树的直径](https://github.com/6fedcom/fe-blog/blob/master/leetcode/543.二叉树的直径.md)
 
+[617.合并二叉树](https://github.com/6fedcom/fe-blog/blob/master/leetcode/617.合并二叉树.md)
+
 [771.宝石与石头](https://github.com/6fedcom/fe-blog/blob/master/leetcode/771.宝石与石头.md)
 
 #### middle
