@@ -6,7 +6,7 @@ vue2 中覆盖了 Array 原型中的 7 个方法，分别是：push、pop、shif
 
 在 3 中改为用 Proxy，但是 Proxy 只能代理一层，对于深层的无法代理。vue3 中利用每次 set 被拦截之前都会拦截到 get 操作，所以 vue3 在 get 中直接对数据进行 reactive，这样就大大减少了递归 reactive 带来的性能消耗。
 
-与 Object.definePropertyd 对比优势：
+与 Object.defineProperty 对比优势：
 
 1.可以直接监听对象而非属性
 
