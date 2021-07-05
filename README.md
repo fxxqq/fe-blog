@@ -126,8 +126,6 @@
 
 [88.合并两个有序数组（easy）](https://github.com/6fedcom/fe-blog/blob/master/leetcode/88.合并两个有序数组.md)
 
-191.位 1 的个数（easy）https://leetcode-cn.com/problems/number-of-1-bits/
-
 581.最短无序连续子数组（easy）https://leetcode-cn.com/problems/shortest-unsorted-continuous-subarray/
 
 1331.数组序号转换（easy）https://leetcode-cn.com/problems/rank-transform-of-an-array/
