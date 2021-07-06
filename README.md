@@ -76,6 +76,8 @@
 
 [前端性能优化](https://github.com/6fedcom/fe-blog/blob/master/前端知识点/前端性能优化.md)
 
+[Map 与 WeakMap 的区别](https://github.com/6fedcom/fe-blog/blob/master/前端知识点/Map与WeakMap的区别.md)
+
 ---
 
 ### leetCode Hot100
