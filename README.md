@@ -63,7 +63,7 @@
 17. [腾讯:三个元素之和为指定数 n 的各个组合](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题:三个元素之和为指定数n的各个组合.js)
 18. [腾讯:生成长度为 n 的 int 型随机数组，数组元素范围为 0~n-1](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/腾讯面试题3.js)
 19. [蚂蚁：苹果、梨、香蕉三个数组相互拼成字符串问题](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/苹果、梨、香蕉三个数组相互拼成字符串.js)
-20. [字节：字节面试题 Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
+20. [字节：Excel 表格随机生成 1000 列](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题Excel表格随机生成1000列.md)
 21. [字节：二叉树&完整路径和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/112.路径总和.md)
 22. [常见排序算法以及复杂度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
 23. [字节：合并两个有序数组](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题：合并两个有序数组.md)
@@ -137,6 +137,8 @@
 215.数组中的第 K 个最大元素(medium) https://leetcode-cn.com/problems/kth-largest-element-in-an-array/
 
 [912.排序数组（middle）](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
+
+[146. LRU 缓存机制]()
 
 ##### LeetCode 字符串相关题目
 

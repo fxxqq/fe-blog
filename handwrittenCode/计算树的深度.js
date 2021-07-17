@@ -5,16 +5,19 @@ const tree = {
     { name: '叶子1-2' },
     {
       name: '叶子2-1',
-      children: [{
-        name: '叶子3-1',
-        children: [{
-          name: '叶子4-1'
-        }]
-      }]
-    }
-  ]
+      children: [
+        {
+          name: '叶子3-1',
+          children: [
+            {
+              name: '叶子4-1',
+            },
+          ],
+        },
+      ],
+    },
+  ],
 }
-
 
 function getDepth(tree) {
   let depth = 0
