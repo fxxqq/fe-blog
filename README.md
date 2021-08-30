@@ -67,6 +67,7 @@
 21. [字节：二叉树&完整路径和](https://github.com/6fedcom/fe-blog/blob/master/leetcode/112.路径总和.md)
 22. [常见排序算法以及复杂度](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/常见排序算法以及复杂度.md)
 23. [字节：合并两个有序数组](https://github.com/6fedcom/fe-blog/blob/master/handwrittenCode/字节面试题：合并两个有序数组.md)
+24. [拼多多](合并线段)
 
 ### 前端知识点
 
