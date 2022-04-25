@@ -27,4 +27,28 @@ function buildTree(arr) {
 
 console.log(buildTree(arr))
 
-https://blog.csdn.net/susuzhe123/article/details/95353403
+//blog.csdn.net/susuzhe123/article/details/95353403
+
+function transfer(treeData) {
+  if (!(!treeData.hasOwnProperty('name') || !treeData)) {
+    let arr = []
+    let obj = {}
+    obj.name = treeData.name
+    obj.children = treeData.children.map((value) => {
+      // [1] arr = arr.concat(transfer(value))
+      return value.name
+    })
+    arr.push(obj)
+
+    // 这段代码可由代码 [1] 替代，替代后父元素在子元素后
+    treeData.children.forEach((value) => {
+      arr = arr.concat(transfer(value))
+    })
+    //
+
+    return arr
+  } else {
+    // 初始treeData是否为空树
+    return []
+  }
+}
