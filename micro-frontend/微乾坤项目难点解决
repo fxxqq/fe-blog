@@ -1,0 +1,563 @@
+
+# 微前端项目难点解决
+
+## 为什么要用微前端
+
+- 业务管理系统多，技术栈分别为 vue/vue2/react16/react hook
+- 管理人员需要同时使用多系统，但是又不想切换系统重新登陆，页面会刷新，需要新开浏览器tab
+- 部分子应用需要支持子公司的业务，需要独立部署运行。
+- 对于开发者来说，如果需要在应用 A 实现应用B的某些功能，例如在应用A的页面弹出应用B的弹窗，如果是react、vue两种不同的框架的话，重新写一遍业务逻辑代码很明显是不理智的。
+
+所以从技术角度来看，我们需要用一个父架构来集成这些子应用，把它们整合到统一平台上，同时子应用也可以脱离父架构独立部署运行。
+
+微前端架构图
+
+## 为什么放弃iframe
+
+浏览记录无法自动被记录，浏览器刷新，状态丢失、后退前进按钮无法使用。
+
+嵌套子应用弹窗蒙层无法覆盖全屏
+
+页面通信比较麻烦，只能采用postMessage方式。
+
+每次子应用进入都需要重新请求资源，页面加载速度慢。
+
+强调一下，目规模小、数量少的场景其实不建议使用微前端。
+
+## 罗列一下碰到的问题
+
+- 多tab切换操作久了会越来越卡
+- 双应用切换数据缓存
+- 同一个基座如何同时并行加载两个应用
+- 子应用部署后，如何提示业务人员更新系统
+- 性能优化：父应用如何实现预加载和按需加载
+
+## qiankun 实现原理
+
+微前端方案中我们最终选择了 `qiankun`，`qiankun`是基于`single-spa`开发，它主要采用`HTML Entry`模式，直接将子应用打出来 HTML作为入口，通过 fetch html 的方式，解析子应用的html文件，然后获取子应用的静态资源，同时将 HTML document 作为子节点塞到主框架的容器中。
+
+应用切出/卸载后，同时卸载掉其样式表即可，浏览器会对所有的样式表的插入、移除做整个 CSSOM 的重构，从而达到 插入、卸载 样式的目的。这样即能保证，在一个时间点里，只有一个应用的样式表是生效的。
+
+`HTML Entry` 方案则天生具备样式隔离的特性，因为应用卸载后会直接移除去 HTML 结构，从而自动移除了其样式表。
+
+子应用挂载时，会自动做一些特殊处理，可以确保子应用所有的资源dom（包括js添加的style标签等）都集中在子应用根节点dom下。子应用卸载时，对应的整个dom都移除了，这样也就避免了样式冲突。
+
+提供了js沙箱，子应用挂载时，会对全局window对象代理、对全局事件监听进行劫持等，确保微应用之间 全局变量/事件 不冲突。
+
+通过阅读`qiankun`源码。熟悉一下`qiankun`代码的执行流程
+
+## 业务中碰到的难点解决
+
+### 双应用切换数据缓存
+
+不同系统之间切换数据缓存问题，同一个应用可以使用 keep-alive 去缓存页面，但是不同子应用之间切换的时候，会导致子应用被销毁，缓存失效
+
+#### 多开tab缓存方案
+
+##### 代码实现
+
+通过display:none;控制不同子应用dom的显示隐藏
+
+```js
+ <template>
+  <div id="app">
+  <header>
+    <router-link to="/app1/">app1</router-link>
+    <router-link to="/app2/">app2</router-link>
+  </header>
+  <div id="appContainer1" v-show="$route.path.startsWith('/app1/')"></div>
+  <div id="appContainer2" v-show="$route.path.startsWith('/app2/')"></div>
+  <router-view></router-view>
+</div>
+</template>
+```
+
+##### 解决方案
+
+思考，
+如何优化渲染性能：
+
+每一个微应用实例都是运行在一个基座里，那我们如何尽可能多的复用沙箱，子系统切换时候不卸载，这样切换路由就快了
+
+1. 方案一
+
+方案优势：
+直接调用官网api  `loadMicroApp`,方便快捷
+切换的时候不卸载子应用，tab切换速度比较快。
+方案不足：
+超级管理员应用太多，子应用切换时不销毁DOM，会导致DOM节点和事件监听过多，造成页面卡顿；
+子应用切换时未卸载，路由事件监听也未卸载，需要对路由变化的监听做特殊的处理。
+2. 方案二
+
+```js
+start({
+    prefetch: 'all',
+    singular: false,
+})
+```
+
+有点：代码量少，通过registerMicroApps注册子应用,通过start的prefetch预加载，
+但是有个问题就是子应用在切换的时候会unmount，导致数据丢失，导致之前填写的表单数据丢失&重新打开速度也慢
+
+看了一下 [基于微前端qiankun的多页签缓存方案实践：https://zhuanlan.zhihu.com/p/548520855](https://zhuanlan.zhihu.com/p/548520855) 3.1章节的实现方法，我感觉太复杂了，而且还需要同时实现react和vue两种方案,代码量也比较大。
+
+当时就想着要是微应用切换的时候不卸载dom就好了。
+
+##### 方案二优化
+
+调用了start方法后，子应用切换怎么才能不卸载dom呢
+通过查阅文献以及阅读qiankun生命周期钩子函数的源码，最终找到了解决方案
+
+首先修改子项目的render()和unmount()方法
+
+子项目修改
+
+```js
+let instance
+export async function render() {
+  if(!instance){
+     instance = ReactDOM.render(
+        app,
+        container
+            ? container.querySelector("#root")
+            : document.querySelector("#root")
+    );ount('#app1History');
+  }
+}
+
+export async function unmount(props) { 
+    //     const { container } = props;
+    //     ReactDOM.unmountComponentAtNode(
+    //         container
+    //             ? container.querySelector("#root")
+    //             : document.querySelector("#root")
+    //     );
+}
+```
+
+vue项目同理
+
+然后，主应用调用
+
+```js
+start({
+    prefetch: 'all',
+    singular: false,
+})
+```
+
+然后借助`patch-package`修改`qiankun`源码
+
+`patch-package`的使用方法这里就不赘述了，网上有很多，很容易搜到
+
+总共修改五处地方,基于qiankun2.9.1
+
+```js
+diff --git a/node_modules/qiankun/es/loader.js b/node_modules/qiankun/es/loader.js
+index 6f48575..285af0e 100644
+--- a/node_modules/qiankun/es/loader.js
++++ b/node_modules/qiankun/es/loader.js
+@@ -286,11 +286,14 @@ function _loadApp() {
+           legacyRender = 'render' in app ? app.render : undefined;
+           render = getRender(appInstanceId, appContent, legacyRender); // 第一次加载设置应用可见区域 dom 结构
+           // 确保每次应用加载前容器 dom 结构已经设置完毕
+-          render({
+-            element: initialAppWrapperElement,
+-            loading: true,
+-            container: initialContainer
+-          }, 'loading');
++          console.log("qiankun-loader--loading", getContainer(initialContainer).firstChild)
++          if (!getContainer(initialContainer).firstChild) {
++            render({
++              element: initialAppWrapperElement,
++              loading: true,
++              container: initialContainer
++            }, 'loading');
++          }
+           initialAppWrapperGetter = getAppWrapperGetter(appInstanceId, !!legacyRender, strictStyleIsolation, scopedCSS, function () {
+             return initialAppWrapperElement;
+           });
+@@ -305,8 +308,8 @@ function _loadApp() {
+           speedySandbox = _typeof(sandbox) === 'object' ? sandbox.speedy !== false : true;
+           if (sandbox) {
+             sandboxContainer = createSandboxContainer(appInstanceId,
+-            // FIXME should use a strict sandbox logic while remount, see https://github.com/umijs/qiankun/issues/518
+-            initialAppWrapperGetter, scopedCSS, useLooseSandbox, excludeAssetFilter, global, speedySandbox);
++              // FIXME should use a strict sandbox logic while remount, see https://github.com/umijs/qiankun/issues/518
++              initialAppWrapperGetter, scopedCSS, useLooseSandbox, excludeAssetFilter, global, speedySandbox);
+             // 用沙箱的代理对象作为接下来使用的全局对象
+             global = sandboxContainer.instance.proxy;
+             mountSandbox = sandboxContainer.mount;
+@@ -409,11 +412,18 @@ function _loadApp() {
+                         appWrapperElement = createElement(appContent, strictStyleIsolation, scopedCSS, appInstanceId);
+                         syncAppWrapperElement2Sandbox(appWrapperElement);
+                       }
+-                      render({
+-                        element: appWrapperElement,
+-                        loading: true,
+-                        container: remountContainer
+-                      }, 'mounting');
++                      //修改2
++                      if (!getContainer(remountContainer).firstChild) {
++                        render({
++                          element: appWrapperElement,
++                          loading: true,
++                          container: remountContainer
++                        }, 'mounting');
++                      }
+                     case 3:
+                     case "end":
+                       return _context5.stop();
+@@ -458,11 +468,18 @@ function _loadApp() {
+                 return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+                   while (1) switch (_context8.prev = _context8.next) {
+                     case 0:
+-                      return _context8.abrupt("return", render({
+-                        element: appWrapperElement,
+-                        loading: false,
+-                        container: remountContainer
+-                      }, 'mounted'));
++                      return _context8.abrupt("return", () => {
++                        console.log(initialContainer, remountContainer)
++                        //修改3
++                        console.log("qiankun-loader-mounted", getContainer(initialContainer).firstChild)
++                        if (!getContainer(remountContainer).firstChild) {
++                          render({
++                            element: appWrapperElement,
++                            loading: false,
++                            container: remountContainer
++                          }, 'mounted')
++                        }
++                      });
+                     case 1:
+                     case "end":
+                       return _context8.stop();
+@@ -554,15 +571,17 @@ function _loadApp() {
+                 return _regeneratorRuntime.wrap(function _callee15$(_context15) {
+                   while (1) switch (_context15.prev = _context15.next) {
+                     case 0:
+-                      render({
+-                        element: null,
+-                        loading: false,
+-                        container: remountContainer
+-                      }, 'unmounted');
+-                      offGlobalStateChange(appInstanceId);
+-                      // for gc
+-                      appWrapperElement = null;
+-                      syncAppWrapperElement2Sandbox(appWrapperElement);
++                      //修改4
++                      console.log('qiankun-loader-unmounted')
++                    // render({
++                    //   element: null,
++                    //   loading: false,
++                    //   container: remountContainer
++                    // }, 'unmounted');
++                    // offGlobalStateChange(appInstanceId);
++                    // // for gc
++                    // appWrapperElement = null;
++                    // syncAppWrapperElement2Sandbox(appWrapperElement);
+                     case 4:
+                     case "end":
+                       return _context15.stop();
+diff --git a/node_modules/qiankun/es/sandbox/patchers/dynamicAppend/forStrictSandbox.js b/node_modules/qiankun/es/sandbox/patchers/dynamicAppend/forStrictSandbox.js
+index 724a276..1dd3da1 100644
+--- a/node_modules/qiankun/es/sandbox/patchers/dynamicAppend/forStrictSandbox.js
++++ b/node_modules/qiankun/es/sandbox/patchers/dynamicAppend/forStrictSandbox.js
+@@ -91,8 +91,9 @@ export function patchStrictSandbox(appName, appWrapperGetter, proxy) {
+       rebuildCSSRules(dynamicStyleSheetElements, function (stylesheetElement) {
+         var appWrapper = appWrapperGetter();
+         if (!appWrapper.contains(stylesheetElement)) {
+-          var mountDom = stylesheetElement[styleElementTargetSymbol] === 'head' ? getAppWrapperHeadElement(appWrapper) : appWrapper;
+-          rawHeadAppendChild.call(mountDom, stylesheetElement);
++          console.log("qiankun-forStrictSandbox")
++          // var mountDom = stylesheetElement[styleElementTargetSymbol] === 'head' ? getAppWrapperHeadElement(appWrapper) : appWrapper;
++          // rawHeadAppendChild.call(mountDom, stylesheetElement);
+           return true;
+         }
+         return false;
+```
+
+### 多个子应用并行加载，子应用嵌套
+
+1. 同一个基座并行加载两个或者多个子应用
+
+可以使用loadMicroApp加载多个子应用
+2. 多路由系统共存带来的 冲突/抢占 问题如何解决？
+
+```js
+let historyPath=window.location.pathname.startWith('/vue1/')?process.env.BASE_URL+'/vue1/':process.env.BASE_URL
+const router = createRouter({
+    history: createWebHistory(window.__POWERED_BY_QIANKUN__ ? historyPath : process.env.BASE_URL),
+    // history: createWebHashHistory(),
+    routes: constantRoutes,
+})
+```
+
+同时调用`start`和`loadMicroApp`会导致子应用render两次，虽然对页面结构和样式没有影响，但是接口都会调用两次，所以在跳出子应用的时候一定要`loadMicroApp.unmount()`卸载不需要的子应用
+
+### qiankun代码入口函数封装
+
+```ts
+import type { MicroAppStateActions } from 'qiankun';
+import QiankunBridge from '@/qiankun/qiankun-bridge'
+import {
+    initGlobalState,
+    registerMicroApps,
+    start,
+    loadMicroApp,
+    addGlobalUncaughtErrorHandler,
+    runAfterFirstMounted
+} from 'qiankun';
+import { getAppStatus, unloadApplication } from 'single-spa';
+
+export default class Qiankun {
+    private actions: MicroAppStateActions | null = null
+    private appMap: any = {}
+    private prefetchAppMap: any = {}
+    init() {
+        this.registerApps()
+        this.initialState()
+        this.prefetchApp();
+        this.errorHandler();
+    }
+    registerApps(){
+        const parentRoute = useRouter();
+        registerMicroApps([{
+            name: 'demo-vue',
+            entry: `${publicPath}/demo-vue`,
+            container: `#demo-vue`,
+            activeRule: `${publicPath}${'demo-vue'}`,
+            props: {
+                parentRoute,
+                QiankunBridge:new QiankunBridge()
+            }
+        }, ...]);
+    }
+    initialState(){  
+        const initialState = {};
+        // 初始化 state
+        this.actions = initGlobalState(initialState);
+        this.actions.onGlobalStateChange((state, prev) => {
+            // state: 变更后的状态; prev 变更前的状态
+            console.log(state, prev);
+        });
+    }
+    setState(state: any) {
+        this.actions?.setGlobalState(state);
+    }
+    //预加载
+    prefetchApp() {
+        start({
+            prefetch: 'all',
+            singular: false,
+        });
+    }
+    //按需加载
+    demandLoading(apps){
+       let installAppMap = {
+          ...store.getters["tabs/installAppMap"],
+       };
+       if (!installAppMap[config.name]) {
+          installAppMap[config.name] = loadMicroApp({
+            ...config,
+            configuration: {
+                // singular: true
+                sandbox: { experimentalStyleIsolation: true },
+            },
+            props: {
+                getGlobalState: actions.getGlobalState,
+                fn: {
+                    parentRoute: useRouter(),
+                    qiankunBridge: qiankunBridge,
+                },
+            },
+        });
+       }
+    }
+    /**
+     * @description: 卸载app
+     * @param {Object} app 卸载微应用name, entry
+     * @returns false
+     */
+    async unloadApp(app) {
+        // await clearCatchByUrl(getPrefetchAppList(addVisitedRoute, router)[0])
+        const appStatus = getAppStatus('utcus');
+        if (appStatus !== 'NOT_LOADED') {
+            unloadApplication(app.name);
+            // 调用unloadApplication时，Single-spa将执行以下步骤。
+
+            // 在要卸载的注册应用程序上调用卸载生命周期。
+            // 将应用程序状态设置为NOT_LOADED
+            // 触发重新路由，在此期间，单spa可能会挂载刚刚卸载的应用程序。
+            // 由于unloadApplication调用时可能会挂载已注册的应用程序，因此您可以指定是要立即卸载还是要等待直到不再挂载该应用程序。这是通过该waitForUnmount选项完成的。
+        }
+    }
+    //重新加载微应用
+    reloadApp(app) {
+        this.unloadApp(app).then(() => {
+            loadMicroApp(app);
+        });
+    }
+    //加载单个app
+    loadSingleApp(name) {
+        if (!this.appMap[name]) {
+            this.appMap[name] = loadMicroApp(this.prefetchAppMap[name]);
+        }
+    }
+    // 切出单个app，和unloadApp用法不同unloadApp 是卸载start方法生成的应用，unmountSingleApp是卸载loadMicroApp方法生成的应用
+    async unmountSingleApp(name) {
+        if (this.appMap[name]) {
+            await this.appMap[name].unmount();
+            this.appMap[name] = null;
+        }
+    }
+    //错误处理
+    errorHandler() {
+        addGlobalUncaughtErrorHandler((event: any) => {
+            console.log('addGlobalUncaughtErrorHandler', event);
+            if (
+                event?.message &&
+                event?.message.includes('died in status LOADING_SOURCE_CODE')
+            ) {
+                Message('子应用加载失败，请检查应用是否运行', 'error', false);
+            }
+            //子应用发版更新后，原有的js会找不到，所以会报错
+            if (event?.message && event?.message.includes("Unexpected token '<'")) {
+                Message('检测到项目更新,请刷新页面', 'error', false);
+            }
+        });
+    }
+}
+
+```
+
+### 应用事件通信
+
+应用场景：子应用a调用子应用b的事件
+
+```ts
+const isDuplicate = function isDuplicate(keys: string[], key: string) {
+    return keys.includes(key);
+};
+export default class QiankunBridge {
+    private handlerMap: any = {}
+    // 单例判断
+    static hasInstance = () => !!(window as any).$qiankunBridge
+    constructor() {
+        if (!QiankunBridge.hasInstance()) {
+            ; (window as any).$qiankunBridge = this;
+        } else {
+            return (window as any).$qiankunBridge;
+        }
+    }
+    //注册
+    registerHandlers(handlers: any) {
+        const registeredHandlerKeys = Object.keys(this.handlerMap);
+        Object.keys(handlers).forEach((key) => {
+            const handler = handlers[key];
+            if (isDuplicate(registeredHandlerKeys, key)) {
+                console.warn(`注册失败,事件 '${key}' 注册已注册`);
+            } else {
+                this.handlerMap = {
+                    ...this.handlerMap,
+                    [key]: {
+                        key,
+                        handler,
+                    },
+                };
+                console.log(`事件 '${key}' 注册成功`);
+            }
+        });
+        return true;
+    }
+    removeHandlers(handlerKeys: string[]) {
+        handlerKeys.forEach((key) => {
+            delete this.handlerMap[key];
+        });
+        return true;
+    }
+    // 获取某个事件
+    getHandler(key: string) {
+        const target = this.handlerMap[key];
+        const errMsg = `事件 '${key}' 没注册过`;
+        if (!target) {
+            console.error(errMsg);
+        }
+        return (
+            (target && target.handler) ||
+            (() => {
+                console.error(errMsg);
+            })
+        );
+    }
+}
+```
+
+子应用a注册
+
+```jsx
+import React from "react";
+export async function mount(props) {
+    if (!instance) {
+        React.$qiankunBridge = props.qiankunBridge;
+        render(props);
+    }
+}
+
+React.$qiankunBridge &&
+React.$qiankunBridge.registerHandlers({
+    event1: event1Fn
+});
+```
+
+子应用b调用
+
+```js
+Vue.$qiankunBridge.getHandler('event1')
+```
+
+## 项目部署，提示用户更新系统
+
+插件在注册 `serviceWorker` 时判断 `registration` 的 `waiting` 状态, 从而判定 `serviceWorker` 是否存在新版本, 再执行对应的更新操作, 也就是弹窗提示;
+有个弊端就是项目有可能需要经常发版改一些bug，导致更新弹窗频繁出现，所以只能弃用。
+
+对于主项目简单一点的方案就是把版本号数据写入cookie里，通过webpack生成一个json文件部署到服务器，前端代码请求到json文件的版本号做对比，如果不是最新版就弹窗系统更新弹窗。
+
+子项目更新的话，js，css资源会重新编译生成新的链接，所以请求不到， `addGlobalUncaughtErrorHandler`监听到资源请求错误，直接提示更新弹窗就好
+
+```js
+addGlobalUncaughtErrorHandler((event: any) => {
+    //子应用发版更新后，原有的文件会找不到，所以会报错
+    if (event?.message && event?.message.includes("Unexpected token '<'")) {
+        Message('检测到项目更新,请刷新页面', 'error', false);
+    }
+});
+```
+
+### 主应用组件重新渲染导致子应用dom消失
+
+问题出现场景：ipad移动端切到宽屏，布局发生变价，vue组件重新渲染导致微服务里面的dom消失
+
+解决方案：用`single-spa`的`unloadApplication`方法卸载子应用，用`qiankun`的`loadMicroApp`方法重新加载该子应用
+
+详见上文的 `reloadApp`方法
+
+### 切换应用后原有子应用路由变化监听失效
+
+```js
+function render(props = {}) {
+  const { container } = props
+  router=Router() //添加此行代码,react子应用清空下dom重新调用下ReactDOM.render即可
+  instance = createApp(App)
+  instance
+    .use(store)
+    .use(router)
+    .mount(
+      container
+        ? container.querySelector('#app-vue')
+        : '#app-vue'
+    )
+  instance.config.globalProperties.$util = util
+  instance.config.globalProperties.$echarts = echarts
+}
+```
